@@ -5,14 +5,18 @@ import io.apibrew.client.Client;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.logic.*;
+import io.apibrew.faas.helper.ListDiffer;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 @Log4j2
 public class InstanceDataStore {
@@ -30,11 +34,18 @@ public class InstanceDataStore {
     private final List<FunctionExecutionEngine> functionExecutionEngines = new ArrayList<>();
     private final List<FunctionTrigger> functionTriggers = new ArrayList<>();
     private final List<ResourceRule> resourceRules = new ArrayList<>();
+    private final List<Lambda> lambdas = new ArrayList<>();
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private static final String channelKey = "faas-sync-chan";
     private final List<FunctionExecutionEngine> functionEngines = new ArrayList<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
+
+    @Setter
+    private Consumer<Function> functionRegisterHandler;
+
+    @Setter
+    private Consumer<Function> functionUnRegisterHandler;
 
     public InstanceDataStore(Client client) {
         this.client = client;
@@ -134,6 +145,29 @@ public class InstanceDataStore {
 
     private void handleEvent(Extension.Event event) {
         log.info("Handling event: " + event);
+
+        if (event.getResource().getNamespace().getName().equals(Function.NAMESPACE)) {
+            log.warn("Ignoring event for namespace: " + event.getResource().getNamespace().getName());
+            return;
+        }
+
+        switch (event.getResource().getName()) {
+            case Function.RESOURCE:
+                loadFunctions();
+                break;
+            case FunctionExecutionEngine.RESOURCE:
+                loadFunctionExecutionEngines();
+                break;
+            case FunctionTrigger.RESOURCE:
+                loadFunctionTriggers();
+                break;
+            case ResourceRule.RESOURCE:
+                loadResourceRules();
+                break;
+            case Lambda.RESOURCE:
+                loadLambdas();
+                break;
+        }
     }
 
     public void loadFunctions() {
@@ -141,10 +175,41 @@ public class InstanceDataStore {
         lock.lock();
         try {
             List<Function> functions = functionRepository.list().getContent();
-            // ... remaining logic translated from Go to Java
+
+            ListDiffer.DiffResult<Function> diffResult = ListDiffer.diff(this.functions, functions, (f1, f2) -> Objects.equals(f1.getId(), f2.getId()), Function::equals);
+
+            for (Function function : diffResult.added) {
+                log.info("Function added: " + function);
+                this.registerFunction(function);
+                this.functions.add(function);
+            }
+
+            for (Function function : diffResult.deleted) {
+                log.info("Function deleted: " + function);
+                this.unRegisterFunction(function);
+                this.functions.remove(function);
+            }
+
+            for (Function function : diffResult.updated) {
+                log.info("Function updated: " + function);
+                this.unRegisterFunction(function);
+                this.registerFunction(function);
+                this.functions.remove(function);
+                this.functions.add(function);
+            }
+
+            log.info("Functions loaded: " + this.functions.size());
         } finally {
             lock.unlock();
         }
+    }
+
+    private void unRegisterFunction(Function function) {
+        functionRegisterHandler.accept(function);
+    }
+
+    private void registerFunction(Function function) {
+        functionUnRegisterHandler.accept(function);
     }
 
     private void loadAll() {
@@ -155,9 +220,27 @@ public class InstanceDataStore {
     }
 
     private void loadResourceRules() {
+        log.info("Loading resource rules");
+        this.resourceRules.clear();
+        this.resourceRules.addAll(resourceRuleRepository.list().getContent());
+
+        log.info("Resource rules loaded: " + this.resourceRules.size());
+    }
+    private void loadLambdas() {
+        log.info("Loading lambdas");
+        this.lambdas.clear();
+        this.lambdas.addAll(lambdaRepository.list().getContent());
+
+        log.info("Lambdas loaded: " + this.lambdas.size());
+
     }
 
     private void loadFunctionTriggers() {
+        log.info("Loading function triggers");
+        this.functionTriggers.clear();
+        this.functionTriggers.addAll(functionTriggerRepository.list().getContent());
+
+        log.info("Function triggers loaded: " + this.functionTriggers.size());
     }
 
     private void loadFunctionExecutionEngines() {

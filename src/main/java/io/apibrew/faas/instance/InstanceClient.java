@@ -23,8 +23,8 @@ public class InstanceClient {
     private final Repository<ResourceRule> resourceRuleRepository;
 
     private final InstanceDataStore dataStore;
-    private final String FUNCTION_EXECUTION_CHAN = "faas-function-execution-chan";
     private final String PSEUDO_EXTENSION_CHAN = "faas-pseudo-extension-chan";
+    private final FunctionExecutor functionExecutor;
 
     public InstanceClient(Config.Server serverConfig) {
         client = Client.newClientByServerConfig(serverConfig);
@@ -34,14 +34,28 @@ public class InstanceClient {
         functionTriggerRepository = client.repository(FunctionTrigger.class);
         resourceRuleRepository = client.repository(ResourceRule.class);
         dataStore = new InstanceDataStore(client);
+        functionExecutor = new FunctionExecutor(client);
     }
 
     public void init() {
         log.info("Initializing instance client");
+
+        dataStore.setFunctionRegisterHandler(this::registerFunction);
+        dataStore.setFunctionUnRegisterHandler(this::unRegisterFunction);
+
         registerExtensions();
         registerFunctionExecutionEngines();
         registerPoll();
         dataStore.init();
+        functionExecutor.init();
+    }
+
+    private void unRegisterFunction(Function function) {
+        functionExecutor.unRegisterFunction(function);
+    }
+
+    private void registerFunction(Function function) {
+        functionExecutor.registerFunction(function);
     }
 
     private void registerFunctionExecutionEngines() {
@@ -61,7 +75,6 @@ public class InstanceClient {
 
         list.add(new FunctionExecutionEngine().withName("faas-nodejs-engine"));
         list.add(new FunctionExecutionEngine().withName("faas-python-engine"));
-//        list.add(new FunctionExecutionEngine().withName("faas-java-engine"));
 
         return list;
     }
@@ -85,30 +98,11 @@ public class InstanceClient {
     public List<Extension> prepareExtensions() {
         List<Extension> list = new ArrayList<>();
 
-        Extension functionExecutionExtension = new Extension();
-        functionExecutionExtension.setName("faas-function-execution");
-        functionExecutionExtension.setDescription("Function extension for FaaS");
-
-        Extension.EventSelector selector = new Extension.EventSelector();
-        selector.setActions(List.of(Extension.Action.CREATE));
-        selector.setNamespaces(List.of("logic"));
-        selector.setResources(List.of(Function.entityInfo.getResource()));
-
-        functionExecutionExtension.setSelector(selector);
-        functionExecutionExtension.setOrder(1);
-        functionExecutionExtension.setSync(true);
-        functionExecutionExtension.setResponds(true);
-        functionExecutionExtension.setFinalizes(true);
-        functionExecutionExtension.setCall(new Extension.ExternalCall().withChannelCall(new Extension.ChannelCall().withChannelKey(FUNCTION_EXECUTION_CHAN)));
-
         for (Extension.Action action : Extension.Action.values()) {
             list.add(preparePseudoExtension(action, 90, true, action.name().toLowerCase() + "-before"));
             list.add(preparePseudoExtension(action, 250, true, action.name().toLowerCase() + "-after"));
             list.add(preparePseudoExtension(action, 250, false, action.name().toLowerCase() + "-async"));
         }
-
-
-        list.add(functionExecutionExtension);
 
         return list;
     }

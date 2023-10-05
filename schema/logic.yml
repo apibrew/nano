@@ -38,7 +38,8 @@ properties:
     type: REFERENCE
     required: true
     reference:
-      resource: FunctionExecutionEngine
+      resource:
+        name: FunctionExecutionEngine
   - name: annotations
     type: MAP
     required: false
@@ -82,12 +83,14 @@ properties:
     type: REFERENCE
     required: false
     reference:
-      resource: Module
+      resource:
+        name: Module
   - name: engine
     type: REFERENCE
     required: true
     reference:
-      resource: FunctionExecutionEngine
+      resource:
+        name: FunctionExecutionEngine
   - name: options
     type: STRUCT
     typeRef: Options
@@ -105,7 +108,9 @@ indexes:
   - unique: true
     properties:
       - name: package
+        order: ORDER_ASC
       - name: name
+        order: ORDER_ASC
 annotations:
   EnableAudit: "true"
 ---
@@ -120,7 +125,8 @@ properties:
     type: REFERENCE
     required: true
     reference:
-      resource: Function
+      resource:
+        name: Function
   - name: input
     type: OBJECT
   - name: output
@@ -179,7 +185,8 @@ properties:
     type: REFERENCE
     required: true
     reference:
-      resource: Function
+      resource:
+        name: Function
   - name: annotations
     type: MAP
     required: false
@@ -209,7 +216,8 @@ properties:
     type: REFERENCE
     required: true
     reference:
-      resource: Function
+      resource:
+        name: Function
   - name: annotations
     type: MAP
     required: false
@@ -219,7 +227,9 @@ indexes:
   - unique: true
     properties:
       - name: package
+        order: ORDER_ASC
       - name: name
+        order: ORDER_ASC
 annotations:
   EnableAudit: "true"
 ---
@@ -245,7 +255,8 @@ properties:
     type: REFERENCE
     required: true
     reference:
-      resource: Function
+      resource:
+        name: Function
   - name: annotations
     type: MAP
     required: false
@@ -272,7 +283,8 @@ properties:
     type: REFERENCE
     required: true
     reference:
-      resource: Function
+      resource:
+        name: Function
   - name: annotations
     type: MAP
     required: false
