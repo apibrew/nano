@@ -1,0 +1,42 @@
+type: resource
+name: Database
+types:
+  - name: DbConfig
+    properties:
+      - name: username
+        type: STRING
+        required: true
+        description: The username of the database
+      - name: password
+        type: STRING
+        required: true
+        description: The password of the database
+      - name: host
+        type: STRING
+        required: true
+        description: The host of the database
+      - name: port
+        type: STRING
+        required: true
+        description: The port of the database
+      - name: dbName
+        type: STRING
+        required: true
+        description: The name of the database
+      - name: defaultSchema
+        type: STRING
+        required: true
+        description: The default schema of the database
+properties:
+  - name: name
+    type: STRING
+    required: true
+    unique: true
+    description: The name of the account
+  - name: config
+    type: STRUCT
+    typeRef: DbConfig
+    required: true
+    description: The configuration of the database
+annotations:
+  EnableAudit: "true"

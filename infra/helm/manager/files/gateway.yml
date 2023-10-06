@@ -1,0 +1,4 @@
+manager_server_name: gateway
+tls_cert: /app/ssl-config/tls.crt
+tls_key: /app/ssl-config/tls.key
+domain: apibrew.io

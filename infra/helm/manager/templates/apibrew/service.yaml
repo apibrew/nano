@@ -1,0 +1,16 @@
+# service for apibrew server
+apiVersion: v1
+kind: Service
+metadata:
+  name: manager-apibrew-server
+  labels:
+    app: manager-apibrew-server
+spec:
+  type: NodePort
+  ports:
+    - port: 9009
+      targetPort: 9009
+      protocol: TCP
+      name: http
+  selector:
+    app: manager-apibrew-server

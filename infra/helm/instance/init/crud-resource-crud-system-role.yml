@@ -1,0 +1,42 @@
+type: record
+namespace: ui
+resource: Crud
+properties:
+  name: ResourceCrud-system-Role
+  namespace: system
+  resource: Role
+  gridConfig:
+    columns:
+      - name: id
+        title: Id
+        width: 300
+      - name: name
+        flex: 1
+        title: Name
+  formConfig:
+    apiOptions:
+      resolveReferences:
+        [
+          "$.permissions[]",
+          "$.permissions[].namespace",
+          "$.permissions[].resource",
+          "$.permissions[].user",
+        ]
+    children:
+      - kind: tab
+        title: Details
+        children:
+          - kind: property
+            propertyPath: name
+            children:
+              - kind: input
+      - kind: tab
+        title: Permissions
+        children:
+          - kind: property
+            propertyPath: permissions
+            children:
+              - kind: custom
+                component: CoreUI/PermissionsInput
+                params:
+                  mode: "role"

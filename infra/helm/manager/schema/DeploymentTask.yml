@@ -1,0 +1,26 @@
+type: resource
+name: DeploymentTask
+properties:
+  - name: instance
+    type: REFERENCE
+    required: true
+    reference:
+      resource: Instance
+  - name: kind
+    type: ENUM
+    required: true
+    enumValues: [ deploy, upgrade, destroy, restart ]
+  - name: params
+    type: MAP
+    item:
+      type: STRING
+  - name: status
+    type: ENUM
+    required: true
+    defaultValue: pending
+    enumValues: [ pending, executing, executed, failed, done ]
+  - name: message
+    type: STRING
+    length: 4096
+annotations:
+  EnableAudit: "true"

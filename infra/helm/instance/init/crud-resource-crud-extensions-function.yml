@@ -1,0 +1,82 @@
+type: record
+namespace: ui
+resource: Crud
+properties:
+  name: ResourceCrud-logic-Function
+  namespace: ui
+  resource: Crud
+  gridConfig:
+    columns:
+      - name: id
+        title: Id
+        width: 300
+      - name: package
+        flex: 1
+        title: Package
+      - name: name
+        title: Name
+        flex: 1
+      - name: engine
+        title: Engine
+    actions:
+      - name: Execute
+        title: Execute
+        icon: play_arrow
+        component: CoreUI/ActionExecuteFunction
+  formConfig:
+    children:
+      - kind: tab
+        title: Details
+        children:
+          - kind: group
+            title: Main
+            children:
+              - kind: property
+                propertyPath: package
+                children:
+                  - kind: input
+              - kind: property
+                propertyPath: name
+                children:
+                  - kind: input
+          - kind: property
+            propertyPath: engine
+            children:
+              - kind: input
+          - kind: section
+            title: Arguments
+            children:
+              - kind: property
+                propertyPath: args
+                children:
+                  - kind: input
+                    children:
+                      - kind: section
+                        children:
+                          - kind: property
+                            propertyPath: name
+                            children:
+                              - kind: input
+                                params:
+                                  hideLabel: true
+          - kind: section
+            title: Options
+            children:
+              - kind: property
+                propertyPath: options
+                children:
+                  - kind: property
+                    propertyPath: namedParams
+                    children:
+                      - kind: input
+      - kind: tab
+        title: Script
+        children:
+          - kind: property
+            propertyPath: script
+            children:
+              - kind: input
+                params:
+                  multiline: true
+                  rows: 20
+#                component: CoreUI/FunctionScriptInput

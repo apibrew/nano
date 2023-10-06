@@ -1,0 +1,16 @@
+# service for apibrew server
+apiVersion: v1
+kind: Service
+metadata:
+  name: deployer
+  labels:
+    app: deployer
+spec:
+  type: NodePort
+  ports:
+    - port: 7671
+      targetPort: 7671
+      protocol: TCP
+      name: http
+  selector:
+    app: deployer

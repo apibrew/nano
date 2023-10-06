@@ -1,0 +1,45 @@
+type: record
+resource: Menu
+namespace: ui
+properties:
+  name: main
+  children:
+    - title: Dashboard
+      icon: dashboard
+      link: dashboard
+      component: CoreUI/Dashboard
+    - title: Resources
+      link: resources
+      icon: api
+      component: CoreUI/ResourcePage
+      params:
+        namespace: system
+        resource: Resource
+      permission:
+        namespace: system
+        resource: Resource
+    - title: Records
+      link: records
+      icon: api
+      component: CoreUI/RecordPage
+    - title: SDK
+      link: sdk
+      icon: api
+      component: Documentation/Sdk
+    - title: Namespaces
+      link: namespaces
+      icon: api
+      component: CoreUI/Crud
+      params:
+        namespace: system
+        resource: Namespace
+      permission:
+        namespace: system
+        resource: Namespace
+    - title: Users & Roles
+      icon: admin_panel_settings
+      link: users-and-roles
+      component: CoreUI/UsersRoles
+      permission:
+        namespace: system
+        resource: User

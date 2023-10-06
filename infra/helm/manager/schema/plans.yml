@@ -1,0 +1,22 @@
+type: record
+resource: InstancePlan
+properties:
+  name: free
+  amount: 0
+  currency: USD
+  limits:
+    requestPerMinute: 100
+    maxRecordCount: 100
+---
+type: record
+resource: InstancePlan
+properties:
+  name: premium
+  amount: 50
+  currency: USD
+  limits:
+    requestPerMinute: 1000
+    maxRecordCount: 1000
+  attributes:
+    - name: enableHistory
+      value: "true"

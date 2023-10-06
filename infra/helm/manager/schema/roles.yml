@@ -1,0 +1,43 @@
+type: record
+resource: Role
+namespace: system
+properties:
+  name: customers
+  permissions:
+    - resource: InstancePlan
+      namespace: default
+      operation: READ
+      permit: ALLOW
+    - resource: Payment
+      namespace: default
+      operation: READ
+      permit: ALLOW
+    - resource: Instance
+      namespace: default
+      operation: CREATE
+      permit: ALLOW
+    - resource: Instance
+      namespace: default
+      operation: UPDATE
+      permit: ALLOW
+    - resource: Instance
+      namespace: default
+      operation: READ
+      permit: ALLOW
+    - resource: Invoice
+      namespace: default
+      operation: CREATE
+      permit: ALLOW
+    - resource: Invoice
+      namespace: default
+      operation: UPDATE
+      permit: ALLOW
+    - resource: Invoice
+      namespace: default
+      operation: READ
+      permit: ALLOW
+    - resource: DeploymentTask
+      namespace: default
+      operation: CREATE
+      permit: ALLOW
+

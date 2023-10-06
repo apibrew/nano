@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/gateway/config.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: gateway
+          image: "apibrew/manager:latest"
+          imagePullPolicy: Always
+          args: ["/app/gateway"]
+          env:
+            - name: HOME
+              value: /app/
+          ports:
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+            - name: grpcs
+              containerPort: 9443
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/.apbr
+            - name: ssl-config
+              mountPath: /app/ssl-config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gateway-config
+        - name: ssl-config
+          secret:
+            secretName: ssl-config

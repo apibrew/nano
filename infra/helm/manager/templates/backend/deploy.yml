@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/backend/config.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: backend
+          image: "apibrew/manager-backend:latest"
+          imagePullPolicy: Always
+          env:
+            - name: HOME
+              value: /app/
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/.apbr
+      volumes:
+        - name: config-volume
+          configMap:
+            name: backend-config

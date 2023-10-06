@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.name }}-apibrew-ui"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: "{{ .Values.name }}-apibrew-ui"
+spec:
+  selector:
+    matchLabels:
+      app: "{{ .Values.name }}-apibrew-ui"
+  template:
+    metadata:
+      namespace: "{{ .Values.namespace }}"
+      labels:
+        app: "{{ .Values.name }}-apibrew-ui"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/ui/config.yaml") . | sha256sum }}
+        checksum/deploymentId: "{{ .Values.deploymentId }}"
+    spec:
+      containers:
+        - name: "{{ .Values.name }}-apibrew-ui"
+          image: "tislib/apibrew-ui:latest"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/nginx/html/config.js
+              subPath: config.js
+      volumes:
+        - name: config-volume
+          configMap:
+            name: "{{ .Values.name }}-apibrew-ui-config"
+        - name: schema-volume

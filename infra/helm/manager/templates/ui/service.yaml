@@ -1,0 +1,16 @@
+# service for manager ui
+apiVersion: v1
+kind: Service
+metadata:
+  name: "manager-ui"
+  labels:
+    app: "manager-ui"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: next
+  selector:
+    app: "manager-ui"

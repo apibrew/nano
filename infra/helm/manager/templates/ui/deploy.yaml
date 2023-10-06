@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "manager-ui"
+  labels:
+    app: "manager-ui"
+spec:
+  selector:
+    matchLabels:
+      app: "manager-ui"
+  template:
+    metadata:
+      labels:
+        app: "manager-ui"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/ui/config.yaml") . | sha256sum }}
+        checksum/deploymentId: "{{ .Values.deploymentId }}"
+    spec:
+      containers:
+        - name: "manager-ui"
+          image: "apibrew/manager-ui:latest"
+          imagePullPolicy: Always
+          ports:
+            - name: next
+              containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/nginx/html/config.js
+              subPath: config.js
+      volumes:
+        - name: config-volume
+          configMap:
+            name: "manager-ui-config"
+        - name: schema-volume

@@ -1,0 +1,23 @@
+type: record
+namespace: ui
+resource: Router
+properties:
+  name: main
+  routes:
+    - path: /dashboard/*
+      component: CoreUI/DashboardLayout
+      system: true
+    - path: /
+      component: Router/Forward
+      system: true
+      params:
+        to: /dashboard
+        system: true
+    - path: /sdk
+      component: CoreUI/Sdk
+      system: true
+    - path: "*"
+      component: CoreUI/Error
+      params:
+        code: 404
+        message: Page not found

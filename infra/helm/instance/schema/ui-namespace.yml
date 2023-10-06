@@ -1,0 +1,5 @@
+type: record
+resource: Namespace
+namespace: system
+properties:
+  name: ui

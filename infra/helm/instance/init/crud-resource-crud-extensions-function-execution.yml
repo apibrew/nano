@@ -1,0 +1,25 @@
+type: record
+namespace: ui
+resource: Crud
+properties:
+  name: ResourceCrud-extensions-FunctionExecution
+  namespace: ui
+  resource: Crud
+  gridConfig:
+    columns:
+      - name: id
+        title: Id
+        width: 300
+      - name: package
+        title: Package
+      - name: name
+        title: Name
+      - name: engine
+        title: Engine
+    actions:
+      - name: Execute
+        title: Execute
+        icon: play_arrow
+        component: CoreUI/ActionExecuteFunction
+  formConfig:
+    children:

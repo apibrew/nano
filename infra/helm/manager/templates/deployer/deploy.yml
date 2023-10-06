@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployer
+  labels:
+    app: deployer
+spec:
+  selector:
+    matchLabels:
+      app: deployer
+  template:
+    metadata:
+      labels:
+        app: deployer
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/deployer/config.yaml") . | sha256sum }}
+    spec:
+      serviceAccount: deployer-service-account
+      containers:
+        - name: deployer
+          image: "apibrew/manager:latest"
+          imagePullPolicy: Always
+          args: ["/app/deployer"]
+          env:
+            - name: HOME
+              value: /app/
+          ports:
+            - name: http
+              containerPort: 7671
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/.apbr
+      volumes:
+        - name: config-volume
+          configMap:
+            name: deployer-config

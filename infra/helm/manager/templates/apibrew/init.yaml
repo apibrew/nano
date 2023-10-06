@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: manager-apibrew-server-init
+  namespace: "{{ .Values.namespace }}"
+data:
+{{ (.Files.Glob "init/*").AsConfig | indent 2 }}

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager-apibrew-server
+  labels:
+    app: manager-apibrew-server
+spec:
+  selector:
+    matchLabels:
+      app: manager-apibrew-server
+  template:
+    metadata:
+      labels:
+        app: manager-apibrew-server
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/apibrew/config.yaml") . | sha256sum }}
+        checksum/schema: {{ include (print $.Template.BasePath "/apibrew/schema.yaml") . | sha256sum }}
+        checksum/init: {{ include (print $.Template.BasePath "/apibrew/init.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: manager-apibrew-server
+          image: "tislib/apibrew:latest"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 9009
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9009
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9009
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/
+            - name: schema-volume
+              mountPath: /app/schema/
+            - name: init-volume
+              mountPath: /app/init/
+      volumes:
+        - name: config-volume
+          configMap:
+            name: manager-apibrew-server-config
+        - name: schema-volume
+          configMap:
+            name: manager-apibrew-server-schema
+        - name: init-volume
+          configMap:
+            name: manager-apibrew-server-init

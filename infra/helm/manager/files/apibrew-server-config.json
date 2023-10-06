@@ -1,0 +1,144 @@
+{
+  "serviceId": "manager-apibrew-manager",
+  "host": "0.0.0.0",
+  "port": "9009",
+  "jwtPrivateKey": "/app/jwt.key",
+  "jwtPublicKey": "/app/jwt.key.pub",
+  "disableAuthentication": false,
+  "eventChannelConfig": {
+    "maxChannelSize": 500,
+    "maxWaitTimeMs": 50000
+  },
+  "loggingConfig": {
+    "level": "DEBUG",
+    "reportCaller": true,
+    "format": "TEXT"
+  },
+  "metrics": {
+    "enabled": true,
+    "influxdb": {
+      "hostUrl": "http://tisserv.net:8086",
+      "token": "3rUxUFF_3OGJLAjZ2MhKt6tK3vrIMTG5A2DH7YE8q0vf1m7bV6q3c4wExxKjRmHaH4iRZzxWJsBnpYhTZaU3eA==",
+      "organization": "apibrew",
+      "bucket": "apibrew"
+    }
+  },
+  "stats": {
+    "enabled": true,
+    "redis": {
+      "prefix": "manager",
+      "addr": "tisserv.net:6379"
+    }
+  },
+  "systemDataSource": {
+    "id": "system",
+    "properties": {
+      "backend": "POSTGRESQL",
+      "options": {
+        "username": "root",
+        "password": "root",
+        "host": "tisserv.net",
+        "port": "5432",
+        "db_name": "apibrew_manager_db",
+        "defaultSchema": "public"
+      }
+    }
+  },
+  "initRecords": [
+    {
+      "namespace": "system",
+      "resource": "DataSource",
+      "record": {
+        "properties": {
+          "name": "default",
+          "backend": "POSTGRESQL",
+          "options": {
+            "username": "root",
+            "password": "root",
+            "host": "tisserv.net",
+            "port": "5432",
+            "db_name": "apibrew_manager_db",
+            "defaultSchema": "public"
+          }
+        }
+      }
+    },
+    {
+      "namespace": "system",
+      "resource": "User",
+      "record": {
+        "properties": {
+          "username": "deployer",
+          "password": "ffdab5ceb8df11f3bc5ac806dd3f6423",
+          "permissions": [
+            {
+              "operation": "FULL",
+              "permit": "ALLOW"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "namespace": "system",
+      "resource": "User",
+      "record": {
+        "properties": {
+          "username": "gateway",
+          "password": "459fd4c79d106845fca6f013a73900e0",
+          "permissions": [
+            {
+              "operation": "FULL",
+              "permit": "ALLOW"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "namespace": "system",
+      "resource": "User",
+      "record": {
+        "properties": {
+          "username": "backend",
+          "password": "d56fb556019d75e0e627fa8cfc88819b",
+          "permissions": [
+            {
+              "operation": "FULL",
+              "permit": "ALLOW"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "namespace": "system",
+      "resource": "User",
+      "record": {
+        "properties": {
+          "username": "admin",
+          "password": "614c273519c2989be50b96694a7b9406",
+          "permissions": [
+            {
+              "operation": "FULL",
+              "permit": "ALLOW"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "namespace": "system",
+      "resource": "Namespace",
+      "record": {
+        "properties": {
+          "name": "default"
+        }
+      }
+    }
+  ],
+  "applyPaths": [
+    "/app/schema/*.yml",
+    "/app/init/*.yml"
+  ]
+}

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deployer-config
+  namespace: "{{ .Values.namespace }}"
+data:
+  deployer.yml: |-
+{{ .Files.Get "files/deployer.yml" | indent 4 }}
+  config: |-
+{{ .Files.Get "files/config" | indent 4 }}

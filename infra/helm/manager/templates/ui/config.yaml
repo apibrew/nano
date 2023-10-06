@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "manager-ui-config"
+data:
+  config.js: |-
+{{ .Files.Get "files/config.js" | indent 4 }}

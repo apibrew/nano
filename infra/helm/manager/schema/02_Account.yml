@@ -1,0 +1,9 @@
+type: resource
+name: Account
+properties:
+  - name: name
+    type: STRING
+    description: The name of the account
+  - name: email
+    type: STRING
+    description: The email of the account

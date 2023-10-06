@@ -1,0 +1,70 @@
+type: resource
+name: Invoice
+namespace: default
+types:
+  - name: InvoiceItem
+    properties:
+      - name: instance
+        type: REFERENCE
+        required: true
+        description: The instance of the payment
+        reference:
+          resource: Instance
+      - name: instancePreviousPlanName
+        type: STRING
+      - name: instancePreviousPlanUntil
+        type: TIMESTAMP
+      - name: monthCount
+        type: INT32
+        required: true
+        description: The amount of the payment
+      - name: plan
+        type: REFERENCE
+        required: true
+        description: The plan of the payment
+        reference:
+          resource: InstancePlan
+properties:
+  - name: user
+    type: STRING
+    required: true
+    description: The user of the payment
+  - name: items
+    required: true
+    type: LIST
+    item:
+      type: STRUCT
+      typeRef: InvoiceItem
+  - name: amount
+    type: INT32
+    required: true
+    description: The amount of the payment
+  - name: currency
+    type: STRING
+    required: true
+    description: The currency of the payment
+  - name: payment
+    type: REFERENCE
+    required: true
+    description: The payment of the payment
+    reference:
+      resource: Payment
+  - name: paymentDate
+    type: TIMESTAMP
+    description: The date of the payment
+  - name: status
+    type: ENUM
+    required: true
+    defaultValue: pending
+    enumValues: [ pending, paid ]
+  - name: executionStatus
+    type: ENUM
+    required: true
+    defaultValue: pending
+    enumValues: [ pending, executing, executed, failed ]
+  - name: notes
+    type: STRING
+    length: 1024
+    description: The notes of the payment
+annotations:
+  EnableAudit: "true"

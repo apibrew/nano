@@ -1,0 +1,58 @@
+type: resource
+name: Instance
+properties:
+  - name: name
+    type: STRING
+    required: true
+    unique: true
+    immutable: true
+    description: The name of the account
+  - name: owner
+    type: STRING
+  - name: title
+    type: STRING
+  - name: description
+    type: STRING
+  - name: cluster
+    type: STRING
+    required: true
+    description: The cluster of the instance
+    defaultValue: default
+  - name: replicaCount
+    type: INT32
+    required: true
+    description: The number of replicas of the instance
+    defaultValue: 1
+  - name: namespace
+    type: STRING
+    required: true
+    description: The namespace of the instance
+    defaultValue: instances
+  - name: database
+    type: REFERENCE
+    required: true
+    reference:
+      resource: Database
+  - name: plan
+    type: REFERENCE
+    reference:
+      resource: InstancePlan
+  - name: paidPlanUntil
+    type: TIMESTAMP
+  - name: backendVersion
+    defaultValue: 1.0.0
+    type: STRING
+    required: true
+    description: The version of the api-brew
+  - name: health
+    type: ENUM
+    required: true
+    defaultValue: healthy
+    enumValues: [healthy, unhealthy]
+  - name: deploymentStatus
+    type: ENUM
+    required: true
+    defaultValue: pending
+    enumValues: [pending, pendingDeploy, deployed, deployFailed, pendingDestroy, destroyed, destroyFailed]
+annotations:
+  EnableAudit: "true"

@@ -1,0 +1,50 @@
+type: resource
+name: InstancePlan
+namespace: default
+types:
+  - name: PlanLimits
+    properties:
+      - name: requestPerMinute
+        type: INT32
+        description: The request per minute
+      - name: maxRecordCount
+        type: INT32
+        description: The max record count
+      - name: maxResourceCount
+        type: INT32
+        description: The max resource count
+      - name: maxNamespaceCount
+        type: INT32
+        description: The max namespace count
+  - name: Attribute
+    properties:
+      - name: name
+        type: STRING
+        description: The name of the attribute
+      - name: value
+        type: STRING
+        description: The value of the attribute
+properties:
+  - name: name
+    type: STRING
+    required: true
+    unique: true
+    description: The user of the payment
+  - name: amount
+    type: INT32
+    required: true
+    description: The amount of the payment
+  - name: currency
+    type: STRING
+    required: true
+    description: The currency of the payment
+  - name: limits
+    type: STRUCT
+    typeRef: PlanLimits
+  - name: attributes
+    type: LIST
+    item:
+      type: STRUCT
+      typeRef: Attribute
+annotations:
+  EnableAudit: "true"

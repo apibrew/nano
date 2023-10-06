@@ -1,0 +1,40 @@
+type: resource
+name: Payment
+namespace: default
+properties:
+  - name: user
+    type: STRING
+    required: true
+    description: The user of the payment
+  - name: amount
+    type: INT32
+    required: true
+    description: The amount of the payment
+  - name: currency
+    type: STRING
+    required: true
+    description: The currency of the payment
+  - name: status
+    type: ENUM
+    required: true
+    defaultValue: pending
+    enumValues: [ pending, executing, paid, failed ]
+  - name: returnUrl
+    type: STRING
+    description: The return url of the payment
+  - name: paymentDate
+    type: TIMESTAMP
+    description: The date of the payment
+  - name: token
+    type: STRING
+    description: The token of the payment
+  - name: paymentId
+    type: STRING
+    description: The token of the payment
+  - name: responses
+    type: LIST
+    item:
+      type: STRING
+    description: The responses of the payment
+annotations:
+  EnableAudit: "true"

@@ -1,0 +1,7 @@
+name: "instance-new-2"
+replicas: 1
+namespace: "instances"
+cluster: "cluster-name-1"
+config: "{\"host\":\"0.0.0.0\", \"port\":9009, \"serviceId\":\"instance-new-2\", \"systemDataSource\":{\"properties\":{\"backend\":\"POSTGRESQL\", \"description\":\"\", \"name\":\"system\", \"options\":{\"db_name\":\"instance-new-2\", \"defaultSchema\":\"public\", \"host\":\"tisserv.net\", \"password\":\"root\", \"port\":\"5432\", \"username\":\"root\"}, \"version\":0}}, \"initRecords\":[{\"namespace\":\"system\", \"resource\":\"DataSource\", \"record\":{\"properties\":{\"backend\":\"POSTGRESQL\", \"description\":\"\", \"name\":\"default\", \"options\":{\"db_name\":\"instance-new-2\", \"defaultSchema\":\"public\", \"host\":\"tisserv.net\", \"password\":\"root\", \"port\":\"5432\", \"username\":\"root\"}, \"version\":0}}}, {\"namespace\":\"system\", \"resource\":\"User\", \"record\":{\"properties\":{\"password\":\"admin\", \"permissions\":[{\"operation\":\"FULL\", \"permit\":\"ALLOW\", \"version\":0}], \"username\":\"admin\", \"version\":0}}}, {\"namespace\":\"system\", \"resource\":\"Namespace\", \"record\":{\"properties\":{\"name\":\"default\", \"version\":0}}}], \"applyPaths\":[\"/app/schema/ui-namespace.yml\", \"/app/schema/*.yml\", \"/app/init/*.yml\"]}"
+deploymentId: test
+domain: apibrew.io

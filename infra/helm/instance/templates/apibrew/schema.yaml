@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.name }}-apibrew-server-schema"
+  namespace: "{{ .Values.namespace }}"
+data:
+{{ (.Files.Glob "schema/*").AsConfig | indent 2 }}

@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.name }}-apibrew-server"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: "{{ .Values.name }}-apibrew-server"
+spec:
+  selector:
+    matchLabels:
+      app: "{{ .Values.name }}-apibrew-server"
+  template:
+    metadata:
+      namespace: "{{ .Values.namespace }}"
+      labels:
+        app: "{{ .Values.name }}-apibrew-server"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/apibrew/config.yaml") . | sha256sum }}
+        checksum/schema: {{ include (print $.Template.BasePath "/apibrew/schema.yaml") . | sha256sum }}
+        checksum/init: {{ include (print $.Template.BasePath "/apibrew/init.yaml") . | sha256sum }}
+        checksum/deploymentId: "{{ .Values.deploymentId }}"
+    spec:
+      containers:
+        - name: "{{ .Values.name }}-apibrew-server"
+          image: "tislib/apibrew:latest"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 9009
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9009
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9009
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/
+            - name: schema-volume
+              mountPath: /app/schema/
+            - name: init-volume
+              mountPath: /app/init/
+      volumes:
+        - name: config-volume
+          configMap:
+            name: "{{ .Values.name }}-apibrew-server-config"
+        - name: schema-volume
+          configMap:
+            name: "{{ .Values.name }}-apibrew-server-schema"
+        - name: init-volume
+          configMap:
+            name: "{{ .Values.name }}-apibrew-server-init"

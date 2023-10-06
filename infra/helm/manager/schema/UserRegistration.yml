@@ -1,0 +1,16 @@
+type: resource
+name: UserRegistration
+virtual: true
+properties:
+  - name: name
+    type: STRING
+    required: true
+  - name: emailAddress
+    type: STRING
+    required: true
+  - name: password
+    type: STRING
+    required: true
+annotations:
+  AllowPublicAccess: "true"
+  EnableAudit: "true"

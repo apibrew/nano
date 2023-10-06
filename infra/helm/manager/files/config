@@ -1,0 +1,20 @@
+type: server
+servers:
+  - name: deployer
+    host: manager-apibrew-server:9009
+    insecure: true
+    authentication:
+      username: deployer
+      password: ffdab5ceb8df11f3bc5ac806dd3f6423
+  - name: gateway
+    host: manager-apibrew-server:9009
+    insecure: true
+    authentication:
+      username: gateway
+      password: 459fd4c79d106845fca6f013a73900e0
+  - name: backend
+    host: http://manager-apibrew-server:9009
+    insecure: true
+    authentication:
+      username: backend
+      password: d56fb556019d75e0e627fa8cfc88819b
