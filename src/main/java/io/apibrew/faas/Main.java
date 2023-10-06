@@ -148,10 +148,21 @@ public class Main {
         log.info("Starting instance: " + instance.getName());
 
         Thread thread = new Thread(() -> {
-            InstanceClient instanceClient = new InstanceClient(instance);
-            instanceClient.init();
-
-            instanceMap.put(instance.getName(), instanceClient);
+            for (int i = 0; i < 100; i++) {
+                try {
+                    InstanceClient instanceClient = new InstanceClient(instance);
+                    instanceClient.init();
+                    instanceMap.put(instance.getName(), instanceClient);
+                    break;
+                } catch (Exception e) {
+                    log.error("Unable to start instance: " + instance.getName(), e);
+                    try {
+                        Thread.sleep(1000 * (i + 1));
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                    }
+                }
+            }
 
             log.info("Started instance: " + instance.getName());
         });
