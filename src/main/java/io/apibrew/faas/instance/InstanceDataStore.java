@@ -7,6 +7,7 @@ import io.apibrew.client.impl.ChannelEventPoller;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.logic.*;
 import io.apibrew.faas.helper.ListDiffer;
+import io.apibrew.faas.model.FaasInstance;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
@@ -49,7 +50,7 @@ public class InstanceDataStore {
     @Setter
     private Consumer<Function> functionUnRegisterHandler;
 
-    public InstanceDataStore(Client client) {
+    public InstanceDataStore(Client client, FaasInstance instance) {
         this.client = client;
         this.extensionRepository = client.repository(Extension.class);
         this.functionRepository = client.repository(Function.class);
@@ -61,6 +62,7 @@ public class InstanceDataStore {
                 .client(client)
                 .channelKey(channelKey)
                 .consumer(this::handleEvent)
+                .threadName("InstanceDataStore poller[" + instance.getName() + "]")
                 .build();
     }
 

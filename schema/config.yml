@@ -1,0 +1,41 @@
+type: resource
+name: Config
+types:
+  - name: ServerConfig
+    properties:
+      - name: host
+        type: STRING
+        required: true
+      - name: insecure
+        type: BOOLEAN
+        required: true
+        defaultValue: false
+      - name: authentication
+        type: STRUCT
+        required: true
+        typeRef: ServerConfigAuthentication
+  - name: ServerConfigAuthentication
+    properties:
+      - name: username
+        type: STRING
+        required: false
+      - name: password
+        type: STRING
+        required: false
+      - name: token
+        type: STRING
+        required: false
+properties:
+  - name: instances
+    type: LIST
+    required: false
+    item:
+      type: REFERENCE
+      required: true
+      reference:
+        resource:
+          name: FaasInstance
+  - name: controller
+    type: STRUCT
+    required: false
+    typeRef: ServerConfig

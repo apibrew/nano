@@ -5,6 +5,7 @@ import io.apibrew.client.Config;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.logic.*;
+import io.apibrew.faas.model.FaasInstance;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -27,15 +28,29 @@ public class InstanceClient {
     private final FunctionExecutor functionExecutor;
     private boolean isRunning;
 
-    public InstanceClient(Config.Server serverConfig) {
+    public InstanceClient(FaasInstance instance) {
+        Config.Server serverConfig = prepareServerConfig(instance);
+
         client = Client.newClientByServerConfig(serverConfig);
         extensionRepository = client.repository(Extension.class);
         functionRepository = client.repository(Function.class);
         functionExecutionEngineRepository = client.repository(FunctionExecutionEngine.class);
         functionTriggerRepository = client.repository(FunctionTrigger.class);
         resourceRuleRepository = client.repository(ResourceRule.class);
-        dataStore = new InstanceDataStore(client);
-        functionExecutor = new FunctionExecutor(client);
+        dataStore = new InstanceDataStore(client, instance);
+        functionExecutor = new FunctionExecutor(client, instance);
+    }
+
+    private static Config.Server prepareServerConfig(FaasInstance instance) {
+        Config.Server serverConfig = new Config.Server();
+        serverConfig.setHost(instance.getServerConfig().getHost());
+        serverConfig.setInsecure(instance.getServerConfig().getInsecure());
+        Config.Authentication authentication = new Config.Authentication();
+        authentication.setUsername(instance.getServerConfig().getAuthentication().getUsername());
+        authentication.setPassword(instance.getServerConfig().getAuthentication().getPassword());
+        authentication.setToken(instance.getServerConfig().getAuthentication().getToken());
+        serverConfig.setAuthentication(authentication);
+        return serverConfig;
     }
 
     public void init() {

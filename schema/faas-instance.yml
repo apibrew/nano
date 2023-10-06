@@ -1,0 +1,59 @@
+type: resource
+name: FaasInstance
+description: FunctionExecutionEngine
+types:
+  - name: ServerConfig
+    properties:
+      - name: host
+        type: STRING
+        required: true
+      - name: insecure
+        type: BOOLEAN
+        required: true
+        defaultValue: false
+      - name: authentication
+        type: STRUCT
+        required: true
+        typeRef: ServerConfigAuthentication
+  - name: ServerConfigAuthentication
+    properties:
+      - name: username
+        type: STRING
+        required: false
+      - name: password
+        type: STRING
+        required: false
+      - name: token
+        type: STRING
+        required: false
+  - name: InstanceLimitations
+    properties:
+      - name: maxConcurrentExecutions
+        type: INT32
+        required: false
+        defaultValue: 2
+      - name: maxExecutionTime
+        type: INT32
+        required: false
+        defaultValue: 1500
+properties:
+  - name: name
+    type: STRING
+    length: 255
+    required: true
+    unique: true
+  - name: serverConfig
+    type: STRUCT
+    required: true
+    typeRef: ServerConfig
+  - name: limitations
+    type: STRUCT
+    required: false
+    typeRef: InstanceLimitations
+  - name: annotations
+    type: MAP
+    required: false
+    item:
+      type: STRING
+annotations:
+  EnableAudit: "true"

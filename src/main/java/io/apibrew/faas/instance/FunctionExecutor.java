@@ -11,6 +11,7 @@ import io.apibrew.client.model.Record;
 import io.apibrew.client.model.logic.Function;
 import io.apibrew.client.model.logic.FunctionExecution;
 import io.apibrew.client.model.logic.FunctionExecutionEngine;
+import io.apibrew.faas.model.FaasInstance;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.Instant;
@@ -34,7 +35,7 @@ public class FunctionExecutor {
 
     private final GraalVMFunctionExecutor graalVMFunctionExecutor = new GraalVMFunctionExecutor();
 
-    public FunctionExecutor(Client client) {
+    public FunctionExecutor(Client client, FaasInstance instance) {
         this.client = client;
         extensionRepository = client.repository(Extension.class);
         objectMapper.registerModule(new JavaTimeModule());
@@ -43,6 +44,7 @@ public class FunctionExecutor {
                 .client(client)
                 .channelKey(FUNCTION_EXECUTION_CHAN)
                 .consumer(this::handleEvent)
+                .threadName("faas-function-executor-poller[" + instance.getName() + "]")
                 .build();
     }
 
