@@ -1,4 +1,4 @@
-FROM amazoncorretto:21.0.0
+FROM ghcr.io/graalvm/jdk-community:21
 
 WORKDIR /app
 
