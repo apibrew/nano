@@ -13,6 +13,8 @@ import io.apibrew.client.model.logic.FunctionExecution;
 import io.apibrew.client.model.logic.FunctionExecutionEngine;
 import lombok.extern.log4j.Log4j2;
 
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -88,8 +90,20 @@ public class FunctionExecutor {
     }
 
     private void handleFunctionExecution(FunctionExecution functionExecution) {
+        if (functionExecution.getAnnotations() == null) {
+            functionExecution.setAnnotations(new HashMap<>());
+        }
+
         System.out.println("Function execution: " + functionExecution);
+        Instant now = Instant.now();
         graalVMFunctionExecutor.execute(functionExecution);
+
+        long diff = Instant.now().toEpochMilli() - now.toEpochMilli();
+
+        functionExecution.getAnnotations().put("execution-time", String.valueOf(diff));
+        functionExecution.getAnnotations().put("execution-engine", "faas");
+        functionExecution.getAnnotations().put("execution-engine-version", "1.0.0");
+
     }
 
     private void registerExtensions() {

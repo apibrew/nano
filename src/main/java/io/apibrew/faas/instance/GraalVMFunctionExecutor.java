@@ -23,11 +23,23 @@ import java.util.stream.Collectors;
 
 @Log4j2
 public class GraalVMFunctionExecutor {
-    Map<String, Function> functionMap = new HashMap<>();
-    private Map<UUID, String> engineNameIdMap = new HashMap<>();
+    private final Map<String, Function> functionMap = new HashMap<>();
+    private final Map<UUID, String> engineNameIdMap = new HashMap<>();
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final ExecutorService virtualThreadsExecutorService = Executors.newVirtualThreadPerTaskExecutor();
+
+    public GraalVMFunctionExecutor() {
+        log.info("Initializing GraalVMFunctionExecutor");
+
+        log.info("Testing nodejs");
+        executeWithNodeJs(new Function().withScript("function run(input) { return input; }"), new FunctionExecution().withInput("ok"));
+
+        log.info("Testing python");
+        executeWithPython(new Function().withScript("def run(input):\n    return input"), new FunctionExecution().withInput("ok"));
+
+        log.info("GraalVMFunctionExecutor initialized");
+    }
 
     public void unRegisterFunction(Function function) {
         functionMap.remove(function.getPackage() + "-" + function.getName());
@@ -63,7 +75,7 @@ public class GraalVMFunctionExecutor {
         }
 
         if (functionExecution.getError() != null) {
-           functionExecution.setStatus(FunctionExecution.Status.ERROR);
+            functionExecution.setStatus(FunctionExecution.Status.ERROR);
         } else {
             functionExecution.setStatus(FunctionExecution.Status.SUCCESS);
         }
@@ -128,7 +140,7 @@ public class GraalVMFunctionExecutor {
     private void handleTimeout(Context context) {
         virtualThreadsExecutorService.submit(() -> {
             try {
-                Thread.sleep(1500);
+                Thread.sleep(3500);
             } catch (InterruptedException e) {
                 log.error(e);
             }
@@ -138,7 +150,8 @@ public class GraalVMFunctionExecutor {
     }
 
     public void setEngines(List<FunctionExecutionEngine> engines) {
-        engineNameIdMap = engines.stream().collect(Collectors.toMap(FunctionExecutionEngine::getId, FunctionExecutionEngine::getName));
+        engineNameIdMap.clear();
+        engineNameIdMap.putAll(engines.stream().collect(Collectors.toMap(FunctionExecutionEngine::getId, FunctionExecutionEngine::getName)));
     }
 
     public void stop() {
