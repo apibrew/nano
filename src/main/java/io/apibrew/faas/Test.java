@@ -17,6 +17,8 @@ public class Test {
 
         instanceClient.init();
 
+//        instanceClient.stop();
+
         System.out.println("DONE!");
         Thread.sleep(1000000);
 

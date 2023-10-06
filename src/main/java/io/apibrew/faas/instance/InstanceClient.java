@@ -25,6 +25,7 @@ public class InstanceClient {
     private final InstanceDataStore dataStore;
     private final String PSEUDO_EXTENSION_CHAN = "faas-pseudo-extension-chan";
     private final FunctionExecutor functionExecutor;
+    private boolean isRunning;
 
     public InstanceClient(Config.Server serverConfig) {
         client = Client.newClientByServerConfig(serverConfig);
@@ -45,9 +46,16 @@ public class InstanceClient {
 
         registerExtensions();
         registerFunctionExecutionEngines();
-        registerPoll();
         dataStore.init();
         functionExecutor.init();
+
+        functionExecutor.setEngines(dataStore.getEngines());
+    }
+
+    public void stop() {
+        isRunning = false;
+        functionExecutor.stop();
+        dataStore.stop();
     }
 
     private void unRegisterFunction(Function function) {
@@ -77,10 +85,6 @@ public class InstanceClient {
         list.add(new FunctionExecutionEngine().withName("faas-python-engine"));
 
         return list;
-    }
-
-    private void registerPoll() {
-
     }
 
     public void registerExtensions() {

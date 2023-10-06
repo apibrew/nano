@@ -3,6 +3,7 @@ package io.apibrew.faas.instance;
 import io.apibrew.client.ApiException;
 import io.apibrew.client.Client;
 import io.apibrew.client.Repository;
+import io.apibrew.client.impl.ChannelEventPoller;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.logic.*;
 import io.apibrew.faas.helper.ListDiffer;
@@ -40,6 +41,7 @@ public class InstanceDataStore {
     private static final String channelKey = "faas-sync-chan";
     private final List<FunctionExecutionEngine> functionEngines = new ArrayList<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ChannelEventPoller poller;
 
     @Setter
     private Consumer<Function> functionRegisterHandler;
@@ -55,19 +57,37 @@ public class InstanceDataStore {
         this.functionTriggerRepository = client.repository(FunctionTrigger.class);
         this.resourceRuleRepository = client.repository(ResourceRule.class);
         this.lambdaRepository = client.repository(Lambda.class);
+        this.poller = ChannelEventPoller.builder()
+                .client(client)
+                .channelKey(channelKey)
+                .consumer(this::handleEvent)
+                .build();
     }
 
-    private boolean isRunning = true;
+    private void handleEvent(Extension.Event event) {
+        try {
+            this.client.writeEvent(channelKey, event);
+            executor.execute(() -> handleEvent(event));
+        } catch (ApiException var3) {
+            log.error("Unable to process event[ApiException]", var3);
+            event.setError(var3.getError());
+        } catch (Exception var4) {
+            log.error("Unable to process event", var4);
+            event.setError((new Extension.Error()).withMessage(var4.getMessage()));
+        }
+    }
 
     public void init() {
         log.info("Initializing instance data-store");
         registerExtensions();
-        registerPoll();
         loadAll();
+
+        poller.start();
     }
 
     public void stop() {
-        isRunning = false;
+        executorService.shutdown();
+        poller.close();
     }
 
     public void registerExtensions() {
@@ -111,42 +131,10 @@ public class InstanceDataStore {
         return list;
     }
 
-    private void registerPoll() {
-        executor.submit(() -> {
-            while (isRunning) {
-                try {
-                    doLocalPoll();
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    private void doLocalPoll() {
-        this.client.pollEvents(channelKey, (event) -> {
-            this.executorService.submit(() -> {
-                try {
-                    this.client.writeEvent(channelKey, event);
-                    executor.execute(() -> handleEvent(event));
-                } catch (ApiException var3) {
-                    log.error("Unable to process event[ApiException]", var3);
-                    event.setError(var3.getError());
-                } catch (Exception var4) {
-                    log.error("Unable to process event", var4);
-                    event.setError((new Extension.Error()).withMessage(var4.getMessage()));
-                }
-
-            });
-            return true;
-        });
-    }
-
-    private void handleEvent(Extension.Event event) {
+    private void processEvent(Extension.Event event) {
         log.info("Handling event: " + event);
 
-        if (event.getResource().getNamespace().getName().equals(Function.NAMESPACE)) {
+        if (!event.getResource().getNamespace().getName().equals(Function.NAMESPACE)) {
             log.warn("Ignoring event for namespace: " + event.getResource().getNamespace().getName());
             return;
         }
@@ -205,11 +193,11 @@ public class InstanceDataStore {
     }
 
     private void unRegisterFunction(Function function) {
-        functionRegisterHandler.accept(function);
+        functionUnRegisterHandler.accept(function);
     }
 
     private void registerFunction(Function function) {
-        functionUnRegisterHandler.accept(function);
+        functionRegisterHandler.accept(function);
     }
 
     private void loadAll() {
@@ -217,6 +205,8 @@ public class InstanceDataStore {
         loadFunctionExecutionEngines();
         loadFunctionTriggers();
         loadResourceRules();
+
+        functions.forEach(this::registerFunction);
     }
 
     private void loadResourceRules() {
@@ -226,6 +216,7 @@ public class InstanceDataStore {
 
         log.info("Resource rules loaded: " + this.resourceRules.size());
     }
+
     private void loadLambdas() {
         log.info("Loading lambdas");
         this.lambdas.clear();
@@ -249,5 +240,9 @@ public class InstanceDataStore {
         this.functionEngines.addAll(functionExecutionEngineRepository.list().getContent());
 
         log.info("Function execution engines loaded: " + this.functionEngines.size());
+    }
+
+    public List<FunctionExecutionEngine> getEngines() {
+        return functionEngines;
     }
 }
