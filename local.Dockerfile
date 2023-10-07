@@ -2,6 +2,9 @@ FROM ghcr.io/graalvm/jdk-community:21
 
 WORKDIR /app
 
-COPY target/faas-jar-with-dependencies.jar /app/faas.jar
+COPY target/faas.jar /app/faas.jar
+COPY target/lib /app/lib
 
-CMD ["java", "-jar", "faas.jar"]
+ENV CONFIG_FILE /app/config.json
+
+CMD java -cp "faas.jar:lib/*" io.apibrew.faas.Main --config $CONFIG_FILE

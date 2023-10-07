@@ -12,6 +12,7 @@ import io.apibrew.faas.model.FaasInstance;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ public class Main {
     private final static Map<String, InstanceClient> instanceMap = new HashMap<String, InstanceClient>();
 
     public static void main(String[] args) throws InterruptedException, IOException {
+        System.out.println("Args: " + Arrays.asList(args));
         if (args.length == 0) {
             System.out.println("Invalid args: --config <config location.json>");
             return;
