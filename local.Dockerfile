@@ -7,4 +7,4 @@ COPY target/lib /app/lib
 
 ENV CONFIG_FILE /app/config.json
 
-CMD java -cp "faas.jar:lib/*" io.apibrew.faas.Main --config $CONFIG_FILE
+CMD java -cp "/app/faas.jar:/app/lib/*" io.apibrew.faas.Main --config $CONFIG_FILE
