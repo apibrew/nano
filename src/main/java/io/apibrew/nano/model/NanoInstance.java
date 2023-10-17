@@ -1,33 +1,35 @@
 package io.apibrew.nano.model;
 
 import java.util.Objects;
+
 import io.apibrew.client.EntityInfo;
 import io.apibrew.client.Entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.apibrew.controller.model.ControllerInstance;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NanoInstance extends Entity {
-    
+public class NanoInstance extends Entity implements ControllerInstance {
+
     private java.util.UUID id;
-    
+
     private String name;
-    
+
     private NanoInstance.ServerConfig serverConfig;
-    
+
     private NanoInstance.InstanceLimitations limitations;
-    
+
     private java.util.Map<String, String> annotations;
-    
+
     private String createdBy;
-    
+
     private String updatedBy;
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
     private java.time.Instant createdOn;
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
     private java.time.Instant updatedOn;
-    
+
     private int version;
 
     public static final String NAMESPACE = "default";
@@ -36,12 +38,12 @@ public class NanoInstance extends Entity {
     @JsonIgnore
     public static final EntityInfo<NanoInstance> entityInfo = new EntityInfo<>("default", "NanoInstance", NanoInstance.class, "nanoinstance");
 
-    public static class ServerConfig {
-        
+    public static class ServerConfig implements ControllerInstance.ServerConfig {
+
         private String host;
-        
+
         private boolean insecure;
-        
+
         private NanoInstance.ServerConfigAuthentication authentication;
 
         public String getHost() {
@@ -57,6 +59,7 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+
         public boolean getInsecure() {
             return insecure;
         }
@@ -70,6 +73,7 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+
         public NanoInstance.ServerConfigAuthentication getAuthentication() {
             return authentication;
         }
@@ -84,12 +88,13 @@ public class NanoInstance extends Entity {
             return this;
         }
     }
-    public static class ServerConfigAuthentication {
-        
+
+    public static class ServerConfigAuthentication implements ControllerInstance.Authentication {
+
         private String username;
-        
+
         private String password;
-        
+
         private String token;
 
         public String getUsername() {
@@ -105,6 +110,7 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+
         public String getPassword() {
             return password;
         }
@@ -118,6 +124,7 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+
         public String getToken() {
             return token;
         }
@@ -132,10 +139,11 @@ public class NanoInstance extends Entity {
             return this;
         }
     }
+
     public static class InstanceLimitations {
-        
+
         private Integer maxConcurrentExecutions;
-        
+
         private Integer maxExecutionTime;
 
         public Integer getMaxConcurrentExecutions() {
@@ -151,6 +159,7 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+
         public Integer getMaxExecutionTime() {
             return maxExecutionTime;
         }
@@ -183,6 +192,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public String getName() {
         return name;
     }
@@ -196,6 +206,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public NanoInstance.ServerConfig getServerConfig() {
         return serverConfig;
     }
@@ -209,6 +220,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public NanoInstance.InstanceLimitations getLimitations() {
         return limitations;
     }
@@ -222,6 +234,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public java.util.Map<String, String> getAnnotations() {
         return annotations;
     }
@@ -235,6 +248,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public String getCreatedBy() {
         return createdBy;
     }
@@ -248,6 +262,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public String getUpdatedBy() {
         return updatedBy;
     }
@@ -261,6 +276,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public java.time.Instant getCreatedOn() {
         return createdOn;
     }
@@ -274,6 +290,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public java.time.Instant getUpdatedOn() {
         return updatedOn;
     }
@@ -287,6 +304,7 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+
     public int getVersion() {
         return version;
     }

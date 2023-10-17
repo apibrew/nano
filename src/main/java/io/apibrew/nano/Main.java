@@ -2,24 +2,19 @@ package io.apibrew.nano;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apibrew.client.Client;
-import io.apibrew.client.Repository;
-import io.apibrew.common.ext.Condition;
-import io.apibrew.common.ext.Handler;
-import io.apibrew.common.impl.PollerExtensionService;
-import io.apibrew.nano.instance.InstanceClient;
+import io.apibrew.controller.Controller;
+import io.apibrew.controller.InstanceClient;
+import io.apibrew.nano.instance.NanoInstanceClient;
 import io.apibrew.nano.model.Config;
 import io.apibrew.nano.model.NanoInstance;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 @Log4j2
 public class Main {
 
-    private final static Map<String, InstanceClient> instanceMap = new HashMap<String, InstanceClient>();
 
     public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("Args: " + Arrays.asList(args));
@@ -48,16 +43,25 @@ public class Main {
 
         log.info("Loaded config: " + config);
 
+        Controller<NanoInstance> controller = new Controller<>(NanoInstance.class, Main::newInstance);
+
+
         if (config.getInstances() != null) {
             log.info("Starting preconfigured instances");
-            config.getInstances().forEach(Main::startUpInstance);
+            config.getInstances().forEach(controller::startUpInstance);
         }
 
         // setup controller
-
         if (config.getController() != null) {
             log.info("Starting controller");
-            startUpController(config.getController());
+            controller.startUpController(new NanoInstance.ServerConfig()
+                    .withHost(config.getController().getHost())
+                    .withInsecure(config.getController().getInsecure())
+                    .withAuthentication(new NanoInstance.ServerConfigAuthentication()
+                            .withUsername(config.getController().getAuthentication().getUsername())
+                            .withPassword(config.getController().getAuthentication().getPassword())
+                            .withToken(config.getController().getAuthentication().getToken())
+                    ));
         } else {
             // wait indefinitely
             Thread.sleep(Long.MAX_VALUE);
@@ -65,112 +69,7 @@ public class Main {
 
     }
 
-    private static void startUpController(Config.ServerConfig controller) throws IOException {
-        log.info("Starting controller: " + controller.getHost());
-
-        io.apibrew.client.Config.Server controllerConfig = prepareConfigServer(controller);
-
-        Client client = Client.newClientByServerConfig(controllerConfig);
-
-        Repository<NanoInstance> instancesRepository = client.repository(NanoInstance.class);
-
-        log.info("Starting controller instances");
-        instancesRepository.list().getContent().forEach(Main::startUpInstance);
-
-        log.info("Starting controller instance listener");
-
-        PollerExtensionService extService = new PollerExtensionService(client, "nano-instance-poller");
-
-        log.info("Started controller: " + controller.getHost());
-
-        Handler<NanoInstance> nanoInstanceHandler = extService.handler(NanoInstance.class);
-
-        nanoInstanceHandler.when(Condition.afterCreate())
-                .when(Condition.async())
-                .operate((event, instance) -> {
-                    log.info("Creating instance: " + instance.getName());
-                    startUpInstance(instance);
-                    log.info("Created instance: " + instance.getName());
-
-                    return instance;
-                });
-
-        nanoInstanceHandler.when(Condition.afterUpdate())
-                .when(Condition.async())
-                .operate((event, instance) -> {
-                    log.info("Updating instance: " + instance.getName());
-                    destroyInstance(instance);
-                    startUpInstance(instance);
-                    log.info("Updated instance: " + instance.getName());
-
-                    return instance;
-                });
-
-        nanoInstanceHandler.when(Condition.afterDelete())
-                .when(Condition.async())
-                .operate((event, instance) -> {
-                    log.info("Deleting instance: " + instance.getName());
-                    destroyInstance(instance);
-                    log.info("Deleted instance: " + instance.getName());
-
-                    return instance;
-                });
-
-        extService.run();
-    }
-
-    private static void destroyInstance(NanoInstance instance) {
-        if (!instanceMap.containsKey(instance.getName())) {
-            log.error("Instance not started: " + instance.getName());
-            return;
-        }
-
-        instanceMap.get(instance.getName()).stop();
-        instanceMap.remove(instance.getName());
-    }
-
-    private static io.apibrew.client.Config.Server prepareConfigServer(Config.ServerConfig controller) {
-        io.apibrew.client.Config.Server controllerConfig = new io.apibrew.client.Config.Server();
-        controllerConfig.setHost(controller.getHost());
-        controllerConfig.setInsecure(controller.getInsecure());
-        io.apibrew.client.Config.Authentication authentication = new io.apibrew.client.Config.Authentication();
-        authentication.setUsername(controller.getAuthentication().getUsername());
-        authentication.setPassword(controller.getAuthentication().getPassword());
-        authentication.setToken(controller.getAuthentication().getToken());
-        controllerConfig.setAuthentication(authentication);
-        return controllerConfig;
-    }
-
-    private static void startUpInstance(NanoInstance instance) {
-        if (instanceMap.containsKey(instance.getName())) {
-            log.error("Instance already started: " + instance.getName());
-            return;
-        }
-
-        log.info("Starting instance: " + instance.getName());
-
-        Thread thread = new Thread(() -> {
-            for (int i = 0; i < 100; i++) {
-                try {
-                    InstanceClient instanceClient = new InstanceClient(instance);
-                    instanceClient.init();
-                    instanceMap.put(instance.getName(), instanceClient);
-                    break;
-                } catch (Exception e) {
-                    log.error("Unable to start instance: " + instance.getName(), e);
-                    try {
-                        Thread.sleep(1000 * (i + 1));
-                    } catch (InterruptedException interruptedException) {
-                        interruptedException.printStackTrace();
-                    }
-                }
-            }
-
-            log.info("Started instance: " + instance.getName());
-        });
-
-        thread.setName("nano-instance-startup[" + instance.getName() + "]");
-
-        thread.start();
+    private static InstanceClient newInstance(Client client, NanoInstance controllerInstance) {
+        return new NanoInstanceClient(client, controllerInstance);
     }
 }

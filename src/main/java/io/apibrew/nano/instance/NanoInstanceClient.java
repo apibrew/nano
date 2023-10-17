@@ -5,6 +5,7 @@ import io.apibrew.client.Config;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.logic.*;
+import io.apibrew.controller.InstanceClient;
 import io.apibrew.nano.model.NanoInstance;
 import lombok.extern.log4j.Log4j2;
 
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Log4j2
-public class InstanceClient {
+public class NanoInstanceClient implements InstanceClient {
 
     private static final String FAAS_HANDLER = "nano-handler";
     private final Client client;
@@ -28,10 +29,9 @@ public class InstanceClient {
     private final FunctionExecutor functionExecutor;
     private boolean isRunning;
 
-    public InstanceClient(NanoInstance instance) {
-        Config.Server serverConfig = prepareServerConfig(instance);
+    public NanoInstanceClient(Client client, NanoInstance instance) {
+        this.client = client;
 
-        client = Client.newClientByServerConfig(serverConfig);
         extensionRepository = client.repository(Extension.class);
         functionRepository = client.repository(Function.class);
         functionExecutionEngineRepository = client.repository(FunctionExecutionEngine.class);
