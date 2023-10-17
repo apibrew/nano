@@ -1,23 +1,22 @@
-package io.apibrew.faas.model;
+package io.apibrew.nano.model;
 
 import java.util.Objects;
 import io.apibrew.client.EntityInfo;
 import io.apibrew.client.Entity;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FaasInstance extends Entity {
+public class NanoInstance extends Entity {
     
     private java.util.UUID id;
     
     private String name;
     
-    private FaasInstance.ServerConfig serverConfig;
+    private NanoInstance.ServerConfig serverConfig;
     
-    private FaasInstance.InstanceLimitations limitations;
+    private NanoInstance.InstanceLimitations limitations;
     
     private java.util.Map<String, String> annotations;
     
@@ -32,10 +31,10 @@ public class FaasInstance extends Entity {
     private int version;
 
     public static final String NAMESPACE = "default";
-    public static final String RESOURCE = "FaasInstance";
+    public static final String RESOURCE = "NanoInstance";
 
     @JsonIgnore
-    public static final EntityInfo<FaasInstance> entityInfo = new EntityInfo<>("default", "FaasInstance", FaasInstance.class, "faasinstance");
+    public static final EntityInfo<NanoInstance> entityInfo = new EntityInfo<>("default", "NanoInstance", NanoInstance.class, "nanoinstance");
 
     public static class ServerConfig {
         
@@ -43,7 +42,7 @@ public class FaasInstance extends Entity {
         
         private boolean insecure;
         
-        private FaasInstance.ServerConfigAuthentication authentication;
+        private NanoInstance.ServerConfigAuthentication authentication;
 
         public String getHost() {
             return host;
@@ -71,15 +70,15 @@ public class FaasInstance extends Entity {
 
             return this;
         }
-        public FaasInstance.ServerConfigAuthentication getAuthentication() {
+        public NanoInstance.ServerConfigAuthentication getAuthentication() {
             return authentication;
         }
 
-        public void setAuthentication(FaasInstance.ServerConfigAuthentication authentication) {
+        public void setAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
             this.authentication = authentication;
         }
 
-        public ServerConfig withAuthentication(FaasInstance.ServerConfigAuthentication authentication) {
+        public ServerConfig withAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
             this.authentication = authentication;
 
             return this;
@@ -168,7 +167,7 @@ public class FaasInstance extends Entity {
     }
 
 
-    public FaasInstance() {
+    public NanoInstance() {
     }
 
     public java.util.UUID getId() {
@@ -179,7 +178,7 @@ public class FaasInstance extends Entity {
         this.id = id;
     }
 
-    public FaasInstance withId(java.util.UUID id) {
+    public NanoInstance withId(java.util.UUID id) {
         this.id = id;
 
         return this;
@@ -192,33 +191,33 @@ public class FaasInstance extends Entity {
         this.name = name;
     }
 
-    public FaasInstance withName(String name) {
+    public NanoInstance withName(String name) {
         this.name = name;
 
         return this;
     }
-    public FaasInstance.ServerConfig getServerConfig() {
+    public NanoInstance.ServerConfig getServerConfig() {
         return serverConfig;
     }
 
-    public void setServerConfig(FaasInstance.ServerConfig serverConfig) {
+    public void setServerConfig(NanoInstance.ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
     }
 
-    public FaasInstance withServerConfig(FaasInstance.ServerConfig serverConfig) {
+    public NanoInstance withServerConfig(NanoInstance.ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
 
         return this;
     }
-    public FaasInstance.InstanceLimitations getLimitations() {
+    public NanoInstance.InstanceLimitations getLimitations() {
         return limitations;
     }
 
-    public void setLimitations(FaasInstance.InstanceLimitations limitations) {
+    public void setLimitations(NanoInstance.InstanceLimitations limitations) {
         this.limitations = limitations;
     }
 
-    public FaasInstance withLimitations(FaasInstance.InstanceLimitations limitations) {
+    public NanoInstance withLimitations(NanoInstance.InstanceLimitations limitations) {
         this.limitations = limitations;
 
         return this;
@@ -231,7 +230,7 @@ public class FaasInstance extends Entity {
         this.annotations = annotations;
     }
 
-    public FaasInstance withAnnotations(java.util.Map<String, String> annotations) {
+    public NanoInstance withAnnotations(java.util.Map<String, String> annotations) {
         this.annotations = annotations;
 
         return this;
@@ -244,7 +243,7 @@ public class FaasInstance extends Entity {
         this.createdBy = createdBy;
     }
 
-    public FaasInstance withCreatedBy(String createdBy) {
+    public NanoInstance withCreatedBy(String createdBy) {
         this.createdBy = createdBy;
 
         return this;
@@ -257,7 +256,7 @@ public class FaasInstance extends Entity {
         this.updatedBy = updatedBy;
     }
 
-    public FaasInstance withUpdatedBy(String updatedBy) {
+    public NanoInstance withUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
 
         return this;
@@ -270,7 +269,7 @@ public class FaasInstance extends Entity {
         this.createdOn = createdOn;
     }
 
-    public FaasInstance withCreatedOn(java.time.Instant createdOn) {
+    public NanoInstance withCreatedOn(java.time.Instant createdOn) {
         this.createdOn = createdOn;
 
         return this;
@@ -283,7 +282,7 @@ public class FaasInstance extends Entity {
         this.updatedOn = updatedOn;
     }
 
-    public FaasInstance withUpdatedOn(java.time.Instant updatedOn) {
+    public NanoInstance withUpdatedOn(java.time.Instant updatedOn) {
         this.updatedOn = updatedOn;
 
         return this;
@@ -296,7 +295,7 @@ public class FaasInstance extends Entity {
         this.version = version;
     }
 
-    public FaasInstance withVersion(int version) {
+    public NanoInstance withVersion(int version) {
         this.version = version;
 
         return this;
@@ -304,11 +303,11 @@ public class FaasInstance extends Entity {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof FaasInstance)) {
+        if (!(o instanceof NanoInstance)) {
             return false;
         }
 
-        FaasInstance obj = (FaasInstance) o;
+        NanoInstance obj = (NanoInstance) o;
 
         if (!Objects.equals(this.id, obj.id)) {
             return false;

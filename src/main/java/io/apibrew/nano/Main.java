@@ -1,4 +1,4 @@
-package io.apibrew.faas;
+package io.apibrew.nano;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apibrew.client.Client;
@@ -6,9 +6,9 @@ import io.apibrew.client.Repository;
 import io.apibrew.common.ext.Condition;
 import io.apibrew.common.ext.Handler;
 import io.apibrew.common.impl.PollerExtensionService;
-import io.apibrew.faas.instance.InstanceClient;
-import io.apibrew.faas.model.Config;
-import io.apibrew.faas.model.FaasInstance;
+import io.apibrew.nano.instance.InstanceClient;
+import io.apibrew.nano.model.Config;
+import io.apibrew.nano.model.NanoInstance;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
@@ -72,20 +72,20 @@ public class Main {
 
         Client client = Client.newClientByServerConfig(controllerConfig);
 
-        Repository<FaasInstance> instancesRepository = client.repository(FaasInstance.class);
+        Repository<NanoInstance> instancesRepository = client.repository(NanoInstance.class);
 
         log.info("Starting controller instances");
         instancesRepository.list().getContent().forEach(Main::startUpInstance);
 
         log.info("Starting controller instance listener");
 
-        PollerExtensionService extService = new PollerExtensionService(client, "faas-instance-poller");
+        PollerExtensionService extService = new PollerExtensionService(client, "nano-instance-poller");
 
         log.info("Started controller: " + controller.getHost());
 
-        Handler<FaasInstance> faasInstanceHandler = extService.handler(FaasInstance.class);
+        Handler<NanoInstance> nanoInstanceHandler = extService.handler(NanoInstance.class);
 
-        faasInstanceHandler.when(Condition.afterCreate())
+        nanoInstanceHandler.when(Condition.afterCreate())
                 .when(Condition.async())
                 .operate((event, instance) -> {
                     log.info("Creating instance: " + instance.getName());
@@ -95,7 +95,7 @@ public class Main {
                     return instance;
                 });
 
-        faasInstanceHandler.when(Condition.afterUpdate())
+        nanoInstanceHandler.when(Condition.afterUpdate())
                 .when(Condition.async())
                 .operate((event, instance) -> {
                     log.info("Updating instance: " + instance.getName());
@@ -106,7 +106,7 @@ public class Main {
                     return instance;
                 });
 
-        faasInstanceHandler.when(Condition.afterDelete())
+        nanoInstanceHandler.when(Condition.afterDelete())
                 .when(Condition.async())
                 .operate((event, instance) -> {
                     log.info("Deleting instance: " + instance.getName());
@@ -119,7 +119,7 @@ public class Main {
         extService.run();
     }
 
-    private static void destroyInstance(FaasInstance instance) {
+    private static void destroyInstance(NanoInstance instance) {
         if (!instanceMap.containsKey(instance.getName())) {
             log.error("Instance not started: " + instance.getName());
             return;
@@ -141,7 +141,7 @@ public class Main {
         return controllerConfig;
     }
 
-    private static void startUpInstance(FaasInstance instance) {
+    private static void startUpInstance(NanoInstance instance) {
         if (instanceMap.containsKey(instance.getName())) {
             log.error("Instance already started: " + instance.getName());
             return;
@@ -169,7 +169,7 @@ public class Main {
             log.info("Started instance: " + instance.getName());
         });
 
-        thread.setName("faas-instance-startup[" + instance.getName() + "]");
+        thread.setName("nano-instance-startup[" + instance.getName() + "]");
 
         thread.start();
     }

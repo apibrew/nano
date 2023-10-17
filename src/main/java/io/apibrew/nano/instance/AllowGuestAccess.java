@@ -1,4 +1,4 @@
-package io.apibrew.faas.instance;
+package io.apibrew.nano.instance;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

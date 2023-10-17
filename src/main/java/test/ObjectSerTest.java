@@ -1,16 +1,8 @@
 package test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.apibrew.client.model.Extension;
-import io.apibrew.client.model.logic.Function;
-import io.apibrew.faas.instance.AllowGuestAccess;
+import io.apibrew.nano.instance.AllowGuestAccess;
 import lombok.Data;
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.HostAccess;
-import org.graalvm.polyglot.Value;
-import org.graalvm.polyglot.proxy.ProxyObject;
-
-import java.util.Map;
 
 public class ObjectSerTest {
 

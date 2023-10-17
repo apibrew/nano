@@ -2,6 +2,6 @@ FROM ghcr.io/graalvm/jdk-community:21
 
 WORKDIR /app
 
-COPY target/faas-jar-with-dependencies.jar /app/faas.jar
+COPY target/nano-jar-with-dependencies.jar /app/nano.jar
 
-CMD ["java", "-jar", "faas.jar"]
+CMD ["java", "-jar", "nano.jar"]

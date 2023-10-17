@@ -1,10 +1,8 @@
-package io.apibrew.faas.model;
+package io.apibrew.nano.model;
 
 import java.util.Objects;
 import io.apibrew.client.EntityInfo;
 import io.apibrew.client.Entity;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -13,7 +11,7 @@ public class Config extends Entity {
     
     private java.util.UUID id;
     
-    private java.util.List<FaasInstance> instances;
+    private java.util.List<NanoInstance> instances;
     
     private Config.ServerConfig controller;
     
@@ -139,15 +137,15 @@ public class Config extends Entity {
 
         return this;
     }
-    public java.util.List<FaasInstance> getInstances() {
+    public java.util.List<NanoInstance> getInstances() {
         return instances;
     }
 
-    public void setInstances(java.util.List<FaasInstance> instances) {
+    public void setInstances(java.util.List<NanoInstance> instances) {
         this.instances = instances;
     }
 
-    public Config withInstances(java.util.List<FaasInstance> instances) {
+    public Config withInstances(java.util.List<NanoInstance> instances) {
         this.instances = instances;
 
         return this;

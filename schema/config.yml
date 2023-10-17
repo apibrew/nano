@@ -34,7 +34,7 @@ properties:
       required: true
       reference:
         resource:
-          name: FaasInstance
+          name: NanoInstance
   - name: controller
     type: STRUCT
     required: false

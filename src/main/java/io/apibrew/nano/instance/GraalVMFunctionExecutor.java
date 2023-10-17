@@ -1,4 +1,4 @@
-package io.apibrew.faas.instance;
+package io.apibrew.nano.instance;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apibrew.client.model.Extension;
@@ -10,9 +10,7 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.ResourceLimits;
 import org.graalvm.polyglot.Value;
-import org.graalvm.polyglot.io.IOAccess;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +64,10 @@ public class GraalVMFunctionExecutor {
         System.out.println("engine: " + engine);
 
         switch (engine) {
-            case "faas-nodejs-engine":
+            case "nano-nodejs-engine":
                 executeWithNodeJs(function, functionExecution);
                 break;
-            case "faas-python-engine":
+            case "nano-python-engine":
                 executeWithPython(function, functionExecution);
                 break;
         }

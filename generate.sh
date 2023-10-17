@@ -1,1 +1,1 @@
-apbr generate --platform="java" --path=src/main/java/io/apibrew/faas/model --package=io.apibrew.faas.model
+apbr generate --platform="java" --path=src/main/java/io/apibrew/nano/model --package=io.apibrew.nano.model

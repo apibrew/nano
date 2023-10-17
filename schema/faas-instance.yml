@@ -1,5 +1,5 @@
 type: resource
-name: FaasInstance
+name: NanoInstance
 description: FunctionExecutionEngine
 types:
   - name: ServerConfig

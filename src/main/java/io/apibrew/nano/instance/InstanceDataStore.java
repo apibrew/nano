@@ -1,4 +1,4 @@
-package io.apibrew.faas.instance;
+package io.apibrew.nano.instance;
 
 import io.apibrew.client.ApiException;
 import io.apibrew.client.Client;
@@ -6,8 +6,8 @@ import io.apibrew.client.Repository;
 import io.apibrew.client.impl.ChannelEventPoller;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.logic.*;
-import io.apibrew.faas.helper.ListDiffer;
-import io.apibrew.faas.model.FaasInstance;
+import io.apibrew.nano.helper.ListDiffer;
+import io.apibrew.nano.model.NanoInstance;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
@@ -39,7 +39,7 @@ public class InstanceDataStore {
     private final List<Lambda> lambdas = new ArrayList<>();
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private static final String channelKey = "faas-sync-chan";
+    private static final String channelKey = "nano-sync-chan";
     private final List<FunctionExecutionEngine> functionEngines = new ArrayList<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final ChannelEventPoller poller;
@@ -50,7 +50,7 @@ public class InstanceDataStore {
     @Setter
     private Consumer<Function> functionUnRegisterHandler;
 
-    public InstanceDataStore(Client client, FaasInstance instance) {
+    public InstanceDataStore(Client client, NanoInstance instance) {
         this.client = client;
         this.extensionRepository = client.repository(Extension.class);
         this.functionRepository = client.repository(Function.class);
@@ -110,8 +110,8 @@ public class InstanceDataStore {
         List<Extension> list = new ArrayList<>();
 
         Extension syncDataExtension = new Extension();
-        syncDataExtension.setName("faas-sync");
-        syncDataExtension.setDescription("Function extension for FaaS");
+        syncDataExtension.setName("nano-sync");
+        syncDataExtension.setDescription("Function extension for nano");
 
         Extension.EventSelector selector = new Extension.EventSelector();
         selector.setActions(List.of(Extension.Action.CREATE, Extension.Action.UPDATE, Extension.Action.DELETE));

@@ -1,4 +1,4 @@
-package io.apibrew.faas.instance;
+package io.apibrew.nano.instance;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -11,7 +11,7 @@ import io.apibrew.client.model.Record;
 import io.apibrew.client.model.logic.Function;
 import io.apibrew.client.model.logic.FunctionExecution;
 import io.apibrew.client.model.logic.FunctionExecutionEngine;
-import io.apibrew.faas.model.FaasInstance;
+import io.apibrew.nano.model.NanoInstance;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.Instant;
@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 
 @Log4j2
 public class FunctionExecutor {
@@ -27,7 +26,7 @@ public class FunctionExecutor {
     private final Repository<Extension> extensionRepository;
 
 
-    private final String FUNCTION_EXECUTION_CHAN = "faas-function-execution-chan";
+    private final String FUNCTION_EXECUTION_CHAN = "nano-function-execution-chan";
     private final ChannelEventPoller poller;
     private boolean isRunning = true;
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -35,7 +34,7 @@ public class FunctionExecutor {
 
     private final GraalVMFunctionExecutor graalVMFunctionExecutor = new GraalVMFunctionExecutor();
 
-    public FunctionExecutor(Client client, FaasInstance instance) {
+    public FunctionExecutor(Client client, NanoInstance instance) {
         this.client = client;
         extensionRepository = client.repository(Extension.class);
         objectMapper.registerModule(new JavaTimeModule());
@@ -44,7 +43,7 @@ public class FunctionExecutor {
                 .client(client)
                 .channelKey(FUNCTION_EXECUTION_CHAN)
                 .consumer(this::handleEvent)
-                .threadName("faas-function-executor-poller[" + instance.getName() + "]")
+                .threadName("nano-function-executor-poller[" + instance.getName() + "]")
                 .build();
     }
 
@@ -103,7 +102,7 @@ public class FunctionExecutor {
         long diff = Instant.now().toEpochMilli() - now.toEpochMilli();
 
         functionExecution.getAnnotations().put("execution-time", String.valueOf(diff));
-        functionExecution.getAnnotations().put("execution-engine", "faas");
+        functionExecution.getAnnotations().put("execution-engine", "nano");
         functionExecution.getAnnotations().put("execution-engine-version", "1.0.0");
 
     }
@@ -122,8 +121,8 @@ public class FunctionExecutor {
 
     private List<Extension> prepareExtensions() {
         Extension functionExecutionExtension = new Extension();
-        functionExecutionExtension.setName("faas-function-execution");
-        functionExecutionExtension.setDescription("Function extension for FaaS");
+        functionExecutionExtension.setName("nano-function-execution");
+        functionExecutionExtension.setDescription("Function extension for nano");
 
         Extension.EventSelector selector = new Extension.EventSelector();
         selector.setActions(List.of(Extension.Action.CREATE));

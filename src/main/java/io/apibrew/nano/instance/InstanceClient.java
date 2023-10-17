@@ -1,11 +1,11 @@
-package io.apibrew.faas.instance;
+package io.apibrew.nano.instance;
 
 import io.apibrew.client.Client;
 import io.apibrew.client.Config;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.logic.*;
-import io.apibrew.faas.model.FaasInstance;
+import io.apibrew.nano.model.NanoInstance;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.Map;
 @Log4j2
 public class InstanceClient {
 
-    private static final String FAAS_HANDLER = "faas-handler";
+    private static final String FAAS_HANDLER = "nano-handler";
     private final Client client;
     private final Repository<Extension> extensionRepository;
     private final Repository<Function> functionRepository;
@@ -24,11 +24,11 @@ public class InstanceClient {
     private final Repository<ResourceRule> resourceRuleRepository;
 
     private final InstanceDataStore dataStore;
-    private final String PSEUDO_EXTENSION_CHAN = "faas-pseudo-extension-chan";
+    private final String PSEUDO_EXTENSION_CHAN = "nano-pseudo-extension-chan";
     private final FunctionExecutor functionExecutor;
     private boolean isRunning;
 
-    public InstanceClient(FaasInstance instance) {
+    public InstanceClient(NanoInstance instance) {
         Config.Server serverConfig = prepareServerConfig(instance);
 
         client = Client.newClientByServerConfig(serverConfig);
@@ -41,7 +41,7 @@ public class InstanceClient {
         functionExecutor = new FunctionExecutor(client, instance);
     }
 
-    private static Config.Server prepareServerConfig(FaasInstance instance) {
+    private static Config.Server prepareServerConfig(NanoInstance instance) {
         Config.Server serverConfig = new Config.Server();
         serverConfig.setHost(instance.getServerConfig().getHost());
         serverConfig.setInsecure(instance.getServerConfig().getInsecure());
@@ -96,8 +96,8 @@ public class InstanceClient {
     private List<FunctionExecutionEngine> prepareFunctionExecutionEngines() {
         List<FunctionExecutionEngine> list = new ArrayList<>();
 
-        list.add(new FunctionExecutionEngine().withName("faas-nodejs-engine"));
-        list.add(new FunctionExecutionEngine().withName("faas-python-engine"));
+        list.add(new FunctionExecutionEngine().withName("nano-nodejs-engine"));
+        list.add(new FunctionExecutionEngine().withName("nano-python-engine"));
 
         return list;
     }
@@ -130,7 +130,7 @@ public class InstanceClient {
         Extension.EventSelector selector;
         Extension resourceBeforeExtension = new Extension();
         resourceBeforeExtension.setName(FAAS_HANDLER + "-" + nameSuffix);
-        resourceBeforeExtension.setDescription("Function extension for FaaS");
+        resourceBeforeExtension.setDescription("Function extension for nano");
 
         selector = new Extension.EventSelector();
 
