@@ -7,6 +7,12 @@ types:
       - name: host
         type: STRING
         required: true
+      - name: port
+        type: INT32
+        required: true
+      - name: httpPort
+        type: INT32
+        required: true
       - name: insecure
         type: BOOLEAN
         required: true

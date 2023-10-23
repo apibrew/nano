@@ -4,8 +4,8 @@ import io.apibrew.client.Client;
 import io.apibrew.client.Config;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
-import io.apibrew.client.model.logic.*;
 import io.apibrew.controller.InstanceClient;
+import io.apibrew.nano.model.Code;
 import io.apibrew.nano.model.NanoInstance;
 import lombok.extern.log4j.Log4j2;
 
@@ -19,87 +19,43 @@ public class NanoInstanceClient implements InstanceClient {
     private static final String FAAS_HANDLER = "nano-handler";
     private final Client client;
     private final Repository<Extension> extensionRepository;
-    private final Repository<Function> functionRepository;
-    private final Repository<FunctionExecutionEngine> functionExecutionEngineRepository;
-    private final Repository<FunctionTrigger> functionTriggerRepository;
-    private final Repository<ResourceRule> resourceRuleRepository;
 
     private final InstanceDataStore dataStore;
     private final String PSEUDO_EXTENSION_CHAN = "nano-pseudo-extension-chan";
-    private final FunctionExecutor functionExecutor;
+    private final CodeExecutor codeExecutor;
     private boolean isRunning;
 
     public NanoInstanceClient(Client client, NanoInstance instance) {
         this.client = client;
 
         extensionRepository = client.repository(Extension.class);
-        functionRepository = client.repository(Function.class);
-        functionExecutionEngineRepository = client.repository(FunctionExecutionEngine.class);
-        functionTriggerRepository = client.repository(FunctionTrigger.class);
-        resourceRuleRepository = client.repository(ResourceRule.class);
         dataStore = new InstanceDataStore(client, instance);
-        functionExecutor = new FunctionExecutor(client, instance);
-    }
-
-    private static Config.Server prepareServerConfig(NanoInstance instance) {
-        Config.Server serverConfig = new Config.Server();
-        serverConfig.setHost(instance.getServerConfig().getHost());
-        serverConfig.setInsecure(instance.getServerConfig().getInsecure());
-        Config.Authentication authentication = new Config.Authentication();
-        authentication.setUsername(instance.getServerConfig().getAuthentication().getUsername());
-        authentication.setPassword(instance.getServerConfig().getAuthentication().getPassword());
-        authentication.setToken(instance.getServerConfig().getAuthentication().getToken());
-        serverConfig.setAuthentication(authentication);
-        return serverConfig;
+        codeExecutor = new CodeExecutor(client, instance, dataStore);
     }
 
     public void init() {
         log.info("Initializing instance client");
 
-        dataStore.setFunctionRegisterHandler(this::registerFunction);
-        dataStore.setFunctionUnRegisterHandler(this::unRegisterFunction);
+        dataStore.setCodeRegisterHandler(this::registerCode);
+        dataStore.setCodeUnRegisterHandler(this::unRegisterCode);
 
         registerExtensions();
-        registerFunctionExecutionEngines();
         dataStore.init();
-        functionExecutor.init();
-
-        functionExecutor.setEngines(dataStore.getEngines());
+        codeExecutor.init();
     }
 
     public void stop() {
         isRunning = false;
-        functionExecutor.stop();
+        codeExecutor.stop();
         dataStore.stop();
     }
 
-    private void unRegisterFunction(Function function) {
-        functionExecutor.unRegisterFunction(function);
+    private void unRegisterCode(Code code) {
+        codeExecutor.unRegisterCode(code);
     }
 
-    private void registerFunction(Function function) {
-        functionExecutor.registerFunction(function);
-    }
-
-    private void registerFunctionExecutionEngines() {
-        log.info("Registering function execution engines");
-        List<FunctionExecutionEngine> functionExecutionEngines = prepareFunctionExecutionEngines();
-        log.info("Function execution engines prepared");
-
-        for (FunctionExecutionEngine functionExecutionEngine : functionExecutionEngines) {
-            log.info("Applying function execution engine: " + functionExecutionEngine.getName());
-            FunctionExecutionEngine appliedFunctionExecutionEngine = functionExecutionEngineRepository.apply(functionExecutionEngine);
-            log.info("Function execution engine applied: " + appliedFunctionExecutionEngine.getName());
-        }
-    }
-
-    private List<FunctionExecutionEngine> prepareFunctionExecutionEngines() {
-        List<FunctionExecutionEngine> list = new ArrayList<>();
-
-        list.add(new FunctionExecutionEngine().withName("nano-nodejs-engine"));
-        list.add(new FunctionExecutionEngine().withName("nano-python-engine"));
-
-        return list;
+    private void registerCode(Code code) {
+        codeExecutor.registerCode(code);
     }
 
     public void registerExtensions() {
@@ -130,7 +86,7 @@ public class NanoInstanceClient implements InstanceClient {
         Extension.EventSelector selector;
         Extension resourceBeforeExtension = new Extension();
         resourceBeforeExtension.setName(FAAS_HANDLER + "-" + nameSuffix);
-        resourceBeforeExtension.setDescription("Function extension for nano");
+        resourceBeforeExtension.setDescription("Code extension for nano");
 
         selector = new Extension.EventSelector();
 

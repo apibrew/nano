@@ -41,6 +41,8 @@ public class NanoInstance extends Entity implements ControllerInstance {
     public static class ServerConfig implements ControllerInstance.ServerConfig {
 
         private String host;
+        private int port;
+        private int httpPort;
 
         private boolean insecure;
 
@@ -50,12 +52,40 @@ public class NanoInstance extends Entity implements ControllerInstance {
             return host;
         }
 
+        public int getPort() {
+            return port;
+        }
+
+        public int getHttpPort() {
+            return httpPort;
+        }
+
         public void setHost(String host) {
             this.host = host;
         }
 
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public void setHttpPort(int httpPort) {
+            this.httpPort = httpPort;
+        }
+
         public ServerConfig withHost(String host) {
             this.host = host;
+
+            return this;
+        }
+
+        public ServerConfig withPort(int port) {
+            this.port = port;
+
+            return this;
+        }
+
+        public ServerConfig withHttpPort(int httpPort) {
+            this.httpPort = httpPort;
 
             return this;
         }
