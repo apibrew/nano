@@ -12,13 +12,12 @@ import java.nio.file.attribute.FileAttribute;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 @Log4j2
 @RequiredArgsConstructor
 public class ModuleFileSystem implements FileSystem {
 
-    private final GraalVMCodeExecutor graalVMCodeExecutor;
+    private final GraalVmNanoEngine graalVmNanoEngine;
 
     @Override
     public Path parsePath(URI uri) {

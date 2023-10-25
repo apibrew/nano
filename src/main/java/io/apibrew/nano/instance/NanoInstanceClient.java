@@ -1,7 +1,6 @@
 package io.apibrew.nano.instance;
 
 import io.apibrew.client.Client;
-import io.apibrew.client.Config;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
 import io.apibrew.controller.InstanceClient;
@@ -22,7 +21,7 @@ public class NanoInstanceClient implements InstanceClient {
 
     private final InstanceDataStore dataStore;
     private final String PSEUDO_EXTENSION_CHAN = "nano-pseudo-extension-chan";
-    private final CodeExecutor codeExecutor;
+    private final GraalVmNanoEngine graalVmNanoEngine;
     private boolean isRunning;
 
     public NanoInstanceClient(Client client, NanoInstance instance) {
@@ -30,7 +29,7 @@ public class NanoInstanceClient implements InstanceClient {
 
         extensionRepository = client.repository(Extension.class);
         dataStore = new InstanceDataStore(client, instance);
-        codeExecutor = new CodeExecutor(client, instance, dataStore);
+        this.graalVmNanoEngine = new GraalVmNanoEngine(dataStore, client, instance);
     }
 
     public void init() {
@@ -39,47 +38,22 @@ public class NanoInstanceClient implements InstanceClient {
         dataStore.setCodeRegisterHandler(this::registerCode);
         dataStore.setCodeUnRegisterHandler(this::unRegisterCode);
 
-        registerExtensions();
         dataStore.init();
-        codeExecutor.init();
+        graalVmNanoEngine.init();
     }
 
     public void stop() {
         isRunning = false;
-        codeExecutor.stop();
+        graalVmNanoEngine.stop();
         dataStore.stop();
     }
 
     private void unRegisterCode(Code code) {
-        codeExecutor.unRegisterCode(code);
+        graalVmNanoEngine.unRegisterCode(code);
     }
 
     private void registerCode(Code code) {
-        codeExecutor.registerCode(code);
-    }
-
-    public void registerExtensions() {
-        log.info("Registering extensions");
-        List<Extension> extensions = prepareExtensions();
-        log.info("Extensions prepared");
-
-        for (Extension extension : extensions) {
-            log.info("Applying extension: " + extension.getName());
-            Extension appliedExtension = extensionRepository.apply(extension);
-            log.info("Extension applied: " + appliedExtension.getName());
-        }
-    }
-
-    public List<Extension> prepareExtensions() {
-        List<Extension> list = new ArrayList<>();
-
-        for (Extension.Action action : Extension.Action.values()) {
-            list.add(preparePseudoExtension(action, 90, true, action.name().toLowerCase() + "-before"));
-            list.add(preparePseudoExtension(action, 250, true, action.name().toLowerCase() + "-after"));
-            list.add(preparePseudoExtension(action, 250, false, action.name().toLowerCase() + "-async"));
-        }
-
-        return list;
+        graalVmNanoEngine.registerCode(code);
     }
 
     private Extension preparePseudoExtension(Extension.Action action, int order, boolean sync, String nameSuffix) {

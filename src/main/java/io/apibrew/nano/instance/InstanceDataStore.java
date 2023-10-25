@@ -7,10 +7,14 @@ import io.apibrew.client.Watcher;
 import io.apibrew.client.impl.ChannelEventPoller;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.Resource;
+import io.apibrew.common.ext.Condition;
+import io.apibrew.common.ext.Handler;
+import io.apibrew.common.impl.PollerExtensionService;
 import io.apibrew.nano.helper.ListDiffer;
 import io.apibrew.nano.model.Code;
 import io.apibrew.nano.model.NanoInstance;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.MarkerManager;
 
@@ -33,8 +37,9 @@ public class InstanceDataStore {
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private static final String channelKey = "nano-sync-chan";
-    private final ChannelEventPoller poller;
     private final List<Code> codes = new ArrayList<>();
+    private final PollerExtensionService ext;
+    private final Handler<Code> codeHandler;
 
     @Setter
     private Consumer<Code> codeUnRegisterHandler;
@@ -49,33 +54,15 @@ public class InstanceDataStore {
         this.extensionRepository = client.repository(Extension.class);
         this.codeRepository = client.repository(Code.class);
         this.resourceRepository = client.repository(Resource.class);
-        this.poller = ChannelEventPoller.builder()
-                .client(client)
-                .channelKey(channelKey)
-                .consumer(this::handleEvent)
-                .threadName("InstanceDataStore poller[" + instance.getName() + "]")
-                .build();
+        this.ext = new PollerExtensionService(client, channelKey);
+        this.codeHandler = this.ext.handler(Code.class);
     }
 
-    private void handleEvent(Extension.Event event) {
-        try {
-            processEvent(event);
-        } catch (ApiException var3) {
-            log.error("Unable to process event[ApiException]", var3);
-            event.setError(var3.getError());
-        } catch (Exception var4) {
-            log.error("Unable to process event", var4);
-            event.setError((new Extension.Error()).withMessage(var4.getMessage()));
-        }
-    }
 
     public void init() {
         log.info("Initializing instance data-store");
-        registerExtensions();
-        loadCodes();
         loadResources();
 
-        poller.start();
 
         // resource watcher
         this.resourceWatcher = resourceRepository.watch((event) -> {
@@ -84,67 +71,45 @@ public class InstanceDataStore {
         });
 
         resourceWatcher.start();
+
+        loadCodes();
+
+        codeHandler.when(Condition.beforeCreate()).operate((event, code) -> {
+            registerCode(code);
+
+            return code;
+        });
+
+        codeHandler.when(Condition.beforeUpdate()).operate((event, code) -> {
+            unRegisterCode(code);
+            registerCode(code);
+
+            return code;
+        });
+
+        codeHandler.when(Condition.beforeDelete()).operate((event, code) -> {
+            unRegisterCode(code);
+
+            return code;
+        });
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                this.ext.run();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
+    @SneakyThrows
     public void stop() {
         executorService.shutdown();
-        poller.close();
+        this.ext.close();
         try {
             this.resourceWatcher.close();
         } catch (Exception e) {
             log.error("Unable to close resource watcher", e);
-        }
-    }
-
-    public void registerExtensions() {
-        log.info("Registering extensions for data-store");
-        List<Extension> extensions = prepareExtensions();
-        log.info("Extensions prepared for data-store");
-
-        for (Extension extension : extensions) {
-            log.info("Applying extension: " + extension.getName());
-            Extension appliedExtension = extensionRepository.apply(extension);
-            log.info("Extension applied: " + appliedExtension.getName());
-        }
-
-        log.info("Extensions registered for data-store");
-    }
-
-    private List<Extension> prepareExtensions() {
-        List<Extension> list = new ArrayList<>();
-
-        Extension syncDataExtension = new Extension();
-        syncDataExtension.setName("nano-sync");
-        syncDataExtension.setDescription("Nano code extension");
-
-        Extension.EventSelector selector = new Extension.EventSelector();
-        selector.setActions(List.of(Extension.Action.CREATE, Extension.Action.UPDATE, Extension.Action.DELETE));
-        selector.setNamespaces(List.of("nano"));
-        selector.setResources(List.of(
-                Code.entityInfo.getResource()
-        ));
-
-        syncDataExtension.setSelector(selector);
-        syncDataExtension.setOrder(300);
-        syncDataExtension.setSync(false);
-        syncDataExtension.setCall(new Extension.ExternalCall().withChannelCall(new Extension.ChannelCall().withChannelKey(channelKey)));
-
-        list.add(syncDataExtension);
-        return list;
-    }
-
-    private void processEvent(Extension.Event event) {
-        log.info("Handling event: " + event);
-
-        if (!event.getResource().getNamespace().getName().equals(Code.NAMESPACE)) {
-            log.warn("Ignoring event for namespace: " + event.getResource().getNamespace().getName());
-            return;
-        }
-
-        switch (event.getResource().getName()) {
-            case Code.RESOURCE:
-                loadCodes();
-                break;
         }
     }
 
@@ -170,34 +135,14 @@ public class InstanceDataStore {
 
     private void loadCodes() {
         log.info("Loading codes");
-        lock.lock();
-        try {
-            List<Code> codes = codeRepository.list().getContent();
 
-            ListDiffer.DiffResult<Code> diffResult = ListDiffer.diff(this.codes, codes, (f1, f2) -> Objects.equals(f1.getId(), f2.getId()), Code::equals);
-
-            for (Code code : diffResult.added) {
+        for (Code code : codeRepository.list().getContent()) {
+            try {
                 log.info("Code added: " + code);
                 this.registerCode(code);
+            } catch (Exception e) {
+                log.error("Error registering code: " + code, e);
             }
-
-            for (Code code : diffResult.deleted) {
-                log.info("Code deleted: " + code);
-                this.unRegisterCode(code);
-            }
-
-            for (Code code : diffResult.updated) {
-                log.info("Code updated: " + code);
-                this.unRegisterCode(code);
-                this.registerCode(code);
-            }
-
-            this.codes.clear();
-            this.codes.addAll(codes);
-
-            log.info("Codes loaded: " + this.codes.size());
-        } finally {
-            lock.unlock();
         }
     }
 
