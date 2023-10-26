@@ -4,6 +4,7 @@ import io.apibrew.client.GenericRecord;
 import io.apibrew.client.model.Resource;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
@@ -14,10 +15,12 @@ import java.util.Map;
 
 public class GenericRecordProxy implements ProxyObject {
     private final Resource resource;
+    @Getter
     private final GenericRecord record;
 
     private final List<String> members = new ArrayList<>();
     private final Map<String, MemberInfo> memberInfoMap = new HashMap<>();
+
 
     @Data
     @Builder

@@ -127,7 +127,7 @@ public class InstanceDataStore {
                 this.resourceNameSlashNamespaceMap.put(resource.getNamespace().getName() + "/" + resource.getName(), resource);
             }
 
-            log.info("Resources loaded: " + this.codes.size());
+            log.info("Resources loaded: " + this.resources.size());
         } finally {
             lock.unlock();
         }

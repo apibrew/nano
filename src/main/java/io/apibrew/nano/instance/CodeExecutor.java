@@ -1,6 +1,9 @@
 package io.apibrew.nano.instance;
 
+import io.apibrew.client.ApiException;
 import io.apibrew.client.GenericRecord;
+import io.apibrew.client.Repository;
+import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.Resource;
 import io.apibrew.common.ext.ExtensionService;
 import io.apibrew.common.ext.Handler;
@@ -11,6 +14,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Source;
 
 import java.util.*;
@@ -70,7 +74,6 @@ public class CodeExecutor {
         executeInContextThread(() -> registerAsync(code));
     }
 
-    @SneakyThrows
     public void executeInContextThread(Runnable runnable) {
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -86,10 +89,32 @@ public class CodeExecutor {
             }
         });
 
-        latch.await();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         if (throwable.get() != null) {
-            throw throwable.get();
+            handleException(throwable.get());
+        }
+    }
+
+    private void handleException(Throwable throwable) {
+        if (throwable instanceof PolyglotException) {
+            PolyglotException polyglotException = (PolyglotException) throwable;
+
+            if (polyglotException.isHostException()) {
+                handleException(polyglotException.asHostException());
+            } else if (polyglotException.isGuestException()) {
+                throw new ApiException(Extension.Code.EXTERNAL_BACKEND_ERROR, polyglotException.getMessage());
+            } else {
+                throw polyglotException;
+            }
+        } else if (throwable instanceof RuntimeException) {
+            throw (RuntimeException) throwable;
+        } else {
+            throw new RuntimeException(throwable);
         }
     }
 
@@ -112,7 +137,7 @@ public class CodeExecutor {
             log.debug("Begin executing code: " + code.getName());
 
             if (code.getLanguage() == Code.Language.JAVASCRIPT) {
-                Source source = Source.newBuilder("js", content, code.getName() + "-"+UUID.randomUUID() + ".js")
+                Source source = Source.newBuilder("js", content, code.getName() + "-" + UUID.randomUUID() + ".js")
                         .mimeType("application/javascript+module")
                         .build();
 
@@ -208,5 +233,9 @@ public class CodeExecutor {
 
     public Resource getResourceByName(String namespace, String resourceName) {
         return graalVmNanoEngine.getDataStore().getResourceByName(namespace, resourceName);
+    }
+
+    public Repository<GenericRecord> locateRepository(Resource resource) {
+        return this.graalVmNanoEngine.locateRepository(resource);
     }
 }

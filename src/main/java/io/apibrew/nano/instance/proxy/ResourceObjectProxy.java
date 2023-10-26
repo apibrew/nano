@@ -1,19 +1,20 @@
 package io.apibrew.nano.instance.proxy;
 
 import io.apibrew.client.GenericRecord;
+import io.apibrew.client.Repository;
 import io.apibrew.client.model.Resource;
 import io.apibrew.common.ext.Condition;
 import io.apibrew.common.ext.Handler;
 import io.apibrew.nano.instance.CodeExecutor;
+import io.apibrew.nano.instance.RecordHelper;
 import io.apibrew.nano.model.Code;
+import io.apibrew.nano.util.BooleanExpressionUtil;
 import lombok.extern.log4j.Log4j2;
 import org.graalvm.polyglot.Value;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static io.apibrew.common.ext.Condition.*;
 
@@ -21,44 +22,192 @@ import static io.apibrew.common.ext.Condition.*;
 public class ResourceObjectProxy extends AbstractProxyObject {
     private final CodeExecutor codeExecutor;
     private final Resource resource;
+    private final Repository<GenericRecord> repository;
     private final Handler<GenericRecord> handler;
+    private final RecordHelper recordHelper;
 
     public ResourceObjectProxy(CodeExecutor codeExecutor, Resource resource) {
         this.codeExecutor = codeExecutor;
         this.resource = resource;
         this.handler = codeExecutor.locateHandler(resource);
+        this.repository = codeExecutor.locateRepository(resource);
+        this.recordHelper = new RecordHelper(codeExecutor, resource, repository);
+
+        prepareMethods();
     }
 
-    public Map<String, Consumer<Value>> operatorMethods() {
-        Map<String, Consumer<Value>> result = new HashMap<>();
+    public void prepareMethods() {
+        registerFunction("beforeCreate", operator(beforeCreate()));
+        registerFunction("beforeDelete", operator(beforeDelete(), true));
+        registerFunction("beforeUpdate", operator(beforeUpdate()));
+        registerFunction("beforeGet", operator(beforeGet()));
+        registerFunction("beforeList", operator(beforeList()));
 
-        result.put("beforeCreate", operator(beforeCreate()));
+        registerFunction("afterCreate", operator(afterCreate()));
+        registerFunction("afterUpdate", operator(afterUpdate()));
+        registerFunction("afterDelete", operator(afterDelete()));
+        registerFunction("afterGet", operator(afterGet()));
+        registerFunction("afterList", operator(afterList()));
 
-        return result;
+        registerFunction("onCreate", operator(afterCreate()));
+        registerFunction("onUpdate", operator(afterUpdate()));
+        registerFunction("onDelete", operator(afterDelete()));
+        registerFunction("onGet", operator(afterGet()));
+        registerFunction("onList", operator(afterList()));
+
+        registerFunction("count", countFn());
+        registerFunction("load", loadFn());
+        registerFunction("create", createFn());
+        registerFunction("update", updateFn());
+        registerFunction("save", saveFn());
+        registerFunction("delete", deleteFn());
+        registerFunction("findById", findByIdFn());
+        registerFunction("get", findByIdFn());
     }
 
-    public Map<String, Function<Value[], Value>> methods() {
-        Map<String, Function<Value[], Value>> list = new HashMap<>();
+    private Function<Value[], Value> findByIdFn() {
+        return this::findById;
+    }
 
-        for (Map.Entry<String, Consumer<Value>> entry : operatorMethods().entrySet()) {
-            list.put(entry.getKey(), (Value[] values) -> {
-                if (values.length != 1) {
-                    throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
-                }
-                entry.getValue().accept(values[0]);
-                return null;
-            });
+    private Value findById(Value[] values) {
+        if (values.length != 1) {
+            throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
         }
 
-        return list;
+        String id = values[0].asString();
+
+        GenericRecord record = repository.get(id);
+
+        return Value.asValue(new GenericRecordProxy(resource, record));
     }
 
-    private Consumer<Value> operator(Condition<GenericRecord> condition) {
-        return (Value executable) -> handleOperator(executable, handler.when(condition));
+    private Function<Value[], Value> deleteFn() {
+        return this::delete;
     }
 
-    private void handleOperator(Value executable, Handler<GenericRecord> updatedHandler) {
+    private Value delete(Value[] values) {
+        if (values.length != 1) {
+            throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
+        }
+
+        String id = recordHelper.identifyRecord(values[0]);
+
+        repository.delete(id);
+
+        return Value.asValue(null);
+    }
+
+    private Function<Value[], Value> saveFn() {
+        return this::save;
+    }
+
+    private Value save(Value[] values) {
+        if (values.length != 1) {
+            throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
+        }
+
+        GenericRecord record = recordHelper.resolveRecordFromValue(values[0]);
+
+        if (record.getId() == null) {
+            record = repository.create(record);
+        } else {
+            record = repository.update(record);
+        }
+
+        return Value.asValue(new GenericRecordProxy(resource, record));
+    }
+
+    private Function<Value[], Value> updateFn() {
+        return this::update;
+    }
+
+    private Value update(Value[] values) {
+        if (values.length == 0 || values.length > 2) {
+            throw new IllegalArgumentException("Expected 1 or 2 argument, got " + values.length);
+        }
+
+        GenericRecord record;
+        if (values.length == 1) {
+            record = recordHelper.resolveRecordFromValue(values[0]);
+
+            if (record.getId() == null) {
+                throw new IllegalArgumentException("Record does not have an id");
+            }
+        } else {
+            String id = recordHelper.identifyRecord(values[0]);
+
+            record = recordHelper.resolveRecordFromValue(values[1]);
+
+            record.getProperties().put("id", id);
+        }
+
+        record = repository.update(record);
+
+        return Value.asValue(new GenericRecordProxy(resource, record));
+    }
+
+    private Function<Value[], Value> createFn() {
+        return this::create;
+    }
+
+    private Value create(Value[] values) {
+        if (values.length != 1) {
+            throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
+        }
+
+        GenericRecord record = recordHelper.resolveRecordFromValue(values[0]);
+
+        record = repository.create(record);
+
+        return Value.asValue(new GenericRecordProxy(resource, record));
+    }
+
+    private Function<Value[], Value> loadFn() {
+        return this::load;
+    }
+
+    private Value load(Value[] values) {
+        if (values.length != 1) {
+            throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
+        }
+        GenericRecord record = recordHelper.resolveRecordFromValue(values[0]);
+
+        record = recordHelper.loadRecord(record);
+
+        return Value.asValue(new GenericRecordProxy(resource, record));
+    }
+
+    private Function<Value[], Value> countFn() {
+        return this::count;
+    }
+
+    private Value count(Value[] arguments) {
+        if (arguments.length == 0) {
+            return Value.asValue(repository.list().getTotal());
+        } else if (arguments.length == 1) {
+            return Value.asValue(repository.list(BooleanExpressionUtil.booleanExpressionFrom(arguments[0])).getTotal());
+        } else {
+            throw new IllegalArgumentException("Too many arguments");
+        }
+    }
+
+    private Consumer<Value[]> operator(Condition<GenericRecord> condition) {
+        return operator(condition, false);
+    }
+
+    private Consumer<Value[]> operator(Condition<GenericRecord> condition, boolean preload) {
+        return (Value[] arguments) -> handleOperator(arguments, handler.when(condition), preload);
+    }
+
+    private void handleOperator(Value[] arguments, Handler<GenericRecord> updatedHandler, boolean preload) {
         codeExecutor.ensureInsideCodeInitializer();
+
+        if (arguments.length != 1) {
+            throw new IllegalArgumentException("Expected 1 argument, got " + arguments.length);
+        }
+
+        Value executable = arguments[0];
+
         try {
             if (!executable.canExecute()) {
                 throw new IllegalArgumentException("given argument is not executable: " + executable);
@@ -66,12 +215,19 @@ public class ResourceObjectProxy extends AbstractProxyObject {
             Code code = codeExecutor.getCurrentInitializingCode();
 
             String operatorId = updatedHandler.operate((event, item) -> {
+                AtomicReference<GenericRecord> record = new AtomicReference<>(item);
+
+                if (preload) {
+                    record.set(recordHelper.loadRecord(record.get()));
+                }
+
                 codeExecutor.executeInContextThread(() -> {
                     log.debug("[" + code.getName() + "]Executing beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
-                    executable.execute(Value.asValue(new GenericRecordProxy(resource, item)));
+                    executable.execute(Value.asValue(new GenericRecordProxy(resource, record.get())));
                     log.debug("[" + code.getName() + "]Executed beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
                 });
-                return item;
+
+                return record.get();
             });
 
             codeExecutor.registerOperatorId(operatorId);

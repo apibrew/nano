@@ -3,6 +3,7 @@ package io.apibrew.nano.instance;
 import io.apibrew.client.Client;
 import io.apibrew.client.EntityInfo;
 import io.apibrew.client.GenericRecord;
+import io.apibrew.client.Repository;
 import io.apibrew.client.model.Resource;
 import io.apibrew.common.ext.Handler;
 import io.apibrew.common.impl.PollerExtensionService;
@@ -24,6 +25,7 @@ public class GraalVmNanoEngine {
     private final PollerExtensionService ext;
 
     private final List<CodeExecutor> codeExecutors = new ArrayList<>();
+    private final Client client;
 
     public GraalVmNanoEngine(InstanceDataStore dataStore, Client client, NanoInstance instance) {
         this.dataStore = dataStore;
@@ -31,6 +33,7 @@ public class GraalVmNanoEngine {
         log.info("GraalVMCodeExecutor initialized");
 
         this.ext = new PollerExtensionService(client, "nano-code-ext-chan");
+        this.client = client;
 
         for (int i = 0; i < 1; i++) {
             this.codeExecutors.add(new CodeExecutor(ext, this));
@@ -85,6 +88,10 @@ public class GraalVmNanoEngine {
         handlerMap.computeIfAbsent(entityInfo.toString(), name -> new LoadBalancingHandler(prepareHandler(entityInfo)));
 
         return handlerMap.get(entityInfo.toString());
+    }
+
+    public Repository<GenericRecord> locateRepository(Resource resource) {
+        return client.repository(EntityInfo.fromResource(resource));
     }
 
     private Handler<GenericRecord> prepareHandler(EntityInfo<GenericRecord> entityInfo) {
