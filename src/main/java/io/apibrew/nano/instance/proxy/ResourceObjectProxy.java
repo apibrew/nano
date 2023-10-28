@@ -1,10 +1,13 @@
 package io.apibrew.nano.instance.proxy;
 
+import io.apibrew.client.ApiException;
 import io.apibrew.client.GenericRecord;
 import io.apibrew.client.Repository;
+import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.Resource;
 import io.apibrew.common.ext.Condition;
 import io.apibrew.common.ext.Handler;
+import io.apibrew.common.ext.Operator;
 import io.apibrew.nano.instance.CodeExecutor;
 import io.apibrew.nano.instance.RecordHelper;
 import io.apibrew.nano.model.Code;
@@ -13,6 +16,7 @@ import lombok.extern.log4j.Log4j2;
 import org.graalvm.polyglot.Value;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -54,6 +58,10 @@ public class ResourceObjectProxy extends AbstractProxyObject {
         registerFunction("onDelete", operator(afterDelete()));
         registerFunction("onGet", operator(afterGet()));
         registerFunction("onList", operator(afterList()));
+
+        registerFunction("preprocess", operator(and(before(), or(Condition.create(), Condition.update()))));
+        registerFunction("postprocess", operator(and(after(), or(Condition.create(), Condition.update()))));
+        registerFunction("check", check(and(after(), or(Condition.create(), Condition.update()))));
 
         registerFunction("count", countFn());
         registerFunction("load", loadFn());
@@ -196,10 +204,24 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Consumer<Value[]> operator(Condition<GenericRecord> condition, boolean preload) {
-        return (Value[] arguments) -> handleOperator(arguments, handler.when(condition), preload);
+        return (Value[] arguments) -> handleOperator(arguments, (executable) -> executeOperator(handler.when(condition), preload, executable));
     }
 
-    private void handleOperator(Value[] arguments, Handler<GenericRecord> updatedHandler, boolean preload) {
+    private Consumer<Value[]> check(Condition<GenericRecord> condition) {
+        return (Value[] arguments) -> {
+            String message;
+
+            if (arguments.length == 2) {
+                message = arguments[1].asString();
+            } else {
+                message = "Record validation failed";
+            }
+
+            handleOperator(arguments, (executable) -> checkOperator(handler.when(condition), executable, message));
+        };
+    }
+
+    private void handleOperator(Value[] arguments, Consumer<Value> handler) {
         codeExecutor.ensureInsideCodeInitializer();
 
         if (arguments.length != 1) {
@@ -212,30 +234,60 @@ public class ResourceObjectProxy extends AbstractProxyObject {
             if (!executable.canExecute()) {
                 throw new IllegalArgumentException("given argument is not executable: " + executable);
             }
-            Code code = codeExecutor.getCurrentInitializingCode();
-
-            String operatorId = updatedHandler.operate((event, item) -> {
-                AtomicReference<GenericRecord> record = new AtomicReference<>(item);
-
-                if (preload) {
-                    record.set(recordHelper.loadRecord(record.get()));
-                }
-
-                codeExecutor.executeInContextThread(() -> {
-                    log.debug("[" + code.getName() + "]Executing beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
-                    executable.execute(Value.asValue(new GenericRecordProxy(resource, record.get())));
-                    log.debug("[" + code.getName() + "]Executed beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
-                });
-
-                return record.get();
-            });
-
-            codeExecutor.registerOperatorId(operatorId);
+            handler.accept(executable);
 
         } catch (RuntimeException e) {
             log.error("Error executing beforeCreate", e);
             throw e;
         }
+    }
+
+    private void executeOperator(Handler<GenericRecord> updatedHandler, boolean preload, Value executable) {
+        Code code = codeExecutor.getCurrentInitializingCode();
+
+        String operatorId = updatedHandler.operate((event, item) -> {
+            AtomicReference<GenericRecord> record = new AtomicReference<>(item);
+
+            if (preload) {
+                record.set(recordHelper.loadRecord(record.get()));
+            }
+
+            codeExecutor.executeInContextThread(() -> {
+                log.debug("[" + code.getName() + "]Executing beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
+                executable.execute(Value.asValue(new GenericRecordProxy(resource, record.get())));
+                log.debug("[" + code.getName() + "]Executed beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
+            });
+
+            return record.get();
+        });
+
+        codeExecutor.registerOperatorId(operatorId);
+    }
+
+    private void checkOperator(Handler<GenericRecord> updatedHandler, Value executable, String message) {
+        Code code = codeExecutor.getCurrentInitializingCode();
+
+        String operatorId = updatedHandler.operate((event, item) -> {
+            AtomicReference<GenericRecord> record = new AtomicReference<>(item);
+            AtomicReference<Boolean> result = new AtomicReference<>();
+
+            codeExecutor.executeInContextThread(() -> {
+                log.debug("[" + code.getName() + "]Executing beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
+                Value execResult = executable.execute(Value.asValue(new GenericRecordProxy(resource, record.get())));
+
+                result.set(execResult.asBoolean());
+
+                log.debug("[" + code.getName() + "]Executed beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
+            });
+
+            if (!result.get()) {
+                throw new ApiException(Extension.Code.RECORD_VALIDATION_ERROR, message);
+            }
+
+            return record.get();
+        });
+
+        codeExecutor.registerOperatorId(operatorId);
     }
 
     @Override

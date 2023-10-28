@@ -4,13 +4,11 @@ import io.apibrew.client.ApiException;
 import io.apibrew.client.Client;
 import io.apibrew.client.Repository;
 import io.apibrew.client.Watcher;
-import io.apibrew.client.impl.ChannelEventPoller;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.Resource;
 import io.apibrew.common.ext.Condition;
 import io.apibrew.common.ext.Handler;
 import io.apibrew.common.impl.PollerExtensionService;
-import io.apibrew.nano.helper.ListDiffer;
 import io.apibrew.nano.model.Code;
 import io.apibrew.nano.model.NanoInstance;
 import lombok.Setter;
@@ -54,7 +52,7 @@ public class InstanceDataStore {
         this.extensionRepository = client.repository(Extension.class);
         this.codeRepository = client.repository(Code.class);
         this.resourceRepository = client.repository(Resource.class);
-        this.ext = new PollerExtensionService(client, channelKey);
+        this.ext = new PollerExtensionService(channelKey, client, channelKey);
         this.codeHandler = this.ext.handler(Code.class);
     }
 
