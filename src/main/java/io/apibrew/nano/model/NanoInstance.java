@@ -7,7 +7,7 @@ import io.apibrew.client.Entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.apibrew.controller.model.ControllerInstance;
+import io.apibrew.client.controller.model.ControllerInstance;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NanoInstance extends Entity implements ControllerInstance {

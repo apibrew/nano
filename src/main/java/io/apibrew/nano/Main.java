@@ -2,8 +2,8 @@ package io.apibrew.nano;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apibrew.client.Client;
-import io.apibrew.controller.Controller;
-import io.apibrew.controller.InstanceClient;
+import io.apibrew.client.controller.Controller;
+import io.apibrew.client.controller.InstanceClient;
 import io.apibrew.nano.instance.NanoInstanceClient;
 import io.apibrew.nano.model.Config;
 import io.apibrew.nano.model.NanoInstance;

@@ -5,8 +5,8 @@ import io.apibrew.client.GenericRecord;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.Resource;
-import io.apibrew.common.ext.ExtensionService;
-import io.apibrew.common.ext.Handler;
+import io.apibrew.client.ext.ExtensionService;
+import io.apibrew.client.ext.Handler;
 import io.apibrew.nano.instance.proxy.ConsoleProxy;
 import io.apibrew.nano.instance.proxy.LoadResourceProxy;
 import io.apibrew.nano.model.Code;
@@ -104,6 +104,12 @@ public class CodeExecutor {
         if (throwable instanceof PolyglotException) {
             PolyglotException polyglotException = (PolyglotException) throwable;
 
+            if (polyglotException.isCancelled()) {
+                log.error("Code execution cancelled; restarting context");
+                isRunning = false;
+                return;
+            }
+
             if (polyglotException.isHostException()) {
                 handleException(polyglotException.asHostException());
             } else if (polyglotException.isGuestException()) {
@@ -131,8 +137,8 @@ public class CodeExecutor {
         this.currentInitializingCode = code;
         codeOperators.put(code.getName(), new ArrayList<>());
         log.debug("Content:\n" + content + "\n");
+        AtomicBoolean timeoutCancel = handleTimeout(code, context);
         try {
-            AtomicBoolean timeoutCancel = handleTimeout(code, context);
 
             log.debug("Begin executing code: " + code.getName());
 
@@ -147,12 +153,12 @@ public class CodeExecutor {
             }
 
             log.debug("end executing code: " + code.getName());
-            timeoutCancel.set(true);
         } catch (Exception e) {
             log.error("Error while executing code: " + code.getName(), e);
             unRegister(code);
-            throw e;
+            handleException(e);
         } finally {
+            timeoutCancel.set(true);
             currentInitializingCode = null;
             if (!codeOperators.get(code.getName()).isEmpty()) {
                 this.ext.registerPendingItems();

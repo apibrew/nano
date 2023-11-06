@@ -5,9 +5,9 @@ import io.apibrew.client.GenericRecord;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
 import io.apibrew.client.model.Resource;
-import io.apibrew.common.ext.Condition;
-import io.apibrew.common.ext.Handler;
-import io.apibrew.common.ext.Operator;
+import io.apibrew.client.ext.Condition;
+import io.apibrew.client.ext.Handler;
+import io.apibrew.client.ext.Operator;
 import io.apibrew.nano.instance.CodeExecutor;
 import io.apibrew.nano.instance.RecordHelper;
 import io.apibrew.nano.model.Code;
@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static io.apibrew.common.ext.Condition.*;
+import static io.apibrew.client.ext.Condition.*;
 
 @Log4j2
 public class ResourceObjectProxy extends AbstractProxyObject {

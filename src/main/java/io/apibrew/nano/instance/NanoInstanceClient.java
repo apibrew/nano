@@ -1,7 +1,7 @@
 package io.apibrew.nano.instance;
 
 import io.apibrew.client.Client;
-import io.apibrew.controller.InstanceClient;
+import io.apibrew.client.controller.InstanceClient;
 import io.apibrew.nano.model.Code;
 import io.apibrew.nano.model.NanoInstance;
 import lombok.extern.log4j.Log4j2;

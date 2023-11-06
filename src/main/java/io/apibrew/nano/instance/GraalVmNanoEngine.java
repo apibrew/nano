@@ -5,8 +5,8 @@ import io.apibrew.client.EntityInfo;
 import io.apibrew.client.GenericRecord;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Resource;
-import io.apibrew.common.ext.Handler;
-import io.apibrew.common.impl.PollerExtensionService;
+import io.apibrew.client.ext.Handler;
+import io.apibrew.client.ext.impl.PollerExtensionService;
 import io.apibrew.nano.model.Code;
 import io.apibrew.nano.model.NanoInstance;
 import lombok.Getter;
@@ -32,7 +32,7 @@ public class GraalVmNanoEngine {
 
         log.info("GraalVMCodeExecutor initialized");
 
-        this.ext = new PollerExtensionService(client, "nano-code-ext-chan");
+        this.ext = new PollerExtensionService("nano-code-ext-chan", client, "nano-code-ext-chan");
         this.client = client;
 
         for (int i = 0; i < 1; i++) {

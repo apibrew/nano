@@ -2,10 +2,10 @@ package io.apibrew.nano.instance;
 
 import io.apibrew.client.GenericRecord;
 import io.apibrew.client.model.Extension;
-import io.apibrew.common.ExtensionInfo;
-import io.apibrew.common.ext.Condition;
-import io.apibrew.common.ext.Handler;
-import io.apibrew.common.ext.Operator;
+import io.apibrew.client.ExtensionInfo;
+import io.apibrew.client.ext.Condition;
+import io.apibrew.client.ext.Handler;
+import io.apibrew.client.ext.Operator;
 import io.apibrew.nano.model.Code;
 import lombok.RequiredArgsConstructor;
 

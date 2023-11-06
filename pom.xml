@@ -34,17 +34,6 @@
             <artifactId>client</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
-            <groupId>io.apibrew</groupId>
-            <artifactId>common</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.apibrew</groupId>
-            <artifactId>controller</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.graalvm.polyglot</groupId>
