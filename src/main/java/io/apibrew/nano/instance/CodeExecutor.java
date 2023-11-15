@@ -1,6 +1,7 @@
 package io.apibrew.nano.instance;
 
 import io.apibrew.client.ApiException;
+import io.apibrew.client.Client;
 import io.apibrew.client.GenericRecord;
 import io.apibrew.client.Repository;
 import io.apibrew.client.model.Extension;
@@ -10,6 +11,7 @@ import io.apibrew.client.ext.Handler;
 import io.apibrew.nano.instance.proxy.ConsoleProxy;
 import io.apibrew.nano.instance.proxy.LoadResourceProxy;
 import io.apibrew.nano.model.Code;
+import io.apibrew.nano.model.Log;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -32,6 +34,7 @@ public class CodeExecutor {
     private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>(1000);
     private final ExtensionService ext;
     private final GraalVmNanoEngine graalVmNanoEngine;
+    private final Repository<Log> logRepository;
     @Getter
     private Code currentInitializingCode;
 
@@ -40,7 +43,9 @@ public class CodeExecutor {
 
     private final Thread thread = new Thread(this::run);
 
-    public CodeExecutor(ExtensionService ext, GraalVmNanoEngine graalVmNanoEngine) {
+    public CodeExecutor(Client client, ExtensionService ext, GraalVmNanoEngine graalVmNanoEngine) {
+        this.logRepository = client.repo(Log.class);
+
         this.context = prepareNewContext();
         this.ext = ext;
         this.graalVmNanoEngine = graalVmNanoEngine;
@@ -60,7 +65,7 @@ public class CodeExecutor {
                 Runnable runnable = taskQueue.take();
                 runnable.run();
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Error while executing task", e);
             }
         }
         log.info("CodeExecutor thread stopped");
@@ -84,6 +89,7 @@ public class CodeExecutor {
                 runnable.run();
             } catch (Throwable t) {
                 throwable.set(t);
+                log.error("Error while executing task in context", t);
             } finally {
                 latch.countDown();
             }
@@ -184,10 +190,10 @@ public class CodeExecutor {
 
     private void registerProxies(Context context) {
         context.getBindings("python").putMember("resource", new LoadResourceProxy(this));
-        context.getBindings("python").putMember("console", new ConsoleProxy());
+        context.getBindings("python").putMember("console", new ConsoleProxy(logRepository));
 
         context.getBindings("js").putMember("resource", new LoadResourceProxy(this));
-        context.getBindings("js").putMember("console", new ConsoleProxy());
+        context.getBindings("js").putMember("console", new ConsoleProxy(logRepository));
     }
 
     private AtomicBoolean handleTimeout(Code code, Context context) {

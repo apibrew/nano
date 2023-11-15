@@ -36,7 +36,7 @@ public class GraalVmNanoEngine {
         this.client = client;
 
         for (int i = 0; i < 1; i++) {
-            this.codeExecutors.add(new CodeExecutor(ext, this));
+            this.codeExecutors.add(new CodeExecutor(client, ext, this));
         }
     }
 

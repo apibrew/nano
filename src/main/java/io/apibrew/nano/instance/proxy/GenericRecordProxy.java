@@ -21,6 +21,22 @@ public class GenericRecordProxy implements ProxyObject {
     private final List<String> members = new ArrayList<>();
     private final Map<String, MemberInfo> memberInfoMap = new HashMap<>();
 
+    public GenericRecordProxy(Resource resource, Value result) {
+        this(resource, prepareGenericRecord(resource, result));
+    }
+
+    private static GenericRecord prepareGenericRecord(Resource resource, Value result) {
+        GenericRecord genericRecord = new GenericRecord();
+
+        for (Resource.Property property : resource.getProperties()) {
+            if (result.getMember(property.getName()) != null) {
+                genericRecord.getProperties().put(property.getName(), TransferProxy.unwrap(property, result.getMember(property.getName())));
+            }
+        }
+
+        return genericRecord;
+    }
+
 
     @Data
     @Builder
@@ -55,7 +71,7 @@ public class GenericRecordProxy implements ProxyObject {
 
     @Override
     public Object getMemberKeys() {
-        return members;
+        return new ListProxy(members);
     }
 
     @Override

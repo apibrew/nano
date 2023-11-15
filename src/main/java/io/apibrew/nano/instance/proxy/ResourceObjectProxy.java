@@ -1,13 +1,14 @@
 package io.apibrew.nano.instance.proxy;
 
-import io.apibrew.client.ApiException;
-import io.apibrew.client.GenericRecord;
-import io.apibrew.client.Repository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.apibrew.client.*;
 import io.apibrew.client.model.Extension;
+import io.apibrew.client.model.Record;
 import io.apibrew.client.model.Resource;
 import io.apibrew.client.ext.Condition;
 import io.apibrew.client.ext.Handler;
-import io.apibrew.client.ext.Operator;
 import io.apibrew.nano.instance.CodeExecutor;
 import io.apibrew.nano.instance.RecordHelper;
 import io.apibrew.nano.model.Code;
@@ -15,12 +16,18 @@ import io.apibrew.nano.util.BooleanExpressionUtil;
 import lombok.extern.log4j.Log4j2;
 import org.graalvm.polyglot.Value;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.apibrew.client.ext.Condition.*;
+import static io.apibrew.nano.instance.proxy.TransferProxy.wrapGeneric;
 
 @Log4j2
 public class ResourceObjectProxy extends AbstractProxyObject {
@@ -29,6 +36,7 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     private final Repository<GenericRecord> repository;
     private final Handler<GenericRecord> handler;
     private final RecordHelper recordHelper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ResourceObjectProxy(CodeExecutor codeExecutor, Resource resource) {
         this.codeExecutor = codeExecutor;
@@ -38,6 +46,9 @@ public class ResourceObjectProxy extends AbstractProxyObject {
         this.recordHelper = new RecordHelper(codeExecutor, resource, repository);
 
         prepareMethods();
+
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     public void prepareMethods() {
@@ -58,6 +69,11 @@ public class ResourceObjectProxy extends AbstractProxyObject {
         registerFunction("onDelete", operator(afterDelete()));
         registerFunction("onGet", operator(afterGet()));
         registerFunction("onList", operator(afterList()));
+        registerFunction("bindCreate", bindToFn("create"));
+        registerFunction("bindUpdate", bindToFn("update"));
+        registerFunction("bindDelete", bindToFn("delete"));
+        registerFunction("bindGet", bindToFn("get"));
+        registerFunction("bindList", bindToFn("list"));
 
         registerFunction("preprocess", operator(and(before(), or(Condition.create(), Condition.update()))));
         registerFunction("postprocess", operator(and(after(), or(Condition.create(), Condition.update()))));
@@ -71,6 +87,91 @@ public class ResourceObjectProxy extends AbstractProxyObject {
         registerFunction("delete", deleteFn());
         registerFunction("findById", findByIdFn());
         registerFunction("get", findByIdFn());
+    }
+
+    private Consumer<Value[]> bindToFn(String action) {
+        return (Value[] values) -> bindTo(action, values);
+    }
+
+    private void bindTo(String action, Value[] values) {
+        if (values.length != 3) {
+            throw new IllegalArgumentException("Expected 2 argument, got " + values.length);
+        }
+
+        Value resourceValue = values[0];
+        Value mapFromValue = values[1];
+        Value mapToValue = values[2];
+
+        if (!resourceValue.isProxyObject() || !(resourceValue.asProxyObject() instanceof ResourceObjectProxy)) {
+            throw new IllegalArgumentException("Expected resource as first argument");
+        }
+
+        if (!mapFromValue.canExecute()) {
+            throw new IllegalArgumentException("Expected executable as second argument");
+        }
+
+        if (!mapToValue.canExecute()) {
+            throw new IllegalArgumentException("Expected executable as third argument");
+        }
+
+        ResourceObjectProxy resourceObjectProxy = resourceValue.asProxyObject();
+
+        Function<GenericRecord, GenericRecord> mapFrom = prepareRecordMapper(mapFromValue, resource);
+        Function<GenericRecord, GenericRecord> mapTo = prepareRecordMapper(mapToValue, resourceObjectProxy.resource);
+
+        switch (action) {
+            case "create":
+                this.handler.when(beforeCreate()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.create(mapTo.apply(item))));
+                break;
+            case "update":
+                this.handler.when(beforeUpdate()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.update(mapTo.apply(item))));
+                break;
+            case "delete":
+                this.handler.when(beforeDelete()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.delete(item.getId().toString())));
+                break;
+            case "get":
+                this.handler.when(beforeGet()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.get(item.getId().toString())));
+                break;
+            case "list":
+                this.handler.when(beforeList()).operate((event, item) -> {
+                    codeExecutor.executeInContextThread(() -> {
+                        List<String> resolvedReferences = new ArrayList<>();
+
+                        if (event.getRecordSearchParams().getResolveReferences() != null) {
+                            resolvedReferences = event.getRecordSearchParams().getResolveReferences();
+                        }
+
+                        Container<GenericRecord> result = resourceObjectProxy.repository.list(ListRecordParams.builder()
+                                .limit(event.getRecordSearchParams().getLimit())
+                                .offset(event.getRecordSearchParams().getOffset())
+                                .query(event.getRecordSearchParams().getQuery())
+                                .resolveReferences(resolvedReferences)
+                                .build());
+
+                        event.setTotal((long) result.getTotal());
+                        event.setRecords(result.getContent().stream().map((GenericRecord genericRecord) -> {
+                            Record record = new Record();
+                            record.setProperties(objectMapper.convertValue(mapFrom.apply(genericRecord).getProperties(), Object.class));
+                            return record;
+                        }).collect(Collectors.toList()));
+                    });
+
+                    return item;
+                });
+                break;
+        }
+    }
+
+    private Function<GenericRecord, GenericRecord> prepareRecordMapper(Value mapToValue, Resource resultResource) {
+        return (record) -> {
+            Value result = mapToValue.execute(Value.asValue(new GenericRecordProxy(resultResource, record)));
+
+            if (result.isProxyObject() && result.asProxyObject() instanceof GenericRecordProxy) {
+                return ((GenericRecordProxy) result.asProxyObject()).getRecord();
+            } else {
+                return new GenericRecordProxy(resultResource, result).getRecord();
+            }
+        };
     }
 
     private Function<Value[], Value> findByIdFn() {
@@ -254,7 +355,9 @@ public class ResourceObjectProxy extends AbstractProxyObject {
 
             codeExecutor.executeInContextThread(() -> {
                 log.debug("[" + code.getName() + "]Executing beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
-                executable.execute(Value.asValue(new GenericRecordProxy(resource, record.get())));
+                Value recordVal = Value.asValue(new GenericRecordProxy(resource, record.get()));
+                Value eventVal = wrapGeneric(objectMapper.convertValue(event, Map.class));
+                executable.execute(recordVal, eventVal);
                 log.debug("[" + code.getName() + "]Executed beforeCreate for " + resource.getNamespace().getName() + "/" + resource.getName());
             });
 

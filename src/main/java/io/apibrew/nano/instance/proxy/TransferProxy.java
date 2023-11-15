@@ -59,4 +59,13 @@ public class TransferProxy {
             case LIST -> value.as(List.class);
         };
     }
+
+    public static Value wrapGeneric(Object o) {
+        if (o instanceof Map<?,?>) {
+            return Value.asValue(new MapProxy((Map<String, Object>) o));
+        } else if (o instanceof List<?>) {
+            return Value.asValue(new ListProxy((List<Object>) o));
+        }
+        return Value.asValue(o);
+    }
 }

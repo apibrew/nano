@@ -22,8 +22,8 @@ properties:
     type: ENUM
     required: true
     enumValues:
-    - PYTHON
-    - JAVASCRIPT
+      - PYTHON
+      - JAVASCRIPT
   - name: content
     title: Content
     description: Code content
@@ -38,9 +38,9 @@ properties:
     type: ENUM
     required: true
     enumValues:
-    - TEXT
-    - TAR
-    - TAR_GZ
+      - TEXT
+      - TAR
+      - TAR_GZ
     defaultValue: TEXT
   - name: annotations
     type: MAP
@@ -49,3 +49,23 @@ properties:
       type: STRING
 annotations:
   EnableAudit: "true"
+---
+type: resource
+name: Log
+namespace: nano
+title: Log
+description: Nano code
+virtual: true
+properties:
+  - name: level
+    type: ENUM
+    enumValues:
+      - TRACE
+      - DEBUG
+      - INFO
+      - WARN
+      - ERROR
+      - FATAL
+  - name: message
+    type: STRING
+    length: 64000
