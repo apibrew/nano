@@ -80,13 +80,18 @@ public class CodeExecutor {
     }
 
     public void executeInContextThread(Runnable runnable) {
+
+    }
+
+    public <R> R executeInContextThread(Callable<R> runnable) {
         CountDownLatch latch = new CountDownLatch(1);
 
         AtomicReference<Throwable> throwable = new AtomicReference<>();
+        AtomicReference<R> result = new AtomicReference<>();
 
         taskQueue.add(() -> {
             try {
-                runnable.run();
+                result.set(runnable.call());
             } catch (Throwable t) {
                 throwable.set(t);
                 log.error("Error while executing task in context", t);
@@ -104,6 +109,8 @@ public class CodeExecutor {
         if (throwable.get() != null) {
             handleException(throwable.get());
         }
+
+        return result.get();
     }
 
     private void handleException(Throwable throwable) {

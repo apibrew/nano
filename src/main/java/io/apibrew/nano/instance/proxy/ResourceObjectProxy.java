@@ -121,16 +121,16 @@ public class ResourceObjectProxy extends AbstractProxyObject {
 
         switch (action) {
             case "create":
-                this.handler.when(beforeCreate()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.create(mapTo.apply(item))));
+                this.handler.when(beforeCreate()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.create(mapTo.apply(item)))));
                 break;
             case "update":
-                this.handler.when(beforeUpdate()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.update(mapTo.apply(item))));
+                this.handler.when(beforeUpdate()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.update(mapTo.apply(item)))));
                 break;
             case "delete":
-                this.handler.when(beforeDelete()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.delete(item.getId().toString())));
+                this.handler.when(beforeDelete()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.delete(item.getId().toString()))));
                 break;
             case "get":
-                this.handler.when(beforeGet()).operate((event, item) -> mapFrom.apply(resourceObjectProxy.repository.get(item.getId().toString())));
+                this.handler.when(beforeGet()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.get(item.getId().toString()))));
                 break;
             case "list":
                 this.handler.when(beforeList()).operate((event, item) -> {
