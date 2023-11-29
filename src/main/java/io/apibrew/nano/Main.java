@@ -56,6 +56,7 @@ public class Main {
             log.info("Starting controller");
             controller.startUpController(new NanoInstance.ServerConfig()
                     .withHost(config.getController().getHost())
+                    .withPort(9009)
                     .withInsecure(config.getController().getInsecure())
                     .withAuthentication(new NanoInstance.ServerConfigAuthentication()
                             .withUsername(config.getController().getAuthentication().getUsername())
