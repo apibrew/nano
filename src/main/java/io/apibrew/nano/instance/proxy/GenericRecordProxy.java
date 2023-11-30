@@ -28,9 +28,10 @@ public class GenericRecordProxy implements ProxyObject {
     private static GenericRecord prepareGenericRecord(Resource resource, Value result) {
         GenericRecord genericRecord = new GenericRecord();
 
-        for (Resource.Property property : resource.getProperties()) {
-            if (result.getMember(property.getName()) != null) {
-                genericRecord.getProperties().put(property.getName(), TransferProxy.unwrap(property, result.getMember(property.getName())));
+        for (String propertyName : resource.getProperties().keySet()) {
+            Resource.Property property = resource.getProperties().get(propertyName);
+            if (result.getMember(propertyName) != null) {
+                genericRecord.getProperties().put(propertyName, TransferProxy.unwrap(property, result.getMember(propertyName)));
             }
         }
 
@@ -49,9 +50,10 @@ public class GenericRecordProxy implements ProxyObject {
         this.resource = resource;
         this.record = record;
 
-        for (Resource.Property property : resource.getProperties()) {
-            members.add(property.getName());
-            memberInfoMap.put(property.getName(), MemberInfo.builder()
+        for (String propertyName : resource.getProperties().keySet()) {
+            Resource.Property property = resource.getProperties().get(propertyName);
+            members.add(propertyName);
+            memberInfoMap.put(propertyName, MemberInfo.builder()
                     .isProperty(true)
                     .property(property)
                     .build());
