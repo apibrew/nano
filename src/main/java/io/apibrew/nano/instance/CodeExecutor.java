@@ -72,6 +72,7 @@ public class CodeExecutor {
     }
 
     public void register(Code code) {
+        log.info("Registering code: " + code.getName());
         if (!isRunning) {
             throw new IllegalStateException("CodeExecutor is not running");
         }
@@ -80,7 +81,10 @@ public class CodeExecutor {
     }
 
     public void executeInContextThread(Runnable runnable) {
-
+        executeInContextThread(() -> {
+            runnable.run();
+            return null;
+        });
     }
 
     public <R> R executeInContextThread(Callable<R> runnable) {
@@ -145,7 +149,7 @@ public class CodeExecutor {
 
     @SneakyThrows
     private synchronized void registerAsync(Code code) {
-        log.debug("Registering code: " + code.getName());
+        log.debug("Registering code async: " + code.getName());
         String content = new String(Base64.getDecoder().decode(code.getContent()));
         this.currentInitializingCode = code;
         codeOperators.put(code.getName(), new ArrayList<>());
