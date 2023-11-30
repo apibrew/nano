@@ -144,7 +144,7 @@ public class CodeExecutor {
     }
 
     @SneakyThrows
-    private void registerAsync(Code code) {
+    private synchronized void registerAsync(Code code) {
         log.debug("Registering code: " + code.getName());
         String content = new String(Base64.getDecoder().decode(code.getContent()));
         this.currentInitializingCode = code;

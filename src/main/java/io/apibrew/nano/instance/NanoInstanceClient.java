@@ -23,8 +23,8 @@ public class NanoInstanceClient implements InstanceClient {
         dataStore.setCodeRegisterHandler(this::registerCode);
         dataStore.setCodeUnRegisterHandler(this::unRegisterCode);
 
-        dataStore.init();
         graalVmNanoEngine.init();
+        dataStore.init();
     }
 
     public void stop() {
