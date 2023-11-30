@@ -6,6 +6,10 @@ types:
       host:
         type: STRING
         required: true
+      port:
+        type: INT32
+      httpPort:
+        type: INT32
       insecure:
         type: BOOLEAN
         required: true

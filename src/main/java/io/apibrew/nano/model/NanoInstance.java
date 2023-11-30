@@ -8,11 +8,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.apibrew.client.controller.model.ControllerInstance;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NanoInstance extends Entity {
-    
-    private NanoInstance.AuditData auditData;
+public class NanoInstance extends Entity implements ControllerInstance {
     
     private java.util.Map<String, String> annotations;
     
@@ -25,6 +24,8 @@ public class NanoInstance extends Entity {
     private String name;
     
     private int version;
+    
+    private NanoInstance.AuditData auditData;
 
     public static final String NAMESPACE = "default";
     public static final String RESOURCE = "NanoInstance";
@@ -32,27 +33,18 @@ public class NanoInstance extends Entity {
     @JsonIgnore
     public static final EntityInfo<NanoInstance> entityInfo = new EntityInfo<>("default", "NanoInstance", NanoInstance.class, "nanoinstance");
 
-    public static class ServerConfig {
-        
-        private NanoInstance.ServerConfigAuthentication authentication;
+    public static class ServerConfig implements ControllerInstance.ServerConfig {
         
         private String host;
         
+        private Integer port;
+        
+        private Integer httpPort;
+        
         private boolean insecure;
+        
+        private NanoInstance.ServerConfigAuthentication authentication;
 
-        public NanoInstance.ServerConfigAuthentication getAuthentication() {
-            return authentication;
-        }
-
-        public void setAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
-            this.authentication = authentication;
-        }
-
-        public ServerConfig withAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
-            this.authentication = authentication;
-
-            return this;
-        }
         public String getHost() {
             return host;
         }
@@ -63,6 +55,32 @@ public class NanoInstance extends Entity {
 
         public ServerConfig withHost(String host) {
             this.host = host;
+
+            return this;
+        }
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public ServerConfig withPort(int port) {
+            this.port = port;
+
+            return this;
+        }
+        public int getHttpPort() {
+            return httpPort;
+        }
+
+        public void setHttpPort(int httpPort) {
+            this.httpPort = httpPort;
+        }
+
+        public ServerConfig withHttpPort(Integer httpPort) {
+            this.httpPort = httpPort;
 
             return this;
         }
@@ -79,6 +97,19 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+        public NanoInstance.ServerConfigAuthentication getAuthentication() {
+            return authentication;
+        }
+
+        public void setAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
+            this.authentication = authentication;
+        }
+
+        public ServerConfig withAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
+            this.authentication = authentication;
+
+            return this;
+        }
 
         @Override
         public boolean equals(Object o) {
@@ -88,13 +119,19 @@ public class NanoInstance extends Entity {
 
             ServerConfig obj = (ServerConfig) o;
 
-            if (!Objects.equals(this.authentication, obj.authentication)) {
-                return false;
-            }
             if (!Objects.equals(this.host, obj.host)) {
                 return false;
             }
+            if (!Objects.equals(this.port, obj.port)) {
+                return false;
+            }
+            if (!Objects.equals(this.httpPort, obj.httpPort)) {
+                return false;
+            }
             if (!Objects.equals(this.insecure, obj.insecure)) {
+                return false;
+            }
+            if (!Objects.equals(this.authentication, obj.authentication)) {
                 return false;
             }
 
@@ -103,30 +140,17 @@ public class NanoInstance extends Entity {
 
         @Override
         public int hashCode() {
-           return Objects.hash(authentication, host, insecure);
+           return Objects.hash(host, port, httpPort, insecure, authentication);
         }
     }
-    public static class ServerConfigAuthentication {
-        
-        private String token;
+    public static class ServerConfigAuthentication implements Authentication {
         
         private String password;
         
         private String username;
+        
+        private String token;
 
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
-
-        public ServerConfigAuthentication withToken(String token) {
-            this.token = token;
-
-            return this;
-        }
         public String getPassword() {
             return password;
         }
@@ -153,6 +177,19 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public ServerConfigAuthentication withToken(String token) {
+            this.token = token;
+
+            return this;
+        }
 
         @Override
         public boolean equals(Object o) {
@@ -162,13 +199,13 @@ public class NanoInstance extends Entity {
 
             ServerConfigAuthentication obj = (ServerConfigAuthentication) o;
 
-            if (!Objects.equals(this.token, obj.token)) {
-                return false;
-            }
             if (!Objects.equals(this.password, obj.password)) {
                 return false;
             }
             if (!Objects.equals(this.username, obj.username)) {
+                return false;
+            }
+            if (!Objects.equals(this.token, obj.token)) {
                 return false;
             }
 
@@ -177,7 +214,7 @@ public class NanoInstance extends Entity {
 
         @Override
         public int hashCode() {
-           return Objects.hash(token, password, username);
+           return Objects.hash(password, username, token);
         }
     }
     public static class InstanceLimitations {
@@ -237,28 +274,15 @@ public class NanoInstance extends Entity {
         }
     }
     public static class AuditData {
-        @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
-        private java.time.Instant updatedOn;
         
         private String createdBy;
         @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
         private java.time.Instant createdOn;
         
         private String updatedBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
+        private java.time.Instant updatedOn;
 
-        public java.time.Instant getUpdatedOn() {
-            return updatedOn;
-        }
-
-        public void setUpdatedOn(java.time.Instant updatedOn) {
-            this.updatedOn = updatedOn;
-        }
-
-        public AuditData withUpdatedOn(java.time.Instant updatedOn) {
-            this.updatedOn = updatedOn;
-
-            return this;
-        }
         public String getCreatedBy() {
             return createdBy;
         }
@@ -298,6 +322,19 @@ public class NanoInstance extends Entity {
 
             return this;
         }
+        public java.time.Instant getUpdatedOn() {
+            return updatedOn;
+        }
+
+        public void setUpdatedOn(java.time.Instant updatedOn) {
+            this.updatedOn = updatedOn;
+        }
+
+        public AuditData withUpdatedOn(java.time.Instant updatedOn) {
+            this.updatedOn = updatedOn;
+
+            return this;
+        }
 
         @Override
         public boolean equals(Object o) {
@@ -307,9 +344,6 @@ public class NanoInstance extends Entity {
 
             AuditData obj = (AuditData) o;
 
-            if (!Objects.equals(this.updatedOn, obj.updatedOn)) {
-                return false;
-            }
             if (!Objects.equals(this.createdBy, obj.createdBy)) {
                 return false;
             }
@@ -319,13 +353,16 @@ public class NanoInstance extends Entity {
             if (!Objects.equals(this.updatedBy, obj.updatedBy)) {
                 return false;
             }
+            if (!Objects.equals(this.updatedOn, obj.updatedOn)) {
+                return false;
+            }
 
             return true;
         }
 
         @Override
         public int hashCode() {
-           return Objects.hash(updatedOn, createdBy, createdOn, updatedBy);
+           return Objects.hash(createdBy, createdOn, updatedBy, updatedOn);
         }
     }
 
@@ -335,19 +372,6 @@ public class NanoInstance extends Entity {
     public NanoInstance() {
     }
 
-    public NanoInstance.AuditData getAuditData() {
-        return auditData;
-    }
-
-    public void setAuditData(NanoInstance.AuditData auditData) {
-        this.auditData = auditData;
-    }
-
-    public NanoInstance withAuditData(NanoInstance.AuditData auditData) {
-        this.auditData = auditData;
-
-        return this;
-    }
     public java.util.Map<String, String> getAnnotations() {
         return annotations;
     }
@@ -426,6 +450,19 @@ public class NanoInstance extends Entity {
 
         return this;
     }
+    public NanoInstance.AuditData getAuditData() {
+        return auditData;
+    }
+
+    public void setAuditData(NanoInstance.AuditData auditData) {
+        this.auditData = auditData;
+    }
+
+    public NanoInstance withAuditData(NanoInstance.AuditData auditData) {
+        this.auditData = auditData;
+
+        return this;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -435,9 +472,6 @@ public class NanoInstance extends Entity {
 
         NanoInstance obj = (NanoInstance) o;
 
-        if (!Objects.equals(this.auditData, obj.auditData)) {
-            return false;
-        }
         if (!Objects.equals(this.annotations, obj.annotations)) {
             return false;
         }
@@ -454,6 +488,9 @@ public class NanoInstance extends Entity {
             return false;
         }
         if (!Objects.equals(this.version, obj.version)) {
+            return false;
+        }
+        if (!Objects.equals(this.auditData, obj.auditData)) {
             return false;
         }
 
