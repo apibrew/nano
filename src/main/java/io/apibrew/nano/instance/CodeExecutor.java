@@ -144,6 +144,7 @@ public class CodeExecutor {
     public void unRegister(Code code) {
         for (String operatorId : codeOperators.get(code.getName())) {
             ext.unRegisterOperator(operatorId);
+            log.debug("Unregistered operator: " + operatorId);
         }
     }
 
@@ -178,9 +179,13 @@ public class CodeExecutor {
             timeoutCancel.set(true);
             currentInitializingCode = null;
             if (!codeOperators.get(code.getName()).isEmpty()) {
+                log.debug("Registering pending operators for code: " + code.getName());
                 this.ext.registerPendingItems();
+            } else {
+                log.debug("No pending operators for code: " + code.getName());
             }
         }
+        log.debug("Code registered async: " + code.getName());
     }
 
     private Context prepareNewContext() {
@@ -247,6 +252,7 @@ public class CodeExecutor {
     }
 
     public void registerOperatorId(String operatorId) {
+        log.debug("Registering operator: " + operatorId + " for code: " + currentInitializingCode.getName());
         codeOperators.get(currentInitializingCode.getName()).add(operatorId);
     }
 
