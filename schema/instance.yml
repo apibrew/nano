@@ -1,22 +1,21 @@
-type: Namespace
-namespace: system
-properties:
-  name: nano
+type: system/Namespace
+name: nano
 ---
 type: resource
 name: Code
-namespace: nano
+namespace:
+  name: nano
 title: Code
 description: Nano code
 properties:
-  - name: name
+  name:
     title: Name
     description: Full Qualified Name of the code, it must be unique in the system
     type: STRING
     length: 255
     required: true
     unique: true
-  - name: language
+  language:
     title: Language
     description: Code language
     type: ENUM
@@ -24,7 +23,7 @@ properties:
     enumValues:
       - PYTHON
       - JAVASCRIPT
-  - name: content
+  content:
     title: Content
     description: Code content
     type: STRING
@@ -32,7 +31,7 @@ properties:
     required: true
     annotations:
       SQLType: "TEXT"
-  - name: contentFormat
+  contentFormat:
     title: Content Format
     description: Code content format
     type: ENUM
@@ -42,7 +41,7 @@ properties:
       - TAR
       - TAR_GZ
     defaultValue: TEXT
-  - name: annotations
+  annotations:
     type: MAP
     required: false
     item:
@@ -52,12 +51,13 @@ annotations:
 ---
 type: resource
 name: Log
-namespace: nano
+namespace:
+  name: nano
 title: Log
 description: Nano code
 virtual: true
 properties:
-  - name: level
+  level:
     type: ENUM
     enumValues:
       - TRACE
@@ -66,6 +66,6 @@ properties:
       - WARN
       - ERROR
       - FATAL
-  - name: message
+  message:
     type: STRING
     length: 64000
