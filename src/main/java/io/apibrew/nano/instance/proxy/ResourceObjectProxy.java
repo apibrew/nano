@@ -94,6 +94,8 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private void bindTo(String action, Value[] values) {
+        log.debug("Binding " + action + " to " + resource.getNamespace().getName() + "/" + resource.getName());
+
         if (values.length != 3) {
             throw new IllegalArgumentException("Expected 2 argument, got " + values.length);
         }
@@ -119,21 +121,22 @@ public class ResourceObjectProxy extends AbstractProxyObject {
         Function<GenericRecord, GenericRecord> mapFrom = prepareRecordMapper(mapFromValue, resource);
         Function<GenericRecord, GenericRecord> mapTo = prepareRecordMapper(mapToValue, resourceObjectProxy.resource);
 
+        String operatorId;
         switch (action) {
             case "create":
-                this.handler.when(beforeCreate()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.create(mapTo.apply(item)))));
+                operatorId = this.handler.when(beforeCreate()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.create(mapTo.apply(item)))));
                 break;
             case "update":
-                this.handler.when(beforeUpdate()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.update(mapTo.apply(item)))));
+                operatorId = this.handler.when(beforeUpdate()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.update(mapTo.apply(item)))));
                 break;
             case "delete":
-                this.handler.when(beforeDelete()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.delete(item.getId().toString()))));
+                operatorId = this.handler.when(beforeDelete()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.delete(item.getId().toString()))));
                 break;
             case "get":
-                this.handler.when(beforeGet()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.get(item.getId().toString()))));
+                operatorId = this.handler.when(beforeGet()).operate((event, item) -> codeExecutor.executeInContextThread(() -> mapFrom.apply(resourceObjectProxy.repository.get(item.getId().toString()))));
                 break;
             case "list":
-                this.handler.when(beforeList()).operate((event, item) -> {
+                operatorId = this.handler.when(beforeList()).operate((event, item) -> {
                     codeExecutor.executeInContextThread(() -> {
                         List<String> resolvedReferences = new ArrayList<>();
 
@@ -159,7 +162,13 @@ public class ResourceObjectProxy extends AbstractProxyObject {
                     return item;
                 });
                 break;
+            default:
+                throw new IllegalArgumentException("Unknown action " + action);
         }
+
+        codeExecutor.registerOperatorId(operatorId);
+
+        log.debug("Bound " + action + " to " + resource.getNamespace().getName() + "/" + resource.getName());
     }
 
     private Function<GenericRecord, GenericRecord> prepareRecordMapper(Value mapToValue, Resource resultResource) {
@@ -179,6 +188,7 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Value findById(Value[] values) {
+        log.debug("Finding by id " + resource.getNamespace().getName() + "/" + resource.getName());
         if (values.length != 1) {
             throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
         }
@@ -187,7 +197,11 @@ public class ResourceObjectProxy extends AbstractProxyObject {
 
         GenericRecord record = repository.get(id);
 
-        return Value.asValue(new GenericRecordProxy(resource, record));
+        Value result = Value.asValue(new GenericRecordProxy(resource, record));
+
+        log.debug("Found by id " + resource.getNamespace().getName() + "/" + resource.getName());
+
+        return result;
     }
 
     private Function<Value[], Value> deleteFn() {
@@ -195,6 +209,7 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Value delete(Value[] values) {
+        log.debug("Deleting " + resource.getNamespace().getName() + "/" + resource.getName());
         if (values.length != 1) {
             throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
         }
@@ -203,6 +218,7 @@ public class ResourceObjectProxy extends AbstractProxyObject {
 
         repository.delete(id);
 
+        log.debug("Deleted " + resource.getNamespace().getName() + "/" + resource.getName());
         return Value.asValue(null);
     }
 
@@ -211,6 +227,7 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Value save(Value[] values) {
+        log.debug("Saving " + resource.getNamespace().getName() + "/" + resource.getName());
         if (values.length != 1) {
             throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
         }
@@ -223,7 +240,11 @@ public class ResourceObjectProxy extends AbstractProxyObject {
             record = repository.update(record);
         }
 
-        return Value.asValue(new GenericRecordProxy(resource, record));
+        Value result = Value.asValue(new GenericRecordProxy(resource, record));
+
+        log.debug("Saved " + resource.getNamespace().getName() + "/" + resource.getName());
+
+        return result;
     }
 
     private Function<Value[], Value> updateFn() {
@@ -231,6 +252,8 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Value update(Value[] values) {
+        log.debug("Updating " + resource.getNamespace().getName() + "/" + resource.getName());
+
         if (values.length == 0 || values.length > 2) {
             throw new IllegalArgumentException("Expected 1 or 2 argument, got " + values.length);
         }
@@ -252,7 +275,11 @@ public class ResourceObjectProxy extends AbstractProxyObject {
 
         record = repository.update(record);
 
-        return Value.asValue(new GenericRecordProxy(resource, record));
+        Value result = Value.asValue(new GenericRecordProxy(resource, record));
+
+        log.debug("Updated " + resource.getNamespace().getName() + "/" + resource.getName());
+
+        return result;
     }
 
     private Function<Value[], Value> createFn() {
@@ -260,6 +287,8 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Value create(Value[] values) {
+        log.debug("Creating " + resource.getNamespace().getName() + "/" + resource.getName());
+
         if (values.length != 1) {
             throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
         }
@@ -268,7 +297,11 @@ public class ResourceObjectProxy extends AbstractProxyObject {
 
         record = repository.create(record);
 
-        return Value.asValue(new GenericRecordProxy(resource, record));
+        Value result = Value.asValue(new GenericRecordProxy(resource, record));
+
+        log.debug("Created " + resource.getNamespace().getName() + "/" + resource.getName());
+
+        return result;
     }
 
     private Function<Value[], Value> loadFn() {
@@ -276,6 +309,8 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Value load(Value[] values) {
+        log.debug("Loading " + resource.getNamespace().getName() + "/" + resource.getName());
+
         if (values.length != 1) {
             throw new IllegalArgumentException("Expected 1 argument, got " + values.length);
         }
@@ -283,7 +318,11 @@ public class ResourceObjectProxy extends AbstractProxyObject {
 
         record = recordHelper.loadRecord(record);
 
-        return Value.asValue(new GenericRecordProxy(resource, record));
+        Value result = Value.asValue(new GenericRecordProxy(resource, record));
+
+        log.debug("Loaded " + resource.getNamespace().getName() + "/" + resource.getName());
+
+        return result;
     }
 
     private Function<Value[], Value> countFn() {
@@ -291,8 +330,14 @@ public class ResourceObjectProxy extends AbstractProxyObject {
     }
 
     private Value count(Value[] arguments) {
+        log.debug("Counting " + resource.getNamespace().getName() + "/" + resource.getName());
+
         if (arguments.length == 0) {
-            return Value.asValue(repository.list().getTotal());
+            Value result = Value.asValue(repository.list().getTotal());
+
+            log.debug("Counted " + resource.getNamespace().getName() + "/" + resource.getName());
+
+            return result;
         } else if (arguments.length == 1) {
             return Value.asValue(repository.list(BooleanExpressionUtil.booleanExpressionFrom(arguments[0])).getTotal());
         } else {
