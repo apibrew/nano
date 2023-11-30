@@ -12,6 +12,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Code extends Entity {
     
+    private Code.AuditData auditData;
+    
+    private java.util.Map<String, String> annotations;
+    
+    private Code.ContentFormat contentFormat;
+    
     private java.util.UUID id;
     
     private String name;
@@ -21,12 +27,6 @@ public class Code extends Entity {
     private int version;
     
     private Code.Language language;
-    
-    private Code.AuditData auditData;
-    
-    private java.util.Map<String, String> annotations;
-    
-    private Code.ContentFormat contentFormat;
 
     public static final String NAMESPACE = "nano";
     public static final String RESOURCE = "Code";
@@ -35,15 +35,28 @@ public class Code extends Entity {
     public static final EntityInfo<Code> entityInfo = new EntityInfo<>("nano", "Code", Code.class, "nano-code");
 
     public static class AuditData {
+        @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
+        private java.time.Instant updatedOn;
         
         private String createdBy;
         @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
         private java.time.Instant createdOn;
         
         private String updatedBy;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
-        private java.time.Instant updatedOn;
 
+        public java.time.Instant getUpdatedOn() {
+            return updatedOn;
+        }
+
+        public void setUpdatedOn(java.time.Instant updatedOn) {
+            this.updatedOn = updatedOn;
+        }
+
+        public AuditData withUpdatedOn(java.time.Instant updatedOn) {
+            this.updatedOn = updatedOn;
+
+            return this;
+        }
         public String getCreatedBy() {
             return createdBy;
         }
@@ -83,19 +96,6 @@ public class Code extends Entity {
 
             return this;
         }
-        public java.time.Instant getUpdatedOn() {
-            return updatedOn;
-        }
-
-        public void setUpdatedOn(java.time.Instant updatedOn) {
-            this.updatedOn = updatedOn;
-        }
-
-        public AuditData withUpdatedOn(java.time.Instant updatedOn) {
-            this.updatedOn = updatedOn;
-
-            return this;
-        }
 
         @Override
         public boolean equals(Object o) {
@@ -105,6 +105,9 @@ public class Code extends Entity {
 
             AuditData obj = (AuditData) o;
 
+            if (!Objects.equals(this.updatedOn, obj.updatedOn)) {
+                return false;
+            }
             if (!Objects.equals(this.createdBy, obj.createdBy)) {
                 return false;
             }
@@ -114,34 +117,16 @@ public class Code extends Entity {
             if (!Objects.equals(this.updatedBy, obj.updatedBy)) {
                 return false;
             }
-            if (!Objects.equals(this.updatedOn, obj.updatedOn)) {
-                return false;
-            }
 
             return true;
         }
 
         @Override
         public int hashCode() {
-           return Objects.hash(createdBy, createdOn, updatedBy, updatedOn);
+           return Objects.hash(updatedOn, createdBy, createdOn, updatedBy);
         }
     }
 
-    public static enum Language {
-        PYTHON("PYTHON"),
-        JAVASCRIPT("JAVASCRIPT");
-
-        private final String value;
-
-        Language(String value) {
-            this.value = value;
-        }
-
-        @JsonValue
-        public String getValue() {
-            return value;
-        }
-    }
     public static enum ContentFormat {
         TEXT("TEXT"),
         TAR("TAR"),
@@ -158,12 +143,66 @@ public class Code extends Entity {
             return value;
         }
     }
+    public static enum Language {
+        PYTHON("PYTHON"),
+        JAVASCRIPT("JAVASCRIPT");
+
+        private final String value;
+
+        Language(String value) {
+            this.value = value;
+        }
+
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
+    }
 
     
 
     public Code() {
     }
 
+    public Code.AuditData getAuditData() {
+        return auditData;
+    }
+
+    public void setAuditData(Code.AuditData auditData) {
+        this.auditData = auditData;
+    }
+
+    public Code withAuditData(Code.AuditData auditData) {
+        this.auditData = auditData;
+
+        return this;
+    }
+    public java.util.Map<String, String> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(java.util.Map<String, String> annotations) {
+        this.annotations = annotations;
+    }
+
+    public Code withAnnotations(java.util.Map<String, String> annotations) {
+        this.annotations = annotations;
+
+        return this;
+    }
+    public Code.ContentFormat getContentFormat() {
+        return contentFormat;
+    }
+
+    public void setContentFormat(Code.ContentFormat contentFormat) {
+        this.contentFormat = contentFormat;
+    }
+
+    public Code withContentFormat(Code.ContentFormat contentFormat) {
+        this.contentFormat = contentFormat;
+
+        return this;
+    }
     public java.util.UUID getId() {
         return id;
     }
@@ -229,45 +268,6 @@ public class Code extends Entity {
 
         return this;
     }
-    public Code.AuditData getAuditData() {
-        return auditData;
-    }
-
-    public void setAuditData(Code.AuditData auditData) {
-        this.auditData = auditData;
-    }
-
-    public Code withAuditData(Code.AuditData auditData) {
-        this.auditData = auditData;
-
-        return this;
-    }
-    public java.util.Map<String, String> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(java.util.Map<String, String> annotations) {
-        this.annotations = annotations;
-    }
-
-    public Code withAnnotations(java.util.Map<String, String> annotations) {
-        this.annotations = annotations;
-
-        return this;
-    }
-    public Code.ContentFormat getContentFormat() {
-        return contentFormat;
-    }
-
-    public void setContentFormat(Code.ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    public Code withContentFormat(Code.ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-
-        return this;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -277,6 +277,15 @@ public class Code extends Entity {
 
         Code obj = (Code) o;
 
+        if (!Objects.equals(this.auditData, obj.auditData)) {
+            return false;
+        }
+        if (!Objects.equals(this.annotations, obj.annotations)) {
+            return false;
+        }
+        if (!Objects.equals(this.contentFormat, obj.contentFormat)) {
+            return false;
+        }
         if (!Objects.equals(this.id, obj.id)) {
             return false;
         }
@@ -290,15 +299,6 @@ public class Code extends Entity {
             return false;
         }
         if (!Objects.equals(this.language, obj.language)) {
-            return false;
-        }
-        if (!Objects.equals(this.auditData, obj.auditData)) {
-            return false;
-        }
-        if (!Objects.equals(this.annotations, obj.annotations)) {
-            return false;
-        }
-        if (!Objects.equals(this.contentFormat, obj.contentFormat)) {
             return false;
         }
 

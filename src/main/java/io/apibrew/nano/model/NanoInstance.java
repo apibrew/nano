@@ -13,8 +13,6 @@ import io.apibrew.client.controller.model.ControllerInstance;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NanoInstance extends Entity implements ControllerInstance {
     
-    private java.util.Map<String, String> annotations;
-    
     private NanoInstance.InstanceLimitations limitations;
     
     private NanoInstance.ServerConfig serverConfig;
@@ -26,6 +24,8 @@ public class NanoInstance extends Entity implements ControllerInstance {
     private int version;
     
     private NanoInstance.AuditData auditData;
+    
+    private java.util.Map<String, String> annotations;
 
     public static final String NAMESPACE = "default";
     public static final String RESOURCE = "NanoInstance";
@@ -35,16 +35,29 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
     public static class ServerConfig implements ControllerInstance.ServerConfig {
         
+        private NanoInstance.ServerConfigAuthentication authentication;
+        
         private String host;
         
-        private Integer port;
+        private int port;
         
-        private Integer httpPort;
+        private int httpPort;
         
         private boolean insecure;
-        
-        private NanoInstance.ServerConfigAuthentication authentication;
 
+        public NanoInstance.ServerConfigAuthentication getAuthentication() {
+            return authentication;
+        }
+
+        public void setAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
+            this.authentication = authentication;
+        }
+
+        public ServerConfig withAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
+            this.authentication = authentication;
+
+            return this;
+        }
         public String getHost() {
             return host;
         }
@@ -79,7 +92,7 @@ public class NanoInstance extends Entity implements ControllerInstance {
             this.httpPort = httpPort;
         }
 
-        public ServerConfig withHttpPort(Integer httpPort) {
+        public ServerConfig withHttpPort(int httpPort) {
             this.httpPort = httpPort;
 
             return this;
@@ -97,19 +110,6 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
             return this;
         }
-        public NanoInstance.ServerConfigAuthentication getAuthentication() {
-            return authentication;
-        }
-
-        public void setAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
-            this.authentication = authentication;
-        }
-
-        public ServerConfig withAuthentication(NanoInstance.ServerConfigAuthentication authentication) {
-            this.authentication = authentication;
-
-            return this;
-        }
 
         @Override
         public boolean equals(Object o) {
@@ -119,6 +119,9 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
             ServerConfig obj = (ServerConfig) o;
 
+            if (!Objects.equals(this.authentication, obj.authentication)) {
+                return false;
+            }
             if (!Objects.equals(this.host, obj.host)) {
                 return false;
             }
@@ -131,26 +134,36 @@ public class NanoInstance extends Entity implements ControllerInstance {
             if (!Objects.equals(this.insecure, obj.insecure)) {
                 return false;
             }
-            if (!Objects.equals(this.authentication, obj.authentication)) {
-                return false;
-            }
 
             return true;
         }
 
         @Override
         public int hashCode() {
-           return Objects.hash(host, port, httpPort, insecure, authentication);
+           return Objects.hash(authentication, host, port, httpPort, insecure);
         }
     }
-    public static class ServerConfigAuthentication implements Authentication {
+    public static class ServerConfigAuthentication implements ControllerInstance.Authentication {
+        
+        private String token;
         
         private String password;
         
         private String username;
-        
-        private String token;
 
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public ServerConfigAuthentication withToken(String token) {
+            this.token = token;
+
+            return this;
+        }
         public String getPassword() {
             return password;
         }
@@ -177,19 +190,6 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
             return this;
         }
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
-
-        public ServerConfigAuthentication withToken(String token) {
-            this.token = token;
-
-            return this;
-        }
 
         @Override
         public boolean equals(Object o) {
@@ -199,13 +199,13 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
             ServerConfigAuthentication obj = (ServerConfigAuthentication) o;
 
+            if (!Objects.equals(this.token, obj.token)) {
+                return false;
+            }
             if (!Objects.equals(this.password, obj.password)) {
                 return false;
             }
             if (!Objects.equals(this.username, obj.username)) {
-                return false;
-            }
-            if (!Objects.equals(this.token, obj.token)) {
                 return false;
             }
 
@@ -214,7 +214,7 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
         @Override
         public int hashCode() {
-           return Objects.hash(password, username, token);
+           return Objects.hash(token, password, username);
         }
     }
     public static class InstanceLimitations {
@@ -372,19 +372,6 @@ public class NanoInstance extends Entity implements ControllerInstance {
     public NanoInstance() {
     }
 
-    public java.util.Map<String, String> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(java.util.Map<String, String> annotations) {
-        this.annotations = annotations;
-    }
-
-    public NanoInstance withAnnotations(java.util.Map<String, String> annotations) {
-        this.annotations = annotations;
-
-        return this;
-    }
     public NanoInstance.InstanceLimitations getLimitations() {
         return limitations;
     }
@@ -463,6 +450,19 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
         return this;
     }
+    public java.util.Map<String, String> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(java.util.Map<String, String> annotations) {
+        this.annotations = annotations;
+    }
+
+    public NanoInstance withAnnotations(java.util.Map<String, String> annotations) {
+        this.annotations = annotations;
+
+        return this;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -472,9 +472,6 @@ public class NanoInstance extends Entity implements ControllerInstance {
 
         NanoInstance obj = (NanoInstance) o;
 
-        if (!Objects.equals(this.annotations, obj.annotations)) {
-            return false;
-        }
         if (!Objects.equals(this.limitations, obj.limitations)) {
             return false;
         }
@@ -491,6 +488,9 @@ public class NanoInstance extends Entity implements ControllerInstance {
             return false;
         }
         if (!Objects.equals(this.auditData, obj.auditData)) {
+            return false;
+        }
+        if (!Objects.equals(this.annotations, obj.annotations)) {
             return false;
         }
 

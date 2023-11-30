@@ -8,8 +8,10 @@ types:
         required: true
       port:
         type: INT32
+        required: true
       httpPort:
         type: INT32
+        required: true
       insecure:
         type: BOOLEAN
         required: true

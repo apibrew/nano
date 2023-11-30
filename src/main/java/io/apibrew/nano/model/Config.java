@@ -26,7 +26,9 @@ public class Config extends Entity {
     public static class ServerConfig {
         
         private String host;
-        
+        private int port;
+        private int httpPort;
+
         private boolean insecure;
         
         private Config.ServerConfigAuthentication authentication;
@@ -69,6 +71,22 @@ public class Config extends Entity {
             this.authentication = authentication;
 
             return this;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public int getHttpPort() {
+            return httpPort;
+        }
+
+        public void setHttpPort(int httpPort) {
+            this.httpPort = httpPort;
         }
     }
     public static class ServerConfigAuthentication {

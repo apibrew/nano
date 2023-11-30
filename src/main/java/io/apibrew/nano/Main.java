@@ -55,10 +55,10 @@ public class Main {
         if (config.getController() != null) {
             log.info("Starting controller");
             controller.startUpController(new NanoInstance.ServerConfig()
-                    .withHost("manager-apibrew-server")
-                    .withPort(9009)
-                    .withHttpPort(9009)
-                    .withInsecure(true)
+                    .withHost(config.getController().getHost())
+                    .withPort(config.getController().getPort())
+                    .withHttpPort(config.getController().getHttpPort())
+                    .withInsecure(config.getController().getInsecure())
                     .withAuthentication(new NanoInstance.ServerConfigAuthentication()
                             .withUsername(config.getController().getAuthentication().getUsername())
                             .withPassword(config.getController().getAuthentication().getPassword())
