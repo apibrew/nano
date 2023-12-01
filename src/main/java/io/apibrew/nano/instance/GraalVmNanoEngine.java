@@ -80,6 +80,11 @@ public class GraalVmNanoEngine {
     public void stop() {
         log.info("Stopping GraalVMCodeExecutor");
         codeExecutors.forEach(CodeExecutor::stop);
+        try {
+            this.ext.close();
+        } catch (Exception e) {
+            log.error("Error while closing ext", e);
+        }
     }
 
     public Handler<GenericRecord> locateHandler(Resource resource) {
