@@ -43,7 +43,7 @@ public class Main {
 
         log.info("Loaded config: " + config);
 
-        Controller<NanoInstance> controller = new Controller<>(NanoInstance.class, Main::newInstance);
+        Controller<NanoInstance> controller = new Controller<>("nano", NanoInstance.class, Main::newInstance);
 
 
         if (config.getInstances() != null) {

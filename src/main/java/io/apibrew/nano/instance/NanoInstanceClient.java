@@ -11,9 +11,11 @@ public class NanoInstanceClient implements InstanceClient {
 
     private final InstanceDataStore dataStore;
     private final GraalVmNanoEngine graalVmNanoEngine;
+    private final NanoInstance instance;
 
     public NanoInstanceClient(Client client, NanoInstance instance) {
         dataStore = new InstanceDataStore(client, instance);
+        this.instance = instance;
         this.graalVmNanoEngine = new GraalVmNanoEngine(dataStore, client, instance);
     }
 
@@ -28,6 +30,7 @@ public class NanoInstanceClient implements InstanceClient {
     }
 
     public void stop() {
+        log.info("Stopping NanoInstanceClient: " + instance.getName());
         graalVmNanoEngine.stop();
         dataStore.stop();
     }
