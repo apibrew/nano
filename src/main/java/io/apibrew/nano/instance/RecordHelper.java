@@ -39,6 +39,11 @@ public class RecordHelper {
             return proxy.getRecord();
         } else if (searchValue.isHostObject()) {
             Map<String, Object> map = searchValue.asHostObject();
+
+            if (map == null) {
+                return null;
+            }
+
             GenericRecord record = new GenericRecord();
 
             for (String key : map.keySet()) {
@@ -49,7 +54,7 @@ public class RecordHelper {
         } else {
             Object value = searchValue.as(Object.class);
 
-            if (value instanceof Map<?,?>) {
+            if (value instanceof Map<?, ?>) {
                 Map<String, Object> map = (Map<String, Object>) value;
                 GenericRecord record = new GenericRecord();
 
