@@ -132,14 +132,13 @@ public class CodeExecutor {
             if (polyglotException.isHostException()) {
                 handleException(polyglotException.asHostException());
             } else if (polyglotException.isGuestException()) {
-                throw new ApiException(Extension.Code.EXTERNAL_BACKEND_ERROR, polyglotException.getMessage());
+                throw new ApiException(Extension.Code.RECORD_VALIDATION_ERROR, polyglotException.getMessage());
             } else {
+                log.warn("polyglotException is neither host nor guest exception");
                 throw polyglotException;
             }
-        } else if (throwable instanceof RuntimeException) {
-            throw (RuntimeException) throwable;
         } else {
-            throw new RuntimeException(throwable);
+            throw new ApiException(Extension.Code.INTERNAL_ERROR, throwable.getMessage());
         }
     }
 
