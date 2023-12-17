@@ -118,6 +118,8 @@ public class CodeExecutor {
     }
 
     private void handleException(Throwable throwable) {
+        log.warn("Handle Exception", throwable);
+
         if (throwable instanceof PolyglotException) {
             PolyglotException polyglotException = (PolyglotException) throwable;
 
