@@ -8,6 +8,10 @@ func (g *globalObject) Define(name string, value interface{}) {
 	g.innerData[name] = value
 }
 
+func (g *globalObject) UnDefine(name string) {
+	delete(g.innerData, name)
+}
+
 func (g *globalObject) Get(name string) interface{} {
 	return g.innerData[name]
 }

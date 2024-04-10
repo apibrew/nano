@@ -63,6 +63,28 @@ func (m *FunctionMapper) ToProperties(function *Function) map[string]*structpb.V
 		properties["id"] = var_Id_mapped
 	}
 
+	var_Name := function.Name
+
+	var var_Name_mapped *structpb.Value
+
+	var var_Name_err error
+	var_Name_mapped, var_Name_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Name)
+	if var_Name_err != nil {
+		panic(var_Name_err)
+	}
+	properties["name"] = var_Name_mapped
+
+	var_Language := function.Language
+
+	var var_Language_mapped *structpb.Value
+
+	var var_Language_err error
+	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
+	if var_Language_err != nil {
+		panic(var_Language_err)
+	}
+	properties["language"] = var_Language_mapped
+
 	var_Source := function.Source
 
 	var var_Source_mapped *structpb.Value
@@ -109,28 +131,6 @@ func (m *FunctionMapper) ToProperties(function *Function) map[string]*structpb.V
 		properties["annotations"] = var_Annotations_mapped
 	}
 
-	var_Name := function.Name
-
-	var var_Name_mapped *structpb.Value
-
-	var var_Name_err error
-	var_Name_mapped, var_Name_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Name)
-	if var_Name_err != nil {
-		panic(var_Name_err)
-	}
-	properties["name"] = var_Name_mapped
-
-	var_Language := function.Language
-
-	var var_Language_mapped *structpb.Value
-
-	var var_Language_err error
-	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
-	if var_Language_err != nil {
-		panic(var_Language_err)
-	}
-	properties["language"] = var_Language_mapped
-
 	var_Version := function.Version
 
 	var var_Version_mapped *structpb.Value
@@ -168,6 +168,26 @@ func (m *FunctionMapper) FromProperties(properties map[string]*structpb.Value) *
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
+	}
+	if properties["name"] != nil && properties["name"].AsInterface() != nil {
+
+		var_Name := properties["name"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Name)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_Name_mapped := val.(string)
+
+		s.Name = var_Name_mapped
+	}
+	if properties["language"] != nil && properties["language"].AsInterface() != nil {
+
+		var_Language := properties["language"]
+		var_Language_mapped := (FunctionLanguage)(var_Language.GetStringValue())
+
+		s.Language = var_Language_mapped
 	}
 	if properties["source"] != nil && properties["source"].AsInterface() != nil {
 
@@ -209,26 +229,6 @@ func (m *FunctionMapper) FromProperties(properties map[string]*structpb.Value) *
 
 		s.Annotations = var_Annotations_mapped
 	}
-	if properties["name"] != nil && properties["name"].AsInterface() != nil {
-
-		var_Name := properties["name"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Name)
-
-		if err != nil {
-			panic(err)
-		}
-
-		var_Name_mapped := val.(string)
-
-		s.Name = var_Name_mapped
-	}
-	if properties["language"] != nil && properties["language"].AsInterface() != nil {
-
-		var_Language := properties["language"]
-		var_Language_mapped := (FunctionLanguage)(var_Language.GetStringValue())
-
-		s.Language = var_Language_mapped
-	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -256,6 +256,7 @@ func (m *FunctionMapper) FromProperties(properties map[string]*structpb.Value) *
 
 func (m *FunctionMapper) ToUnstructured(function *Function) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
+	properties["type"] = "nano/Function"
 
 	var_Id := function.Id
 
@@ -265,6 +266,20 @@ func (m *FunctionMapper) ToUnstructured(function *Function) unstructured.Unstruc
 		var_Id_mapped = var_Id.String()
 		properties["id"] = var_Id_mapped
 	}
+
+	var_Name := function.Name
+
+	var var_Name_mapped interface{}
+
+	var_Name_mapped = var_Name
+	properties["name"] = var_Name_mapped
+
+	var_Language := function.Language
+
+	var var_Language_mapped interface{}
+
+	var_Language_mapped = string(var_Language)
+	properties["language"] = var_Language_mapped
 
 	var_Source := function.Source
 
@@ -298,20 +313,6 @@ func (m *FunctionMapper) ToUnstructured(function *Function) unstructured.Unstruc
 		var_Annotations_mapped = var_Annotations_st
 		properties["annotations"] = var_Annotations_mapped
 	}
-
-	var_Name := function.Name
-
-	var var_Name_mapped interface{}
-
-	var_Name_mapped = var_Name
-	properties["name"] = var_Name_mapped
-
-	var_Language := function.Language
-
-	var var_Language_mapped interface{}
-
-	var_Language_mapped = string(var_Language)
-	properties["language"] = var_Language_mapped
 
 	var_Version := function.Version
 
@@ -472,6 +473,7 @@ func (m *FunctionAuditDataMapper) FromProperties(properties map[string]*structpb
 
 func (m *FunctionAuditDataMapper) ToUnstructured(functionAuditData *FunctionAuditData) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
+	properties["type"] = "nano/Function"
 
 	var_CreatedBy := functionAuditData.CreatedBy
 

@@ -2,9 +2,7 @@ package nano
 
 import (
 	"context"
-	"github.com/apibrew/nano/pkg/model"
 	"github.com/dop251/goja"
-	"strconv"
 )
 
 type codeExecutionContext struct {
@@ -12,7 +10,8 @@ type codeExecutionContext struct {
 	closeHandlers []func()
 	ctx           context.Context
 	vm            *goja.Runtime
-	code          *model.Code
+	identifier    string
+	scriptMode    bool
 }
 
 func (c *codeExecutionContext) AddHandlerId(id string) {
@@ -33,5 +32,9 @@ func (c *codeExecutionContext) Context() context.Context {
 }
 
 func (c *codeExecutionContext) GetCodeIdentifier() string {
-	return c.code.Id.String() + "-" + strconv.Itoa(int(c.code.Version))
+	return c.identifier
+}
+
+func (c *codeExecutionContext) IsScriptMode() bool {
+	return c.scriptMode
 }

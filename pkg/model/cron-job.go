@@ -11,41 +11,41 @@ import "time"
 
 type CronJob struct {
 	Id          *uuid.UUID        `json:"id,omitempty"`
-	Name        string            `json:"name,omitempty"`
-	Expression  string            `json:"expression,omitempty"`
 	Language    CronJobLanguage   `json:"language,omitempty"`
 	Source      string            `json:"source,omitempty"`
 	Format      CronJobFormat     `json:"format,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty"`
+	Name        string            `json:"name,omitempty"`
+	Expression  string            `json:"expression,omitempty"`
 	Version     int32             `json:"version,omitempty"`
 	AuditData   *CronJobAuditData `json:"auditData,omitempty"`
 }
 
-func (s *CronJob) GetId() *uuid.UUID {
+func (s CronJob) GetId() *uuid.UUID {
 	return s.Id
 }
-func (s *CronJob) GetName() string {
-	return s.Name
-}
-func (s *CronJob) GetExpression() string {
-	return s.Expression
-}
-func (s *CronJob) GetLanguage() CronJobLanguage {
+func (s CronJob) GetLanguage() CronJobLanguage {
 	return s.Language
 }
-func (s *CronJob) GetSource() string {
+func (s CronJob) GetSource() string {
 	return s.Source
 }
-func (s *CronJob) GetFormat() CronJobFormat {
+func (s CronJob) GetFormat() CronJobFormat {
 	return s.Format
 }
-func (s *CronJob) GetAnnotations() map[string]string {
+func (s CronJob) GetAnnotations() map[string]string {
 	return s.Annotations
 }
-func (s *CronJob) GetVersion() int32 {
+func (s CronJob) GetName() string {
+	return s.Name
+}
+func (s CronJob) GetExpression() string {
+	return s.Expression
+}
+func (s CronJob) GetVersion() int32 {
 	return s.Version
 }
-func (s *CronJob) GetAuditData() *CronJobAuditData {
+func (s CronJob) GetAuditData() *CronJobAuditData {
 	return s.AuditData
 }
 
@@ -56,16 +56,16 @@ type CronJobAuditData struct {
 	UpdatedOn *time.Time `json:"updatedOn,omitempty"`
 }
 
-func (s *CronJobAuditData) GetCreatedBy() *string {
+func (s CronJobAuditData) GetCreatedBy() *string {
 	return s.CreatedBy
 }
-func (s *CronJobAuditData) GetUpdatedBy() *string {
+func (s CronJobAuditData) GetUpdatedBy() *string {
 	return s.UpdatedBy
 }
-func (s *CronJobAuditData) GetCreatedOn() *time.Time {
+func (s CronJobAuditData) GetCreatedOn() *time.Time {
 	return s.CreatedOn
 }
-func (s *CronJobAuditData) GetUpdatedOn() *time.Time {
+func (s CronJobAuditData) GetUpdatedOn() *time.Time {
 	return s.UpdatedOn
 }
 

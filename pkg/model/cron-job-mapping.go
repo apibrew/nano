@@ -63,28 +63,6 @@ func (m *CronJobMapper) ToProperties(cronJob *CronJob) map[string]*structpb.Valu
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Name := cronJob.Name
-
-	var var_Name_mapped *structpb.Value
-
-	var var_Name_err error
-	var_Name_mapped, var_Name_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Name)
-	if var_Name_err != nil {
-		panic(var_Name_err)
-	}
-	properties["name"] = var_Name_mapped
-
-	var_Expression := cronJob.Expression
-
-	var var_Expression_mapped *structpb.Value
-
-	var var_Expression_err error
-	var_Expression_mapped, var_Expression_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Expression)
-	if var_Expression_err != nil {
-		panic(var_Expression_err)
-	}
-	properties["expression"] = var_Expression_mapped
-
 	var_Language := cronJob.Language
 
 	var var_Language_mapped *structpb.Value
@@ -142,6 +120,28 @@ func (m *CronJobMapper) ToProperties(cronJob *CronJob) map[string]*structpb.Valu
 		properties["annotations"] = var_Annotations_mapped
 	}
 
+	var_Name := cronJob.Name
+
+	var var_Name_mapped *structpb.Value
+
+	var var_Name_err error
+	var_Name_mapped, var_Name_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Name)
+	if var_Name_err != nil {
+		panic(var_Name_err)
+	}
+	properties["name"] = var_Name_mapped
+
+	var_Expression := cronJob.Expression
+
+	var var_Expression_mapped *structpb.Value
+
+	var var_Expression_err error
+	var_Expression_mapped, var_Expression_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Expression)
+	if var_Expression_err != nil {
+		panic(var_Expression_err)
+	}
+	properties["expression"] = var_Expression_mapped
+
 	var_Version := cronJob.Version
 
 	var var_Version_mapped *structpb.Value
@@ -179,32 +179,6 @@ func (m *CronJobMapper) FromProperties(properties map[string]*structpb.Value) *C
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
-	}
-	if properties["name"] != nil && properties["name"].AsInterface() != nil {
-
-		var_Name := properties["name"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Name)
-
-		if err != nil {
-			panic(err)
-		}
-
-		var_Name_mapped := val.(string)
-
-		s.Name = var_Name_mapped
-	}
-	if properties["expression"] != nil && properties["expression"].AsInterface() != nil {
-
-		var_Expression := properties["expression"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Expression)
-
-		if err != nil {
-			panic(err)
-		}
-
-		var_Expression_mapped := val.(string)
-
-		s.Expression = var_Expression_mapped
 	}
 	if properties["language"] != nil && properties["language"].AsInterface() != nil {
 
@@ -253,6 +227,32 @@ func (m *CronJobMapper) FromProperties(properties map[string]*structpb.Value) *C
 
 		s.Annotations = var_Annotations_mapped
 	}
+	if properties["name"] != nil && properties["name"].AsInterface() != nil {
+
+		var_Name := properties["name"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Name)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_Name_mapped := val.(string)
+
+		s.Name = var_Name_mapped
+	}
+	if properties["expression"] != nil && properties["expression"].AsInterface() != nil {
+
+		var_Expression := properties["expression"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Expression)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_Expression_mapped := val.(string)
+
+		s.Expression = var_Expression_mapped
+	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -280,6 +280,7 @@ func (m *CronJobMapper) FromProperties(properties map[string]*structpb.Value) *C
 
 func (m *CronJobMapper) ToUnstructured(cronJob *CronJob) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
+	properties["type"] = "nano/CronJob"
 
 	var_Id := cronJob.Id
 
@@ -289,20 +290,6 @@ func (m *CronJobMapper) ToUnstructured(cronJob *CronJob) unstructured.Unstructur
 		var_Id_mapped = var_Id.String()
 		properties["id"] = var_Id_mapped
 	}
-
-	var_Name := cronJob.Name
-
-	var var_Name_mapped interface{}
-
-	var_Name_mapped = var_Name
-	properties["name"] = var_Name_mapped
-
-	var_Expression := cronJob.Expression
-
-	var var_Expression_mapped interface{}
-
-	var_Expression_mapped = var_Expression
-	properties["expression"] = var_Expression_mapped
 
 	var_Language := cronJob.Language
 
@@ -343,6 +330,20 @@ func (m *CronJobMapper) ToUnstructured(cronJob *CronJob) unstructured.Unstructur
 		var_Annotations_mapped = var_Annotations_st
 		properties["annotations"] = var_Annotations_mapped
 	}
+
+	var_Name := cronJob.Name
+
+	var var_Name_mapped interface{}
+
+	var_Name_mapped = var_Name
+	properties["name"] = var_Name_mapped
+
+	var_Expression := cronJob.Expression
+
+	var var_Expression_mapped interface{}
+
+	var_Expression_mapped = var_Expression
+	properties["expression"] = var_Expression_mapped
 
 	var_Version := cronJob.Version
 
@@ -503,6 +504,7 @@ func (m *CronJobAuditDataMapper) FromProperties(properties map[string]*structpb.
 
 func (m *CronJobAuditDataMapper) ToUnstructured(cronJobAuditData *CronJobAuditData) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
+	properties["type"] = "nano/CronJob"
 
 	var_CreatedBy := cronJobAuditData.CreatedBy
 

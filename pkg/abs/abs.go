@@ -27,4 +27,5 @@ type CodeExecutionContext interface {
 	RemoveHandlerId(id string)
 	Context() context.Context
 	GetCodeIdentifier() string
+	IsScriptMode() bool
 }

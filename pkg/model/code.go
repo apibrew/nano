@@ -11,37 +11,37 @@ import "time"
 
 type Code struct {
 	Id            *uuid.UUID        `json:"id,omitempty"`
+	ContentFormat CodeContentFormat `json:"contentFormat,omitempty"`
+	Annotations   map[string]string `json:"annotations,omitempty"`
 	Name          string            `json:"name,omitempty"`
 	Language      CodeLanguage      `json:"language,omitempty"`
 	Content       string            `json:"content,omitempty"`
-	ContentFormat CodeContentFormat `json:"contentFormat,omitempty"`
-	Annotations   map[string]string `json:"annotations,omitempty"`
 	Version       int32             `json:"version,omitempty"`
 	AuditData     *CodeAuditData    `json:"auditData,omitempty"`
 }
 
-func (s *Code) GetId() *uuid.UUID {
+func (s Code) GetId() *uuid.UUID {
 	return s.Id
 }
-func (s *Code) GetName() string {
-	return s.Name
-}
-func (s *Code) GetLanguage() CodeLanguage {
-	return s.Language
-}
-func (s *Code) GetContent() string {
-	return s.Content
-}
-func (s *Code) GetContentFormat() CodeContentFormat {
+func (s Code) GetContentFormat() CodeContentFormat {
 	return s.ContentFormat
 }
-func (s *Code) GetAnnotations() map[string]string {
+func (s Code) GetAnnotations() map[string]string {
 	return s.Annotations
 }
-func (s *Code) GetVersion() int32 {
+func (s Code) GetName() string {
+	return s.Name
+}
+func (s Code) GetLanguage() CodeLanguage {
+	return s.Language
+}
+func (s Code) GetContent() string {
+	return s.Content
+}
+func (s Code) GetVersion() int32 {
 	return s.Version
 }
-func (s *Code) GetAuditData() *CodeAuditData {
+func (s Code) GetAuditData() *CodeAuditData {
 	return s.AuditData
 }
 
@@ -52,24 +52,18 @@ type CodeAuditData struct {
 	UpdatedOn *time.Time `json:"updatedOn,omitempty"`
 }
 
-func (s *CodeAuditData) GetCreatedBy() *string {
+func (s CodeAuditData) GetCreatedBy() *string {
 	return s.CreatedBy
 }
-func (s *CodeAuditData) GetUpdatedBy() *string {
+func (s CodeAuditData) GetUpdatedBy() *string {
 	return s.UpdatedBy
 }
-func (s *CodeAuditData) GetCreatedOn() *time.Time {
+func (s CodeAuditData) GetCreatedOn() *time.Time {
 	return s.CreatedOn
 }
-func (s *CodeAuditData) GetUpdatedOn() *time.Time {
+func (s CodeAuditData) GetUpdatedOn() *time.Time {
 	return s.UpdatedOn
 }
-
-type CodeLanguage string
-
-const (
-	CodeLanguage_JAVASCRIPT CodeLanguage = "JAVASCRIPT"
-)
 
 type CodeContentFormat string
 
@@ -77,4 +71,10 @@ const (
 	CodeContentFormat_TEXT  CodeContentFormat = "TEXT"
 	CodeContentFormat_TAR   CodeContentFormat = "TAR"
 	CodeContentFormat_TARGZ CodeContentFormat = "TAR_GZ"
+)
+
+type CodeLanguage string
+
+const (
+	CodeLanguage_JAVASCRIPT CodeLanguage = "JAVASCRIPT"
 )

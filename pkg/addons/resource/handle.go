@@ -28,6 +28,10 @@ type Handler struct {
 
 func handle(cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
 	return func(handler Handler) {
+		if cec.IsScriptMode() {
+			panic("Handlers are not supported in script mode")
+		}
+
 		handlerId := "nano-" + cec.GetCodeIdentifier() + "-" + util.RandomHex(8)
 
 		cec.AddHandlerId(handlerId)

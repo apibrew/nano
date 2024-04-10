@@ -55,6 +55,7 @@ type: resource
 name: Script
 namespace:
   name: nano
+virtual: true
 title: Script
 description: Nano Script
 properties:
