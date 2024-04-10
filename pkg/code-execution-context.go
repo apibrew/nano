@@ -2,6 +2,7 @@ package nano
 
 import (
 	"context"
+	"github.com/apibrew/nano/pkg/model"
 	"github.com/dop251/goja"
 	"strconv"
 )
@@ -11,7 +12,7 @@ type codeExecutionContext struct {
 	closeHandlers []func()
 	ctx           context.Context
 	vm            *goja.Runtime
-	code          *Code
+	code          *model.Code
 }
 
 func (c *codeExecutionContext) AddHandlerId(id string) {

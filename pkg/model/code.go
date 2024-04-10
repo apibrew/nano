@@ -4,7 +4,7 @@
 
 //go:build !codeanalysis
 
-package nano
+package model
 
 import "github.com/google/uuid"
 import "time"
@@ -68,7 +68,6 @@ func (s *CodeAuditData) GetUpdatedOn() *time.Time {
 type CodeLanguage string
 
 const (
-	CodeLanguage_PYTHON     CodeLanguage = "PYTHON"
 	CodeLanguage_JAVASCRIPT CodeLanguage = "JAVASCRIPT"
 )
 

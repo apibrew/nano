@@ -9,6 +9,7 @@ import (
 	"github.com/apibrew/apibrew/pkg/util"
 	"github.com/apibrew/nano/pkg/abs"
 	"github.com/apibrew/nano/pkg/addons"
+	"github.com/apibrew/nano/pkg/model"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
 	log "github.com/sirupsen/logrus"
@@ -54,7 +55,7 @@ func (s codeExecutorService) GetGlobalObject() abs.GlobalObject {
 	return s.globalObject
 }
 
-func (s codeExecutorService) registerCode(code *Code) (err error) {
+func (s codeExecutorService) registerCode(code *model.Code) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -96,7 +97,7 @@ func (s codeExecutorService) registerCode(code *Code) (err error) {
 	return nil
 }
 
-func (s codeExecutorService) updateCode(code *Code) error {
+func (s codeExecutorService) updateCode(code *model.Code) error {
 	if err := s.unRegisterCode(code); err != nil {
 		return err
 	}
@@ -108,7 +109,7 @@ func (s codeExecutorService) updateCode(code *Code) error {
 	return nil
 }
 
-func (s codeExecutorService) unRegisterCode(code *Code) error {
+func (s codeExecutorService) unRegisterCode(code *model.Code) error {
 	cec := s.codeContext[code.Name]
 	if len(cec.handlerIds) > 0 {
 		for _, handlerId := range s.codeContext[code.Name].handlerIds {

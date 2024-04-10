@@ -4,7 +4,7 @@
 
 //go:build !codeanalysis
 
-package nano
+package model
 
 import (
 	"github.com/apibrew/apibrew/pkg/model"
@@ -48,7 +48,7 @@ var CodeResource = &model.Resource{
 					Name:         "createdOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
 					Immutable:    true,
-					ExampleValue: structpb.NewStringValue("2024-03-28T17:16:51+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T00:13:15+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -57,7 +57,7 @@ var CodeResource = &model.Resource{
 				{
 					Name:         "updatedOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
-					ExampleValue: structpb.NewStringValue("2024-03-28T17:16:51+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T00:13:15+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -66,8 +66,8 @@ var CodeResource = &model.Resource{
 			},
 
 			Annotations: map[string]string{
-				"EnableAudit":        "true",
 				"OpenApiGroup":       "meta",
+				"EnableAudit":        "true",
 				"NormalizedResource": "true",
 			},
 		},
@@ -94,10 +94,11 @@ var CodeResource = &model.Resource{
 			Immutable: true,
 		},
 		{
-			Name:       "language",
-			Type:       model.ResourceProperty_ENUM,
-			Required:   true,
-			EnumValues: []string{"PYTHON", "JAVASCRIPT"},
+			Name:         "language",
+			Type:         model.ResourceProperty_ENUM,
+			Required:     true,
+			DefaultValue: structpb.NewStringValue("JAVASCRIPT"),
+			EnumValues:   []string{"JAVASCRIPT"},
 		},
 		{
 			Name:     "content",
@@ -140,7 +141,7 @@ var CodeResource = &model.Resource{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-03-28T17:16:51+04:00"), "updatedOn": structpb.NewStringValue("2024-03-28T17:16:51+04:00")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T00:13:15+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T00:13:15+04:00")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
@@ -149,8 +150,8 @@ var CodeResource = &model.Resource{
 	},
 
 	Annotations: map[string]string{
-		"EnableAudit":        "true",
 		"OpenApiGroup":       "meta",
+		"EnableAudit":        "true",
 		"NormalizedResource": "true",
 	},
 }

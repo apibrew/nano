@@ -9,6 +9,7 @@ import (
 	"github.com/apibrew/apibrew/pkg/service"
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
 	"github.com/apibrew/apibrew/pkg/util"
+	model2 "github.com/apibrew/nano/pkg/model"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/structpb"
 	"log"
@@ -46,7 +47,7 @@ func (m module) ensureNamespace() {
 }
 
 func (m module) ensureResources() {
-	var resources = []*model.Resource{CodeResource}
+	var resources = []*model.Resource{model2.CodeResource}
 
 	for _, resource := range resources {
 		existingResource, err := m.container.GetResourceService().GetResourceByName(util.SystemContext, resource.Namespace, resource.Name)
@@ -79,8 +80,8 @@ func (m module) initCodeListeners() {
 			Actions: []model.Event_Action{
 				model.Event_CREATE, model.Event_UPDATE, model.Event_DELETE,
 			},
-			Namespaces: []string{CodeResource.Namespace},
-			Resources:  []string{CodeResource.Name},
+			Namespaces: []string{model2.CodeResource.Namespace},
+			Resources:  []string{model2.CodeResource.Name},
 		},
 		Order:    90,
 		Sync:     true,
@@ -90,8 +91,8 @@ func (m module) initCodeListeners() {
 
 func (m module) initExistingCodes() {
 	var codeRecords, _, err = m.container.GetRecordService().List(util.SystemContext, service.RecordListParams{
-		Namespace: CodeResource.Namespace,
-		Resource:  CodeResource.Name,
+		Namespace: model2.CodeResource.Namespace,
+		Resource:  model2.CodeResource.Name,
 		Limit:     1000000,
 	})
 
@@ -100,7 +101,7 @@ func (m module) initExistingCodes() {
 	}
 
 	for _, codeRecord := range codeRecords {
-		var code = CodeMapperInstance.FromRecord(codeRecord)
+		var code = model2.CodeMapperInstance.FromRecord(codeRecord)
 
 		err := m.codeExecutor.registerCode(code)
 
@@ -112,7 +113,7 @@ func (m module) initExistingCodes() {
 
 func (m module) codeListenerHandler(ctx context.Context, event *model.Event) (*model.Event, errors.ServiceError) {
 	for _, record := range event.Records {
-		code := CodeMapperInstance.FromRecord(record)
+		code := model2.CodeMapperInstance.FromRecord(record)
 
 		switch event.Action {
 		case model.Event_CREATE:

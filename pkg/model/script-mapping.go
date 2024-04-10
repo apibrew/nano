@@ -4,53 +4,53 @@
 
 //go:build !codeanalysis
 
-package nano
+package model
 
 import (
 	"github.com/apibrew/apibrew/pkg/abs"
-	"github.com/apibrew/apibrew/pkg/formats/unstructured"
 	"github.com/apibrew/apibrew/pkg/model"
 	"github.com/apibrew/apibrew/pkg/types"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 import "github.com/google/uuid"
+import "github.com/apibrew/apibrew/pkg/formats/unstructured"
 import "time"
 
-type CodeMapper struct {
+type ScriptMapper struct {
 }
 
-func NewCodeMapper() *CodeMapper {
-	return &CodeMapper{}
+func NewScriptMapper() *ScriptMapper {
+	return &ScriptMapper{}
 }
 
-var CodeMapperInstance = NewCodeMapper()
+var ScriptMapperInstance = NewScriptMapper()
 
-func (m *CodeMapper) New() *Code {
-	return &Code{}
+func (m *ScriptMapper) New() *Script {
+	return &Script{}
 }
 
-func (m *CodeMapper) ResourceIdentity() abs.ResourceIdentity {
+func (m *ScriptMapper) ResourceIdentity() abs.ResourceIdentity {
 	return abs.ResourceIdentity{
 		Namespace: "nano",
-		Name:      "Code",
+		Name:      "Script",
 	}
 }
 
-func (m *CodeMapper) ToRecord(code *Code) *model.Record {
+func (m *ScriptMapper) ToRecord(script *Script) *model.Record {
 	var rec = &model.Record{}
-	rec.Properties = m.ToProperties(code)
+	rec.Properties = m.ToProperties(script)
 	return rec
 }
 
-func (m *CodeMapper) FromRecord(record *model.Record) *Code {
+func (m *ScriptMapper) FromRecord(record *model.Record) *Script {
 	return m.FromProperties(record.Properties)
 }
 
-func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
+func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 	var properties = make(map[string]*structpb.Value)
 
-	var_Id := code.Id
+	var_Id := script.Id
 
 	if var_Id != nil {
 		var var_Id_mapped *structpb.Value
@@ -63,18 +63,20 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Name := code.Name
+	var_Output := script.Output
 
-	var var_Name_mapped *structpb.Value
+	if var_Output != nil {
+		var var_Output_mapped *structpb.Value
 
-	var var_Name_err error
-	var_Name_mapped, var_Name_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Name)
-	if var_Name_err != nil {
-		panic(var_Name_err)
+		var var_Output_err error
+		var_Output_mapped, var_Output_err = types.ByResourcePropertyType(model.ResourceProperty_OBJECT).Pack(var_Output)
+		if var_Output_err != nil {
+			panic(var_Output_err)
+		}
+		properties["output"] = var_Output_mapped
 	}
-	properties["name"] = var_Name_mapped
 
-	var_Language := code.Language
+	var_Language := script.Language
 
 	var var_Language_mapped *structpb.Value
 
@@ -85,18 +87,18 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 	}
 	properties["language"] = var_Language_mapped
 
-	var_Content := code.Content
+	var_Source := script.Source
 
-	var var_Content_mapped *structpb.Value
+	var var_Source_mapped *structpb.Value
 
-	var var_Content_err error
-	var_Content_mapped, var_Content_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Content)
-	if var_Content_err != nil {
-		panic(var_Content_err)
+	var var_Source_err error
+	var_Source_mapped, var_Source_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Source)
+	if var_Source_err != nil {
+		panic(var_Source_err)
 	}
-	properties["content"] = var_Content_mapped
+	properties["source"] = var_Source_mapped
 
-	var_ContentFormat := code.ContentFormat
+	var_ContentFormat := script.ContentFormat
 
 	var var_ContentFormat_mapped *structpb.Value
 
@@ -107,7 +109,7 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 	}
 	properties["contentFormat"] = var_ContentFormat_mapped
 
-	var_Annotations := code.Annotations
+	var_Annotations := script.Annotations
 
 	if var_Annotations != nil {
 		var var_Annotations_mapped *structpb.Value
@@ -131,7 +133,7 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 		properties["annotations"] = var_Annotations_mapped
 	}
 
-	var_Version := code.Version
+	var_Version := script.Version
 
 	var var_Version_mapped *structpb.Value
 
@@ -142,18 +144,18 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 	}
 	properties["version"] = var_Version_mapped
 
-	var_AuditData := code.AuditData
+	var_AuditData := script.AuditData
 
 	if var_AuditData != nil {
 		var var_AuditData_mapped *structpb.Value
 
-		var_AuditData_mapped = structpb.NewStructValue(&structpb.Struct{Fields: CodeAuditDataMapperInstance.ToProperties(var_AuditData)})
+		var_AuditData_mapped = structpb.NewStructValue(&structpb.Struct{Fields: ScriptAuditDataMapperInstance.ToProperties(var_AuditData)})
 		properties["auditData"] = var_AuditData_mapped
 	}
 	return properties
 }
 
-func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code {
+func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Script {
 	var s = m.New()
 	if properties["id"] != nil && properties["id"].AsInterface() != nil {
 
@@ -169,43 +171,38 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 
 		s.Id = var_Id_mapped
 	}
-	if properties["name"] != nil && properties["name"].AsInterface() != nil {
+	if properties["output"] != nil && properties["output"].AsInterface() != nil {
 
-		var_Name := properties["name"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Name)
+		var_Output := properties["output"]
+		var_Output_mapped := new(interface{})
+		*var_Output_mapped = unstructured.FromValue(var_Output)
 
-		if err != nil {
-			panic(err)
-		}
-
-		var_Name_mapped := val.(string)
-
-		s.Name = var_Name_mapped
+		s.Output = var_Output_mapped
 	}
 	if properties["language"] != nil && properties["language"].AsInterface() != nil {
 
 		var_Language := properties["language"]
-		var_Language_mapped := (CodeLanguage)(var_Language.GetStringValue())
+		var_Language_mapped := (ScriptLanguage)(var_Language.GetStringValue())
 
 		s.Language = var_Language_mapped
 	}
-	if properties["content"] != nil && properties["content"].AsInterface() != nil {
+	if properties["source"] != nil && properties["source"].AsInterface() != nil {
 
-		var_Content := properties["content"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Content)
+		var_Source := properties["source"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Source)
 
 		if err != nil {
 			panic(err)
 		}
 
-		var_Content_mapped := val.(string)
+		var_Source_mapped := val.(string)
 
-		s.Content = var_Content_mapped
+		s.Source = var_Source_mapped
 	}
 	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
 
 		var_ContentFormat := properties["contentFormat"]
-		var_ContentFormat_mapped := (CodeContentFormat)(var_ContentFormat.GetStringValue())
+		var_ContentFormat_mapped := (ScriptContentFormat)(var_ContentFormat.GetStringValue())
 
 		s.ContentFormat = var_ContentFormat_mapped
 	}
@@ -245,7 +242,7 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 	if properties["auditData"] != nil && properties["auditData"].AsInterface() != nil {
 
 		var_AuditData := properties["auditData"]
-		var mappedValue = CodeAuditDataMapperInstance.FromProperties(var_AuditData.GetStructValue().Fields)
+		var mappedValue = ScriptAuditDataMapperInstance.FromProperties(var_AuditData.GetStructValue().Fields)
 
 		var_AuditData_mapped := mappedValue
 
@@ -254,10 +251,10 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 	return s
 }
 
-func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
+func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
 
-	var_Id := code.Id
+	var_Id := script.Id
 
 	if var_Id != nil {
 		var var_Id_mapped interface{}
@@ -266,35 +263,37 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Name := code.Name
+	var_Output := script.Output
 
-	var var_Name_mapped interface{}
+	if var_Output != nil {
+		var var_Output_mapped interface{}
 
-	var_Name_mapped = var_Name
-	properties["name"] = var_Name_mapped
+		var_Output_mapped = var_Output
+		properties["output"] = var_Output_mapped
+	}
 
-	var_Language := code.Language
+	var_Language := script.Language
 
 	var var_Language_mapped interface{}
 
 	var_Language_mapped = string(var_Language)
 	properties["language"] = var_Language_mapped
 
-	var_Content := code.Content
+	var_Source := script.Source
 
-	var var_Content_mapped interface{}
+	var var_Source_mapped interface{}
 
-	var_Content_mapped = var_Content
-	properties["content"] = var_Content_mapped
+	var_Source_mapped = var_Source
+	properties["source"] = var_Source_mapped
 
-	var_ContentFormat := code.ContentFormat
+	var_ContentFormat := script.ContentFormat
 
 	var var_ContentFormat_mapped interface{}
 
 	var_ContentFormat_mapped = string(var_ContentFormat)
 	properties["contentFormat"] = var_ContentFormat_mapped
 
-	var_Annotations := code.Annotations
+	var_Annotations := script.Annotations
 
 	if var_Annotations != nil {
 		var var_Annotations_mapped interface{}
@@ -313,49 +312,49 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 		properties["annotations"] = var_Annotations_mapped
 	}
 
-	var_Version := code.Version
+	var_Version := script.Version
 
 	var var_Version_mapped interface{}
 
 	var_Version_mapped = var_Version
 	properties["version"] = var_Version_mapped
 
-	var_AuditData := code.AuditData
+	var_AuditData := script.AuditData
 
 	if var_AuditData != nil {
 		var var_AuditData_mapped interface{}
 
-		var_AuditData_mapped = CodeAuditDataMapperInstance.ToUnstructured(var_AuditData)
+		var_AuditData_mapped = ScriptAuditDataMapperInstance.ToUnstructured(var_AuditData)
 		properties["auditData"] = var_AuditData_mapped
 	}
 
 	return properties
 }
 
-type CodeAuditDataMapper struct {
+type ScriptAuditDataMapper struct {
 }
 
-func NewCodeAuditDataMapper() *CodeAuditDataMapper {
-	return &CodeAuditDataMapper{}
+func NewScriptAuditDataMapper() *ScriptAuditDataMapper {
+	return &ScriptAuditDataMapper{}
 }
 
-var CodeAuditDataMapperInstance = NewCodeAuditDataMapper()
+var ScriptAuditDataMapperInstance = NewScriptAuditDataMapper()
 
-func (m *CodeAuditDataMapper) New() *CodeAuditData {
-	return &CodeAuditData{}
+func (m *ScriptAuditDataMapper) New() *ScriptAuditData {
+	return &ScriptAuditData{}
 }
 
-func (m *CodeAuditDataMapper) ResourceIdentity() abs.ResourceIdentity {
+func (m *ScriptAuditDataMapper) ResourceIdentity() abs.ResourceIdentity {
 	return abs.ResourceIdentity{
 		Namespace: "nano",
-		Name:      "Code",
+		Name:      "Script",
 	}
 }
 
-func (m *CodeAuditDataMapper) ToProperties(codeAuditData *CodeAuditData) map[string]*structpb.Value {
+func (m *ScriptAuditDataMapper) ToProperties(scriptAuditData *ScriptAuditData) map[string]*structpb.Value {
 	var properties = make(map[string]*structpb.Value)
 
-	var_CreatedBy := codeAuditData.CreatedBy
+	var_CreatedBy := scriptAuditData.CreatedBy
 
 	if var_CreatedBy != nil {
 		var var_CreatedBy_mapped *structpb.Value
@@ -368,7 +367,7 @@ func (m *CodeAuditDataMapper) ToProperties(codeAuditData *CodeAuditData) map[str
 		properties["createdBy"] = var_CreatedBy_mapped
 	}
 
-	var_UpdatedBy := codeAuditData.UpdatedBy
+	var_UpdatedBy := scriptAuditData.UpdatedBy
 
 	if var_UpdatedBy != nil {
 		var var_UpdatedBy_mapped *structpb.Value
@@ -381,7 +380,7 @@ func (m *CodeAuditDataMapper) ToProperties(codeAuditData *CodeAuditData) map[str
 		properties["updatedBy"] = var_UpdatedBy_mapped
 	}
 
-	var_CreatedOn := codeAuditData.CreatedOn
+	var_CreatedOn := scriptAuditData.CreatedOn
 
 	if var_CreatedOn != nil {
 		var var_CreatedOn_mapped *structpb.Value
@@ -394,7 +393,7 @@ func (m *CodeAuditDataMapper) ToProperties(codeAuditData *CodeAuditData) map[str
 		properties["createdOn"] = var_CreatedOn_mapped
 	}
 
-	var_UpdatedOn := codeAuditData.UpdatedOn
+	var_UpdatedOn := scriptAuditData.UpdatedOn
 
 	if var_UpdatedOn != nil {
 		var var_UpdatedOn_mapped *structpb.Value
@@ -409,7 +408,7 @@ func (m *CodeAuditDataMapper) ToProperties(codeAuditData *CodeAuditData) map[str
 	return properties
 }
 
-func (m *CodeAuditDataMapper) FromProperties(properties map[string]*structpb.Value) *CodeAuditData {
+func (m *ScriptAuditDataMapper) FromProperties(properties map[string]*structpb.Value) *ScriptAuditData {
 	var s = m.New()
 	if properties["createdBy"] != nil && properties["createdBy"].AsInterface() != nil {
 
@@ -470,10 +469,10 @@ func (m *CodeAuditDataMapper) FromProperties(properties map[string]*structpb.Val
 	return s
 }
 
-func (m *CodeAuditDataMapper) ToUnstructured(codeAuditData *CodeAuditData) unstructured.Unstructured {
+func (m *ScriptAuditDataMapper) ToUnstructured(scriptAuditData *ScriptAuditData) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
 
-	var_CreatedBy := codeAuditData.CreatedBy
+	var_CreatedBy := scriptAuditData.CreatedBy
 
 	if var_CreatedBy != nil {
 		var var_CreatedBy_mapped interface{}
@@ -482,7 +481,7 @@ func (m *CodeAuditDataMapper) ToUnstructured(codeAuditData *CodeAuditData) unstr
 		properties["createdBy"] = var_CreatedBy_mapped
 	}
 
-	var_UpdatedBy := codeAuditData.UpdatedBy
+	var_UpdatedBy := scriptAuditData.UpdatedBy
 
 	if var_UpdatedBy != nil {
 		var var_UpdatedBy_mapped interface{}
@@ -491,7 +490,7 @@ func (m *CodeAuditDataMapper) ToUnstructured(codeAuditData *CodeAuditData) unstr
 		properties["updatedBy"] = var_UpdatedBy_mapped
 	}
 
-	var_CreatedOn := codeAuditData.CreatedOn
+	var_CreatedOn := scriptAuditData.CreatedOn
 
 	if var_CreatedOn != nil {
 		var var_CreatedOn_mapped interface{}
@@ -500,7 +499,7 @@ func (m *CodeAuditDataMapper) ToUnstructured(codeAuditData *CodeAuditData) unstr
 		properties["createdOn"] = var_CreatedOn_mapped
 	}
 
-	var_UpdatedOn := codeAuditData.UpdatedOn
+	var_UpdatedOn := scriptAuditData.UpdatedOn
 
 	if var_UpdatedOn != nil {
 		var var_UpdatedOn_mapped interface{}
