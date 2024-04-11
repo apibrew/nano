@@ -12,6 +12,7 @@ import (
 	"github.com/apibrew/nano/pkg/addons/http"
 	"github.com/apibrew/nano/pkg/addons/mail"
 	"github.com/apibrew/nano/pkg/addons/resource"
+	"github.com/apibrew/nano/pkg/addons/util"
 	"github.com/dop251/goja"
 )
 
@@ -49,6 +50,10 @@ func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, s abs.CodeExecutor
 	}
 
 	if err := api.Register(vm, cec, container); err != nil {
+		return err
+	}
+
+	if err := util.Register(vm, cec, container); err != nil {
 		return err
 	}
 

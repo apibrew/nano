@@ -63,17 +63,6 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
-	var_ContentFormat := script.ContentFormat
-
-	var var_ContentFormat_mapped *structpb.Value
-
-	var var_ContentFormat_err error
-	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
-	if var_ContentFormat_err != nil {
-		panic(var_ContentFormat_err)
-	}
-	properties["contentFormat"] = var_ContentFormat_mapped
-
 	var_Annotations := script.Annotations
 
 	if var_Annotations != nil {
@@ -133,6 +122,17 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 	}
 	properties["source"] = var_Source_mapped
 
+	var_ContentFormat := script.ContentFormat
+
+	var var_ContentFormat_mapped *structpb.Value
+
+	var var_ContentFormat_err error
+	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
+	if var_ContentFormat_err != nil {
+		panic(var_ContentFormat_err)
+	}
+	properties["contentFormat"] = var_ContentFormat_mapped
+
 	var_Version := script.Version
 
 	var var_Version_mapped *structpb.Value
@@ -170,13 +170,6 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
-	}
-	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
-
-		var_ContentFormat := properties["contentFormat"]
-		var_ContentFormat_mapped := (ScriptContentFormat)(var_ContentFormat.GetStringValue())
-
-		s.ContentFormat = var_ContentFormat_mapped
 	}
 	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
 
@@ -226,6 +219,13 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 
 		s.Source = var_Source_mapped
 	}
+	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
+
+		var_ContentFormat := properties["contentFormat"]
+		var_ContentFormat_mapped := (ScriptContentFormat)(var_ContentFormat.GetStringValue())
+
+		s.ContentFormat = var_ContentFormat_mapped
+	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -263,13 +263,6 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 		var_Id_mapped = var_Id.String()
 		properties["id"] = var_Id_mapped
 	}
-
-	var_ContentFormat := script.ContentFormat
-
-	var var_ContentFormat_mapped interface{}
-
-	var_ContentFormat_mapped = string(var_ContentFormat)
-	properties["contentFormat"] = var_ContentFormat_mapped
 
 	var_Annotations := script.Annotations
 
@@ -312,6 +305,13 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 
 	var_Source_mapped = var_Source
 	properties["source"] = var_Source_mapped
+
+	var_ContentFormat := script.ContentFormat
+
+	var var_ContentFormat_mapped interface{}
+
+	var_ContentFormat_mapped = string(var_ContentFormat)
+	properties["contentFormat"] = var_ContentFormat_mapped
 
 	var_Version := script.Version
 

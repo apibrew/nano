@@ -11,20 +11,17 @@ import "time"
 
 type Function struct {
 	Id          *uuid.UUID         `json:"id,omitempty"`
-	Name        string             `json:"name,omitempty"`
 	Language    FunctionLanguage   `json:"language,omitempty"`
 	Source      string             `json:"source,omitempty"`
 	Format      FunctionFormat     `json:"format,omitempty"`
 	Annotations map[string]string  `json:"annotations,omitempty"`
+	Name        string             `json:"name,omitempty"`
 	Version     int32              `json:"version,omitempty"`
 	AuditData   *FunctionAuditData `json:"auditData,omitempty"`
 }
 
 func (s Function) GetId() *uuid.UUID {
 	return s.Id
-}
-func (s Function) GetName() string {
-	return s.Name
 }
 func (s Function) GetLanguage() FunctionLanguage {
 	return s.Language
@@ -37,6 +34,9 @@ func (s Function) GetFormat() FunctionFormat {
 }
 func (s Function) GetAnnotations() map[string]string {
 	return s.Annotations
+}
+func (s Function) GetName() string {
+	return s.Name
 }
 func (s Function) GetVersion() int32 {
 	return s.Version

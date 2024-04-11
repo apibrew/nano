@@ -48,7 +48,7 @@ var CodeResource = &model.Resource{
 					Name:         "createdOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
 					Immutable:    true,
-					ExampleValue: structpb.NewStringValue("2024-04-11T00:22:01+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -57,7 +57,7 @@ var CodeResource = &model.Resource{
 				{
 					Name:         "updatedOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
-					ExampleValue: structpb.NewStringValue("2024-04-11T00:22:01+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -66,8 +66,8 @@ var CodeResource = &model.Resource{
 			},
 
 			Annotations: map[string]string{
-				"OpenApiGroup": "meta",
 				"EnableAudit":  "true",
+				"OpenApiGroup": "meta",
 			},
 		},
 	},
@@ -82,6 +82,23 @@ var CodeResource = &model.Resource{
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
+			},
+		},
+		{
+			Name:         "language",
+			Type:         model.ResourceProperty_ENUM,
+			Required:     true,
+			DefaultValue: structpb.NewStringValue("JAVASCRIPT"),
+			EnumValues:   []string{"JAVASCRIPT"},
+		},
+		{
+			Name:     "content",
+			Type:     model.ResourceProperty_STRING,
+			Length:   64000,
+			Required: true,
+
+			Annotations: map[string]string{
+				"SQLType": "TEXT",
 			},
 		},
 		{
@@ -108,23 +125,6 @@ var CodeResource = &model.Resource{
 			Immutable: true,
 		},
 		{
-			Name:         "language",
-			Type:         model.ResourceProperty_ENUM,
-			Required:     true,
-			DefaultValue: structpb.NewStringValue("JAVASCRIPT"),
-			EnumValues:   []string{"JAVASCRIPT"},
-		},
-		{
-			Name:     "content",
-			Type:     model.ResourceProperty_STRING,
-			Length:   64000,
-			Required: true,
-
-			Annotations: map[string]string{
-				"SQLType": "TEXT",
-			},
-		},
-		{
 			Name:         "version",
 			Type:         model.ResourceProperty_INT32,
 			Required:     true,
@@ -140,7 +140,7 @@ var CodeResource = &model.Resource{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T00:22:01+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T00:22:01+04:00")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00"), "createdBy": structpb.NewStringValue("admin")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
@@ -149,7 +149,7 @@ var CodeResource = &model.Resource{
 	},
 
 	Annotations: map[string]string{
-		"OpenApiGroup": "meta",
 		"EnableAudit":  "true",
+		"OpenApiGroup": "meta",
 	},
 }

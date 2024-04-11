@@ -11,21 +11,18 @@ import "time"
 
 type CronJob struct {
 	Id          *uuid.UUID        `json:"id,omitempty"`
-	Language    CronJobLanguage   `json:"language,omitempty"`
 	Source      string            `json:"source,omitempty"`
 	Format      CronJobFormat     `json:"format,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty"`
 	Name        string            `json:"name,omitempty"`
 	Expression  string            `json:"expression,omitempty"`
+	Language    CronJobLanguage   `json:"language,omitempty"`
 	Version     int32             `json:"version,omitempty"`
 	AuditData   *CronJobAuditData `json:"auditData,omitempty"`
 }
 
 func (s CronJob) GetId() *uuid.UUID {
 	return s.Id
-}
-func (s CronJob) GetLanguage() CronJobLanguage {
-	return s.Language
 }
 func (s CronJob) GetSource() string {
 	return s.Source
@@ -41,6 +38,9 @@ func (s CronJob) GetName() string {
 }
 func (s CronJob) GetExpression() string {
 	return s.Expression
+}
+func (s CronJob) GetLanguage() CronJobLanguage {
+	return s.Language
 }
 func (s CronJob) GetVersion() int32 {
 	return s.Version
@@ -69,16 +69,16 @@ func (s CronJobAuditData) GetUpdatedOn() *time.Time {
 	return s.UpdatedOn
 }
 
-type CronJobLanguage string
-
-const (
-	CronJobLanguage_JAVASCRIPT CronJobLanguage = "JAVASCRIPT"
-)
-
 type CronJobFormat string
 
 const (
 	CronJobFormat_TEXT  CronJobFormat = "TEXT"
 	CronJobFormat_TAR   CronJobFormat = "TAR"
 	CronJobFormat_TARGZ CronJobFormat = "TAR_GZ"
+)
+
+type CronJobLanguage string
+
+const (
+	CronJobLanguage_JAVASCRIPT CronJobLanguage = "JAVASCRIPT"
 )

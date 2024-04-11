@@ -48,7 +48,7 @@ var CronJobResource = &model.Resource{
 					Name:         "createdOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
 					Immutable:    true,
-					ExampleValue: structpb.NewStringValue("2024-04-11T00:22:01+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -57,7 +57,7 @@ var CronJobResource = &model.Resource{
 				{
 					Name:         "updatedOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
-					ExampleValue: structpb.NewStringValue("2024-04-11T00:22:01+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -66,8 +66,8 @@ var CronJobResource = &model.Resource{
 			},
 
 			Annotations: map[string]string{
-				"EnableAudit":  "true",
 				"OpenApiGroup": "meta",
+				"EnableAudit":  "true",
 			},
 		},
 	},
@@ -83,13 +83,6 @@ var CronJobResource = &model.Resource{
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
 			},
-		},
-		{
-			Name:         "language",
-			Type:         model.ResourceProperty_ENUM,
-			Required:     true,
-			DefaultValue: structpb.NewStringValue("JAVASCRIPT"),
-			EnumValues:   []string{"JAVASCRIPT"},
 		},
 		{
 			Name:     "source",
@@ -131,6 +124,13 @@ var CronJobResource = &model.Resource{
 			Required: true,
 		},
 		{
+			Name:         "language",
+			Type:         model.ResourceProperty_ENUM,
+			Required:     true,
+			DefaultValue: structpb.NewStringValue("JAVASCRIPT"),
+			EnumValues:   []string{"JAVASCRIPT"},
+		},
+		{
 			Name:         "version",
 			Type:         model.ResourceProperty_INT32,
 			Required:     true,
@@ -146,7 +146,7 @@ var CronJobResource = &model.Resource{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdOn": structpb.NewStringValue("2024-04-11T00:22:01+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T00:22:01+04:00"), "createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",

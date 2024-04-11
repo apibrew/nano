@@ -63,17 +63,6 @@ func (m *CronJobMapper) ToProperties(cronJob *CronJob) map[string]*structpb.Valu
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Language := cronJob.Language
-
-	var var_Language_mapped *structpb.Value
-
-	var var_Language_err error
-	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
-	if var_Language_err != nil {
-		panic(var_Language_err)
-	}
-	properties["language"] = var_Language_mapped
-
 	var_Source := cronJob.Source
 
 	var var_Source_mapped *structpb.Value
@@ -142,6 +131,17 @@ func (m *CronJobMapper) ToProperties(cronJob *CronJob) map[string]*structpb.Valu
 	}
 	properties["expression"] = var_Expression_mapped
 
+	var_Language := cronJob.Language
+
+	var var_Language_mapped *structpb.Value
+
+	var var_Language_err error
+	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
+	if var_Language_err != nil {
+		panic(var_Language_err)
+	}
+	properties["language"] = var_Language_mapped
+
 	var_Version := cronJob.Version
 
 	var var_Version_mapped *structpb.Value
@@ -179,13 +179,6 @@ func (m *CronJobMapper) FromProperties(properties map[string]*structpb.Value) *C
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
-	}
-	if properties["language"] != nil && properties["language"].AsInterface() != nil {
-
-		var_Language := properties["language"]
-		var_Language_mapped := (CronJobLanguage)(var_Language.GetStringValue())
-
-		s.Language = var_Language_mapped
 	}
 	if properties["source"] != nil && properties["source"].AsInterface() != nil {
 
@@ -253,6 +246,13 @@ func (m *CronJobMapper) FromProperties(properties map[string]*structpb.Value) *C
 
 		s.Expression = var_Expression_mapped
 	}
+	if properties["language"] != nil && properties["language"].AsInterface() != nil {
+
+		var_Language := properties["language"]
+		var_Language_mapped := (CronJobLanguage)(var_Language.GetStringValue())
+
+		s.Language = var_Language_mapped
+	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -290,13 +290,6 @@ func (m *CronJobMapper) ToUnstructured(cronJob *CronJob) unstructured.Unstructur
 		var_Id_mapped = var_Id.String()
 		properties["id"] = var_Id_mapped
 	}
-
-	var_Language := cronJob.Language
-
-	var var_Language_mapped interface{}
-
-	var_Language_mapped = string(var_Language)
-	properties["language"] = var_Language_mapped
 
 	var_Source := cronJob.Source
 
@@ -344,6 +337,13 @@ func (m *CronJobMapper) ToUnstructured(cronJob *CronJob) unstructured.Unstructur
 
 	var_Expression_mapped = var_Expression
 	properties["expression"] = var_Expression_mapped
+
+	var_Language := cronJob.Language
+
+	var var_Language_mapped interface{}
+
+	var_Language_mapped = string(var_Language)
+	properties["language"] = var_Language_mapped
 
 	var_Version := cronJob.Version
 
