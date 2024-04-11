@@ -31,6 +31,10 @@ func (b *Body) Json() interface{} {
 	return *body
 }
 
+func (b *Body) Text() interface{} {
+	return string(*b)
+}
+
 func (b *Body) UrlEncoded() map[string][]string {
 	values, err := url.ParseQuery(string(*b))
 
@@ -67,22 +71,8 @@ func (h *httpObject) Get(url string, params HttpRequest) HttpResponse {
 	return h.makeResponse(resp)
 }
 
-func (h *httpObject) Post(url string, body interface{}, params HttpRequest) HttpResponse {
-	var r io.Reader
-
-	if bodyStr, ok := body.(string); ok {
-		r = bytes.NewReader([]byte(bodyStr))
-	} else {
-		bodyBytes, err := json.Marshal(body)
-
-		if err != nil {
-			panic(err)
-		}
-
-		r = bytes.NewReader(bodyBytes)
-	}
-
-	req, err := http.NewRequest("POST", url, r)
+func (h *httpObject) Delete(url string, params HttpRequest) HttpResponse {
+	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
 		panic(err)
@@ -99,6 +89,48 @@ func (h *httpObject) Post(url string, body interface{}, params HttpRequest) Http
 	}
 
 	return h.makeResponse(resp)
+}
+
+func (h *httpObject) Method(methodName string, url string, body interface{}, params HttpRequest) HttpResponse {
+	var r io.Reader
+
+	if bodyStr, ok := body.(string); ok {
+		r = bytes.NewReader([]byte(bodyStr))
+	} else {
+		bodyBytes, err := json.Marshal(body)
+
+		if err != nil {
+			panic(err)
+		}
+
+		r = bytes.NewReader(bodyBytes)
+	}
+
+	req, err := http.NewRequest(methodName, url, r)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for key, value := range params.Headers {
+		req.Header.Add(key, value)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return h.makeResponse(resp)
+}
+
+func (h *httpObject) Post(url string, body interface{}, params HttpRequest) HttpResponse {
+	return h.Method("POST", url, body, params)
+}
+
+func (h *httpObject) Put(url string, body interface{}, params HttpRequest) HttpResponse {
+	return h.Method("PUT", url, body, params)
 }
 
 func (h *httpObject) makeResponse(resp *http.Response) HttpResponse {
