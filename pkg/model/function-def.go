@@ -48,7 +48,7 @@ var FunctionResource = &model.Resource{
 					Name:         "createdOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
 					Immutable:    true,
-					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T23:00:59+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -57,7 +57,7 @@ var FunctionResource = &model.Resource{
 				{
 					Name:         "updatedOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
-					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T23:00:59+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -85,24 +85,7 @@ var FunctionResource = &model.Resource{
 			},
 		},
 		{
-			Name:         "language",
-			Type:         model.ResourceProperty_ENUM,
-			Required:     true,
-			DefaultValue: structpb.NewStringValue("JAVASCRIPT"),
-			EnumValues:   []string{"JAVASCRIPT"},
-		},
-		{
-			Name:     "source",
-			Type:     model.ResourceProperty_STRING,
-			Length:   64000,
-			Required: true,
-
-			Annotations: map[string]string{
-				"SQLType": "TEXT",
-			},
-		},
-		{
-			Name:         "format",
+			Name:         "contentFormat",
 			Type:         model.ResourceProperty_ENUM,
 			Required:     true,
 			DefaultValue: structpb.NewStringValue("TEXT"),
@@ -125,6 +108,23 @@ var FunctionResource = &model.Resource{
 			Immutable: true,
 		},
 		{
+			Name:         "language",
+			Type:         model.ResourceProperty_ENUM,
+			Required:     true,
+			DefaultValue: structpb.NewStringValue("JAVASCRIPT"),
+			EnumValues:   []string{"JAVASCRIPT"},
+		},
+		{
+			Name:     "source",
+			Type:     model.ResourceProperty_STRING,
+			Length:   64000,
+			Required: true,
+
+			Annotations: map[string]string{
+				"SQLType": "TEXT",
+			},
+		},
+		{
 			Name:         "version",
 			Type:         model.ResourceProperty_INT32,
 			Required:     true,
@@ -132,15 +132,15 @@ var FunctionResource = &model.Resource{
 			ExampleValue: structpb.NewNumberValue(1),
 
 			Annotations: map[string]string{
-				"AllowEmptyPrimitive": "true",
 				"SpecialProperty":     "true",
+				"AllowEmptyPrimitive": "true",
 			},
 		},
 		{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"updatedOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00"), "createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T23:00:59+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T23:00:59+04:00")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
@@ -149,7 +149,7 @@ var FunctionResource = &model.Resource{
 	},
 
 	Annotations: map[string]string{
-		"OpenApiGroup": "meta",
 		"EnableAudit":  "true",
+		"OpenApiGroup": "meta",
 	},
 }

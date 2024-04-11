@@ -102,6 +102,37 @@ func (s codeExecutorService) runScript(ctx context.Context, script *model.Script
 	return result.Export(), nil
 }
 
+func (s codeExecutorService) runInlineScript(ctx context.Context, identifier string, source string) error {
+	vm := goja.New()
+	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
+
+	registry := new(require.Registry) // this can be shared by multiple runtimes
+
+	runtime := goja.New()
+	registry.Enable(runtime)
+
+	cec := &codeExecutionContext{}
+	cec.ctx = util.WithSystemContext(context.Background())
+	cec.vm = vm
+	cec.identifier = identifier
+	cec.scriptMode = true
+	err := s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
+
+	s.codeContext[cec.identifier] = cec
+
+	if err != nil {
+		return err
+	}
+
+	_, err = vm.RunString(source)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s codeExecutorService) registerCode(code *model.Code) (err error) {
 	defer func() {
 		if r := recover(); r != nil {

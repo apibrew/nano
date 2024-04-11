@@ -63,50 +63,17 @@ func (m *CronJobMapper) ToProperties(cronJob *CronJob) map[string]*structpb.Valu
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Source := cronJob.Source
+	var_LastExecutionError := cronJob.LastExecutionError
 
-	var var_Source_mapped *structpb.Value
+	if var_LastExecutionError != nil {
+		var var_LastExecutionError_mapped *structpb.Value
 
-	var var_Source_err error
-	var_Source_mapped, var_Source_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Source)
-	if var_Source_err != nil {
-		panic(var_Source_err)
-	}
-	properties["source"] = var_Source_mapped
-
-	var_Format := cronJob.Format
-
-	var var_Format_mapped *structpb.Value
-
-	var var_Format_err error
-	var_Format_mapped, var_Format_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Format))
-	if var_Format_err != nil {
-		panic(var_Format_err)
-	}
-	properties["format"] = var_Format_mapped
-
-	var_Annotations := cronJob.Annotations
-
-	if var_Annotations != nil {
-		var var_Annotations_mapped *structpb.Value
-
-		var var_Annotations_st *structpb.Struct = new(structpb.Struct)
-		var_Annotations_st.Fields = make(map[string]*structpb.Value)
-		for key, value := range var_Annotations {
-
-			var_1x := value
-			var var_1x_mapped *structpb.Value
-
-			var var_1x_err error
-			var_1x_mapped, var_1x_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_1x)
-			if var_1x_err != nil {
-				panic(var_1x_err)
-			}
-
-			var_Annotations_st.Fields[key] = var_1x_mapped
+		var var_LastExecutionError_err error
+		var_LastExecutionError_mapped, var_LastExecutionError_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(*var_LastExecutionError)
+		if var_LastExecutionError_err != nil {
+			panic(var_LastExecutionError_err)
 		}
-		var_Annotations_mapped = structpb.NewStructValue(var_Annotations_st)
-		properties["annotations"] = var_Annotations_mapped
+		properties["lastExecutionError"] = var_LastExecutionError_mapped
 	}
 
 	var_Name := cronJob.Name
@@ -141,6 +108,65 @@ func (m *CronJobMapper) ToProperties(cronJob *CronJob) map[string]*structpb.Valu
 		panic(var_Language_err)
 	}
 	properties["language"] = var_Language_mapped
+
+	var_Source := cronJob.Source
+
+	var var_Source_mapped *structpb.Value
+
+	var var_Source_err error
+	var_Source_mapped, var_Source_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Source)
+	if var_Source_err != nil {
+		panic(var_Source_err)
+	}
+	properties["source"] = var_Source_mapped
+
+	var_ContentFormat := cronJob.ContentFormat
+
+	var var_ContentFormat_mapped *structpb.Value
+
+	var var_ContentFormat_err error
+	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
+	if var_ContentFormat_err != nil {
+		panic(var_ContentFormat_err)
+	}
+	properties["contentFormat"] = var_ContentFormat_mapped
+
+	var_Annotations := cronJob.Annotations
+
+	if var_Annotations != nil {
+		var var_Annotations_mapped *structpb.Value
+
+		var var_Annotations_st *structpb.Struct = new(structpb.Struct)
+		var_Annotations_st.Fields = make(map[string]*structpb.Value)
+		for key, value := range var_Annotations {
+
+			var_1x := value
+			var var_1x_mapped *structpb.Value
+
+			var var_1x_err error
+			var_1x_mapped, var_1x_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_1x)
+			if var_1x_err != nil {
+				panic(var_1x_err)
+			}
+
+			var_Annotations_st.Fields[key] = var_1x_mapped
+		}
+		var_Annotations_mapped = structpb.NewStructValue(var_Annotations_st)
+		properties["annotations"] = var_Annotations_mapped
+	}
+
+	var_LastExecutionTime := cronJob.LastExecutionTime
+
+	if var_LastExecutionTime != nil {
+		var var_LastExecutionTime_mapped *structpb.Value
+
+		var var_LastExecutionTime_err error
+		var_LastExecutionTime_mapped, var_LastExecutionTime_err = types.ByResourcePropertyType(model.ResourceProperty_TIMESTAMP).Pack(*var_LastExecutionTime)
+		if var_LastExecutionTime_err != nil {
+			panic(var_LastExecutionTime_err)
+		}
+		properties["lastExecutionTime"] = var_LastExecutionTime_mapped
+	}
 
 	var_Version := cronJob.Version
 
@@ -180,45 +206,19 @@ func (m *CronJobMapper) FromProperties(properties map[string]*structpb.Value) *C
 
 		s.Id = var_Id_mapped
 	}
-	if properties["source"] != nil && properties["source"].AsInterface() != nil {
+	if properties["lastExecutionError"] != nil && properties["lastExecutionError"].AsInterface() != nil {
 
-		var_Source := properties["source"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Source)
+		var_LastExecutionError := properties["lastExecutionError"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_LastExecutionError)
 
 		if err != nil {
 			panic(err)
 		}
 
-		var_Source_mapped := val.(string)
+		var_LastExecutionError_mapped := new(string)
+		*var_LastExecutionError_mapped = val.(string)
 
-		s.Source = var_Source_mapped
-	}
-	if properties["format"] != nil && properties["format"].AsInterface() != nil {
-
-		var_Format := properties["format"]
-		var_Format_mapped := (CronJobFormat)(var_Format.GetStringValue())
-
-		s.Format = var_Format_mapped
-	}
-	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
-
-		var_Annotations := properties["annotations"]
-		var_Annotations_mapped := make(map[string]string)
-		for k, v := range var_Annotations.GetStructValue().Fields {
-
-			var_3x := v
-			val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_3x)
-
-			if err != nil {
-				panic(err)
-			}
-
-			var_3x_mapped := val.(string)
-
-			var_Annotations_mapped[k] = var_3x_mapped
-		}
-
-		s.Annotations = var_Annotations_mapped
+		s.LastExecutionError = var_LastExecutionError_mapped
 	}
 	if properties["name"] != nil && properties["name"].AsInterface() != nil {
 
@@ -252,6 +252,60 @@ func (m *CronJobMapper) FromProperties(properties map[string]*structpb.Value) *C
 		var_Language_mapped := (CronJobLanguage)(var_Language.GetStringValue())
 
 		s.Language = var_Language_mapped
+	}
+	if properties["source"] != nil && properties["source"].AsInterface() != nil {
+
+		var_Source := properties["source"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Source)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_Source_mapped := val.(string)
+
+		s.Source = var_Source_mapped
+	}
+	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
+
+		var_ContentFormat := properties["contentFormat"]
+		var_ContentFormat_mapped := (CronJobContentFormat)(var_ContentFormat.GetStringValue())
+
+		s.ContentFormat = var_ContentFormat_mapped
+	}
+	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
+
+		var_Annotations := properties["annotations"]
+		var_Annotations_mapped := make(map[string]string)
+		for k, v := range var_Annotations.GetStructValue().Fields {
+
+			var_3x := v
+			val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_3x)
+
+			if err != nil {
+				panic(err)
+			}
+
+			var_3x_mapped := val.(string)
+
+			var_Annotations_mapped[k] = var_3x_mapped
+		}
+
+		s.Annotations = var_Annotations_mapped
+	}
+	if properties["lastExecutionTime"] != nil && properties["lastExecutionTime"].AsInterface() != nil {
+
+		var_LastExecutionTime := properties["lastExecutionTime"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_TIMESTAMP).UnPack(var_LastExecutionTime)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_LastExecutionTime_mapped := new(time.Time)
+		*var_LastExecutionTime_mapped = val.(time.Time)
+
+		s.LastExecutionTime = var_LastExecutionTime_mapped
 	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
@@ -291,37 +345,13 @@ func (m *CronJobMapper) ToUnstructured(cronJob *CronJob) unstructured.Unstructur
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Source := cronJob.Source
+	var_LastExecutionError := cronJob.LastExecutionError
 
-	var var_Source_mapped interface{}
+	if var_LastExecutionError != nil {
+		var var_LastExecutionError_mapped interface{}
 
-	var_Source_mapped = var_Source
-	properties["source"] = var_Source_mapped
-
-	var_Format := cronJob.Format
-
-	var var_Format_mapped interface{}
-
-	var_Format_mapped = string(var_Format)
-	properties["format"] = var_Format_mapped
-
-	var_Annotations := cronJob.Annotations
-
-	if var_Annotations != nil {
-		var var_Annotations_mapped interface{}
-
-		var var_Annotations_st map[string]interface{} = make(map[string]interface{})
-		for key, value := range var_Annotations {
-
-			var_1x := value
-			var var_1x_mapped interface{}
-
-			var_1x_mapped = var_1x
-
-			var_Annotations_st[key] = var_1x_mapped
-		}
-		var_Annotations_mapped = var_Annotations_st
-		properties["annotations"] = var_Annotations_mapped
+		var_LastExecutionError_mapped = *var_LastExecutionError
+		properties["lastExecutionError"] = var_LastExecutionError_mapped
 	}
 
 	var_Name := cronJob.Name
@@ -344,6 +374,48 @@ func (m *CronJobMapper) ToUnstructured(cronJob *CronJob) unstructured.Unstructur
 
 	var_Language_mapped = string(var_Language)
 	properties["language"] = var_Language_mapped
+
+	var_Source := cronJob.Source
+
+	var var_Source_mapped interface{}
+
+	var_Source_mapped = var_Source
+	properties["source"] = var_Source_mapped
+
+	var_ContentFormat := cronJob.ContentFormat
+
+	var var_ContentFormat_mapped interface{}
+
+	var_ContentFormat_mapped = string(var_ContentFormat)
+	properties["contentFormat"] = var_ContentFormat_mapped
+
+	var_Annotations := cronJob.Annotations
+
+	if var_Annotations != nil {
+		var var_Annotations_mapped interface{}
+
+		var var_Annotations_st map[string]interface{} = make(map[string]interface{})
+		for key, value := range var_Annotations {
+
+			var_1x := value
+			var var_1x_mapped interface{}
+
+			var_1x_mapped = var_1x
+
+			var_Annotations_st[key] = var_1x_mapped
+		}
+		var_Annotations_mapped = var_Annotations_st
+		properties["annotations"] = var_Annotations_mapped
+	}
+
+	var_LastExecutionTime := cronJob.LastExecutionTime
+
+	if var_LastExecutionTime != nil {
+		var var_LastExecutionTime_mapped interface{}
+
+		var_LastExecutionTime_mapped = *var_LastExecutionTime
+		properties["lastExecutionTime"] = var_LastExecutionTime_mapped
+	}
 
 	var_Version := cronJob.Version
 

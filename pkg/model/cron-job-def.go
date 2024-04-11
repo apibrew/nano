@@ -48,7 +48,7 @@ var CronJobResource = &model.Resource{
 					Name:         "createdOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
 					Immutable:    true,
-					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T23:00:59+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -57,7 +57,7 @@ var CronJobResource = &model.Resource{
 				{
 					Name:         "updatedOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
-					ExampleValue: structpb.NewStringValue("2024-04-11T18:02:25+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-11T23:00:59+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -66,8 +66,8 @@ var CronJobResource = &model.Resource{
 			},
 
 			Annotations: map[string]string{
-				"OpenApiGroup": "meta",
 				"EnableAudit":  "true",
+				"OpenApiGroup": "meta",
 			},
 		},
 	},
@@ -85,29 +85,8 @@ var CronJobResource = &model.Resource{
 			},
 		},
 		{
-			Name:     "source",
-			Type:     model.ResourceProperty_STRING,
-			Length:   64000,
-			Required: true,
-
-			Annotations: map[string]string{
-				"SQLType": "TEXT",
-			},
-		},
-		{
-			Name:         "format",
-			Type:         model.ResourceProperty_ENUM,
-			Required:     true,
-			DefaultValue: structpb.NewStringValue("TEXT"),
-			EnumValues:   []string{"TEXT", "TAR", "TAR_GZ"},
-		},
-		{
-			Name: "annotations",
-			Type: model.ResourceProperty_MAP,
-			Item: &model.ResourceProperty{
-				Name: "",
-				Type: model.ResourceProperty_STRING,
-			},
+			Name: "lastExecutionError",
+			Type: model.ResourceProperty_STRING,
 		},
 		{
 			Name:      "name",
@@ -131,6 +110,35 @@ var CronJobResource = &model.Resource{
 			EnumValues:   []string{"JAVASCRIPT"},
 		},
 		{
+			Name:     "source",
+			Type:     model.ResourceProperty_STRING,
+			Length:   64000,
+			Required: true,
+
+			Annotations: map[string]string{
+				"SQLType": "TEXT",
+			},
+		},
+		{
+			Name:         "contentFormat",
+			Type:         model.ResourceProperty_ENUM,
+			Required:     true,
+			DefaultValue: structpb.NewStringValue("TEXT"),
+			EnumValues:   []string{"TEXT", "TAR", "TAR_GZ"},
+		},
+		{
+			Name: "annotations",
+			Type: model.ResourceProperty_MAP,
+			Item: &model.ResourceProperty{
+				Name: "",
+				Type: model.ResourceProperty_STRING,
+			},
+		},
+		{
+			Name: "lastExecutionTime",
+			Type: model.ResourceProperty_TIMESTAMP,
+		},
+		{
 			Name:         "version",
 			Type:         model.ResourceProperty_INT32,
 			Required:     true,
@@ -146,7 +154,7 @@ var CronJobResource = &model.Resource{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T18:02:25+04:00")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"updatedOn": structpb.NewStringValue("2024-04-11T23:00:59+04:00"), "createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-11T23:00:59+04:00")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
@@ -155,7 +163,7 @@ var CronJobResource = &model.Resource{
 	},
 
 	Annotations: map[string]string{
-		"OpenApiGroup": "meta",
 		"EnableAudit":  "true",
+		"OpenApiGroup": "meta",
 	},
 }

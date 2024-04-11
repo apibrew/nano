@@ -129,7 +129,7 @@ properties:
     required: true
     annotations:
       SQLType: "TEXT"
-  format:
+  contentFormat:
     title: Content Format
     description: Code content format
     type: ENUM
@@ -185,7 +185,7 @@ properties:
     required: true
     annotations:
       SQLType: "TEXT"
-  format:
+  contentFormat:
     title: Content Format
     description: Code content format
     type: ENUM
@@ -200,6 +200,14 @@ properties:
     required: false
     item:
       type: STRING
+  lastExecutionTime:
+    title: Last Execution Time
+    description: Last execution time
+    type: timestamp
+  lastExecutionError:
+    title: Last Execution Error
+    description: Last execution error
+    type: string
 annotations:
   EnableAudit: "true"
   OpenApiGroup: "meta"

@@ -17,7 +17,7 @@ func TestNanoFunction(t *testing.T) {
 return a + b
 `
 	testFn.Language = model.FunctionLanguage_JAVASCRIPT
-	testFn.Format = model.FunctionFormat_TEXT
+	testFn.ContentFormat = model.FunctionContentFormat_TEXT
 
 	_, err := api.Apply(util.SystemContext, model.FunctionMapperInstance.ToUnstructured(testFn))
 
@@ -58,7 +58,7 @@ func TestNanoFunctionAddingToExistingCodes(t *testing.T) {
 return a(b, c)
 `
 	testFn2.Language = model.FunctionLanguage_JAVASCRIPT
-	testFn2.Format = model.FunctionFormat_TEXT
+	testFn2.ContentFormat = model.FunctionContentFormat_TEXT
 
 	_, err := api.Apply(util.SystemContext, model.FunctionMapperInstance.ToUnstructured(testFn2))
 
@@ -73,7 +73,7 @@ return a(b, c)
 	return a + b
 	`
 	testFn.Language = model.FunctionLanguage_JAVASCRIPT
-	testFn.Format = model.FunctionFormat_TEXT
+	testFn.ContentFormat = model.FunctionContentFormat_TEXT
 
 	_, err = api.Apply(util.SystemContext, model.FunctionMapperInstance.ToUnstructured(testFn))
 

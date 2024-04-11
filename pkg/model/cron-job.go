@@ -10,28 +10,24 @@ import "github.com/google/uuid"
 import "time"
 
 type CronJob struct {
-	Id          *uuid.UUID        `json:"id,omitempty"`
-	Source      string            `json:"source,omitempty"`
-	Format      CronJobFormat     `json:"format,omitempty"`
-	Annotations map[string]string `json:"annotations,omitempty"`
-	Name        string            `json:"name,omitempty"`
-	Expression  string            `json:"expression,omitempty"`
-	Language    CronJobLanguage   `json:"language,omitempty"`
-	Version     int32             `json:"version,omitempty"`
-	AuditData   *CronJobAuditData `json:"auditData,omitempty"`
+	Id                 *uuid.UUID           `json:"id,omitempty"`
+	LastExecutionError *string              `json:"lastExecutionError,omitempty"`
+	Name               string               `json:"name,omitempty"`
+	Expression         string               `json:"expression,omitempty"`
+	Language           CronJobLanguage      `json:"language,omitempty"`
+	Source             string               `json:"source,omitempty"`
+	ContentFormat      CronJobContentFormat `json:"contentFormat,omitempty"`
+	Annotations        map[string]string    `json:"annotations,omitempty"`
+	LastExecutionTime  *time.Time           `json:"lastExecutionTime,omitempty"`
+	Version            int32                `json:"version,omitempty"`
+	AuditData          *CronJobAuditData    `json:"auditData,omitempty"`
 }
 
 func (s CronJob) GetId() *uuid.UUID {
 	return s.Id
 }
-func (s CronJob) GetSource() string {
-	return s.Source
-}
-func (s CronJob) GetFormat() CronJobFormat {
-	return s.Format
-}
-func (s CronJob) GetAnnotations() map[string]string {
-	return s.Annotations
+func (s CronJob) GetLastExecutionError() *string {
+	return s.LastExecutionError
 }
 func (s CronJob) GetName() string {
 	return s.Name
@@ -41,6 +37,18 @@ func (s CronJob) GetExpression() string {
 }
 func (s CronJob) GetLanguage() CronJobLanguage {
 	return s.Language
+}
+func (s CronJob) GetSource() string {
+	return s.Source
+}
+func (s CronJob) GetContentFormat() CronJobContentFormat {
+	return s.ContentFormat
+}
+func (s CronJob) GetAnnotations() map[string]string {
+	return s.Annotations
+}
+func (s CronJob) GetLastExecutionTime() *time.Time {
+	return s.LastExecutionTime
 }
 func (s CronJob) GetVersion() int32 {
 	return s.Version
@@ -69,16 +77,16 @@ func (s CronJobAuditData) GetUpdatedOn() *time.Time {
 	return s.UpdatedOn
 }
 
-type CronJobFormat string
-
-const (
-	CronJobFormat_TEXT  CronJobFormat = "TEXT"
-	CronJobFormat_TAR   CronJobFormat = "TAR"
-	CronJobFormat_TARGZ CronJobFormat = "TAR_GZ"
-)
-
 type CronJobLanguage string
 
 const (
 	CronJobLanguage_JAVASCRIPT CronJobLanguage = "JAVASCRIPT"
+)
+
+type CronJobContentFormat string
+
+const (
+	CronJobContentFormat_TEXT  CronJobContentFormat = "TEXT"
+	CronJobContentFormat_TAR   CronJobContentFormat = "TAR"
+	CronJobContentFormat_TARGZ CronJobContentFormat = "TAR_GZ"
 )
