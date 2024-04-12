@@ -86,7 +86,7 @@ func (f *cronJobProcessor) execute(executionNumber int32, cronId string) {
 }
 
 func (f *cronJobProcessor) Update(entity *model2.CronJob) error {
-	if entity.Expression == "" || entity.Source == "" {
+	if entity.Expression == "" && entity.Source == "" {
 		return nil
 	}
 
