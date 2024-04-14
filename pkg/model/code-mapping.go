@@ -63,17 +63,6 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
-	var_ContentFormat := code.ContentFormat
-
-	var var_ContentFormat_mapped *structpb.Value
-
-	var var_ContentFormat_err error
-	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
-	if var_ContentFormat_err != nil {
-		panic(var_ContentFormat_err)
-	}
-	properties["contentFormat"] = var_ContentFormat_mapped
-
 	var_Annotations := code.Annotations
 
 	if var_Annotations != nil {
@@ -131,6 +120,17 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 	}
 	properties["content"] = var_Content_mapped
 
+	var_ContentFormat := code.ContentFormat
+
+	var var_ContentFormat_mapped *structpb.Value
+
+	var var_ContentFormat_err error
+	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
+	if var_ContentFormat_err != nil {
+		panic(var_ContentFormat_err)
+	}
+	properties["contentFormat"] = var_ContentFormat_mapped
+
 	var_Version := code.Version
 
 	var var_Version_mapped *structpb.Value
@@ -168,13 +168,6 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
-	}
-	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
-
-		var_ContentFormat := properties["contentFormat"]
-		var_ContentFormat_mapped := (CodeContentFormat)(var_ContentFormat.GetStringValue())
-
-		s.ContentFormat = var_ContentFormat_mapped
 	}
 	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
 
@@ -229,6 +222,13 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 
 		s.Content = var_Content_mapped
 	}
+	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
+
+		var_ContentFormat := properties["contentFormat"]
+		var_ContentFormat_mapped := (CodeContentFormat)(var_ContentFormat.GetStringValue())
+
+		s.ContentFormat = var_ContentFormat_mapped
+	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -266,13 +266,6 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 		var_Id_mapped = var_Id.String()
 		properties["id"] = var_Id_mapped
 	}
-
-	var_ContentFormat := code.ContentFormat
-
-	var var_ContentFormat_mapped interface{}
-
-	var_ContentFormat_mapped = string(var_ContentFormat)
-	properties["contentFormat"] = var_ContentFormat_mapped
 
 	var_Annotations := code.Annotations
 
@@ -313,6 +306,13 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 
 	var_Content_mapped = var_Content
 	properties["content"] = var_Content_mapped
+
+	var_ContentFormat := code.ContentFormat
+
+	var var_ContentFormat_mapped interface{}
+
+	var_ContentFormat_mapped = string(var_ContentFormat)
+	properties["contentFormat"] = var_ContentFormat_mapped
 
 	var_Version := code.Version
 

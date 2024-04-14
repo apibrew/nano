@@ -161,7 +161,7 @@ class Resource {
     }
 
     delete(record) {
-        return delete ({
+        return delete_({
             type: this.type,
             ...record
         })

@@ -48,7 +48,7 @@ var CodeResource = &model.Resource{
 					Name:         "createdOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
 					Immutable:    true,
-					ExampleValue: structpb.NewStringValue("2024-04-11T23:00:59+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-14T10:47:09+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -57,7 +57,7 @@ var CodeResource = &model.Resource{
 				{
 					Name:         "updatedOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
-					ExampleValue: structpb.NewStringValue("2024-04-11T23:00:59+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-14T10:47:09+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -66,8 +66,8 @@ var CodeResource = &model.Resource{
 			},
 
 			Annotations: map[string]string{
-				"OpenApiGroup": "meta",
 				"EnableAudit":  "true",
+				"OpenApiGroup": "meta",
 			},
 		},
 	},
@@ -83,13 +83,6 @@ var CodeResource = &model.Resource{
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
 			},
-		},
-		{
-			Name:         "contentFormat",
-			Type:         model.ResourceProperty_ENUM,
-			Required:     true,
-			DefaultValue: structpb.NewStringValue("TEXT"),
-			EnumValues:   []string{"TEXT", "TAR", "TAR_GZ"},
 		},
 		{
 			Name: "annotations",
@@ -125,6 +118,13 @@ var CodeResource = &model.Resource{
 			},
 		},
 		{
+			Name:         "contentFormat",
+			Type:         model.ResourceProperty_ENUM,
+			Required:     true,
+			DefaultValue: structpb.NewStringValue("TEXT"),
+			EnumValues:   []string{"TEXT", "TAR", "TAR_GZ"},
+		},
+		{
 			Name:         "version",
 			Type:         model.ResourceProperty_INT32,
 			Required:     true,
@@ -140,7 +140,7 @@ var CodeResource = &model.Resource{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdOn": structpb.NewStringValue("2024-04-11T23:00:59+04:00"), "updatedOn": structpb.NewStringValue("2024-04-11T23:00:59+04:00"), "createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-14T10:47:09+04:00"), "updatedOn": structpb.NewStringValue("2024-04-14T10:47:09+04:00")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
@@ -149,7 +149,7 @@ var CodeResource = &model.Resource{
 	},
 
 	Annotations: map[string]string{
-		"OpenApiGroup": "meta",
 		"EnableAudit":  "true",
+		"OpenApiGroup": "meta",
 	},
 }

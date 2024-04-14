@@ -44,7 +44,7 @@ func apply(cec abs.CodeExecutionContext, apiInterface api.Interface) func(record
 	}
 }
 
-func delete(cec abs.CodeExecutionContext, apiInterface api.Interface) func(record unstructured.Unstructured) {
+func delete_(cec abs.CodeExecutionContext, apiInterface api.Interface) func(record unstructured.Unstructured) {
 	return func(record unstructured.Unstructured) {
 		err := apiInterface.Delete(cec.Context(), record)
 

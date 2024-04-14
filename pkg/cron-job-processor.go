@@ -74,6 +74,8 @@ func (f *cronJobProcessor) execute(executionNumber int32, cronId string) {
 	if err != nil {
 		log.Error(err)
 		record["lastExecutionError"] = err.Error()
+	} else {
+		record["lastExecutionError"] = ""
 	}
 
 	record["type"] = "nano/CronJob"

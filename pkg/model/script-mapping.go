@@ -15,6 +15,7 @@ import (
 )
 
 import "github.com/google/uuid"
+import "github.com/apibrew/apibrew/pkg/formats/unstructured"
 import "time"
 
 type ScriptMapper struct {
@@ -63,6 +64,30 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
+	var_Annotations := script.Annotations
+
+	if var_Annotations != nil {
+		var var_Annotations_mapped *structpb.Value
+
+		var var_Annotations_st *structpb.Struct = new(structpb.Struct)
+		var_Annotations_st.Fields = make(map[string]*structpb.Value)
+		for key, value := range var_Annotations {
+
+			var_1x := value
+			var var_1x_mapped *structpb.Value
+
+			var var_1x_err error
+			var_1x_mapped, var_1x_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_1x)
+			if var_1x_err != nil {
+				panic(var_1x_err)
+			}
+
+			var_Annotations_st.Fields[key] = var_1x_mapped
+		}
+		var_Annotations_mapped = structpb.NewStructValue(var_Annotations_st)
+		properties["annotations"] = var_Annotations_mapped
+	}
+
 	var_Output := script.Output
 
 	if var_Output != nil {
@@ -109,30 +134,6 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 	}
 	properties["contentFormat"] = var_ContentFormat_mapped
 
-	var_Annotations := script.Annotations
-
-	if var_Annotations != nil {
-		var var_Annotations_mapped *structpb.Value
-
-		var var_Annotations_st *structpb.Struct = new(structpb.Struct)
-		var_Annotations_st.Fields = make(map[string]*structpb.Value)
-		for key, value := range var_Annotations {
-
-			var_1x := value
-			var var_1x_mapped *structpb.Value
-
-			var var_1x_err error
-			var_1x_mapped, var_1x_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_1x)
-			if var_1x_err != nil {
-				panic(var_1x_err)
-			}
-
-			var_Annotations_st.Fields[key] = var_1x_mapped
-		}
-		var_Annotations_mapped = structpb.NewStructValue(var_Annotations_st)
-		properties["annotations"] = var_Annotations_mapped
-	}
-
 	var_Version := script.Version
 
 	var var_Version_mapped *structpb.Value
@@ -171,6 +172,26 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 
 		s.Id = var_Id_mapped
 	}
+	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
+
+		var_Annotations := properties["annotations"]
+		var_Annotations_mapped := make(map[string]string)
+		for k, v := range var_Annotations.GetStructValue().Fields {
+
+			var_3x := v
+			val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_3x)
+
+			if err != nil {
+				panic(err)
+			}
+
+			var_3x_mapped := val.(string)
+
+			var_Annotations_mapped[k] = var_3x_mapped
+		}
+
+		s.Annotations = var_Annotations_mapped
+	}
 	if properties["output"] != nil && properties["output"].AsInterface() != nil {
 
 		var_Output := properties["output"]
@@ -205,26 +226,6 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 		var_ContentFormat_mapped := (ScriptContentFormat)(var_ContentFormat.GetStringValue())
 
 		s.ContentFormat = var_ContentFormat_mapped
-	}
-	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
-
-		var_Annotations := properties["annotations"]
-		var_Annotations_mapped := make(map[string]string)
-		for k, v := range var_Annotations.GetStructValue().Fields {
-
-			var_3x := v
-			val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_3x)
-
-			if err != nil {
-				panic(err)
-			}
-
-			var_3x_mapped := val.(string)
-
-			var_Annotations_mapped[k] = var_3x_mapped
-		}
-
-		s.Annotations = var_Annotations_mapped
 	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
@@ -264,6 +265,25 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 		properties["id"] = var_Id_mapped
 	}
 
+	var_Annotations := script.Annotations
+
+	if var_Annotations != nil {
+		var var_Annotations_mapped interface{}
+
+		var var_Annotations_st map[string]interface{} = make(map[string]interface{})
+		for key, value := range var_Annotations {
+
+			var_1x := value
+			var var_1x_mapped interface{}
+
+			var_1x_mapped = var_1x
+
+			var_Annotations_st[key] = var_1x_mapped
+		}
+		var_Annotations_mapped = var_Annotations_st
+		properties["annotations"] = var_Annotations_mapped
+	}
+
 	var_Output := script.Output
 
 	if var_Output != nil {
@@ -293,25 +313,6 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 
 	var_ContentFormat_mapped = string(var_ContentFormat)
 	properties["contentFormat"] = var_ContentFormat_mapped
-
-	var_Annotations := script.Annotations
-
-	if var_Annotations != nil {
-		var var_Annotations_mapped interface{}
-
-		var var_Annotations_st map[string]interface{} = make(map[string]interface{})
-		for key, value := range var_Annotations {
-
-			var_1x := value
-			var var_1x_mapped interface{}
-
-			var_1x_mapped = var_1x
-
-			var_Annotations_st[key] = var_1x_mapped
-		}
-		var_Annotations_mapped = var_Annotations_st
-		properties["annotations"] = var_Annotations_mapped
-	}
 
 	var_Version := script.Version
 
