@@ -22,7 +22,10 @@ func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, container service.
 		return err
 	}
 
-	if err := vm.Set("delete", delete(cec, apiInterface)); err != nil {
+	if err := vm.Set("delete_", delete_(cec, apiInterface)); err != nil {
+		return err
+	}
+	if err := vm.Set("delete", delete_(cec, apiInterface)); err != nil {
 		return err
 	}
 
