@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/apibrew/nano/pkg/addons/util"
 	"github.com/dop251/goja"
 	"io"
 	"net/http"
@@ -17,29 +18,32 @@ type HttpRequest struct {
 	Headers map[string]string `json:"headers"`
 }
 
-type Body []byte
+type Body struct {
+	vm   *goja.Runtime
+	data []byte
+}
 
 func (b *Body) Json() interface{} {
 	var body = new(interface{})
 
-	err := json.Unmarshal(*b, body)
+	err := json.Unmarshal(b.data, body)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(b.vm, err.Error())
 	}
 
 	return *body
 }
 
 func (b *Body) Text() interface{} {
-	return string(*b)
+	return string(b.data)
 }
 
 func (b *Body) UrlEncoded() map[string][]string {
-	values, err := url.ParseQuery(string(*b))
+	values, err := url.ParseQuery(string(b.data))
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(b.vm, err.Error())
 	}
 
 	return values
@@ -55,7 +59,7 @@ func (h *httpObject) Get(url string, params HttpRequest) HttpResponse {
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(h.vm, err.Error())
 	}
 
 	for key, value := range params.Headers {
@@ -65,7 +69,7 @@ func (h *httpObject) Get(url string, params HttpRequest) HttpResponse {
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(h.vm, err.Error())
 	}
 
 	return h.makeResponse(resp)
@@ -75,7 +79,7 @@ func (h *httpObject) Delete(url string, params HttpRequest) HttpResponse {
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(h.vm, err.Error())
 	}
 
 	for key, value := range params.Headers {
@@ -85,7 +89,7 @@ func (h *httpObject) Delete(url string, params HttpRequest) HttpResponse {
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(h.vm, err.Error())
 	}
 
 	return h.makeResponse(resp)
@@ -100,7 +104,7 @@ func (h *httpObject) Method(methodName string, url string, body interface{}, par
 		bodyBytes, err := json.Marshal(body)
 
 		if err != nil {
-			panic(err)
+			util.ThrowError(h.vm, err.Error())
 		}
 
 		r = bytes.NewReader(bodyBytes)
@@ -109,7 +113,7 @@ func (h *httpObject) Method(methodName string, url string, body interface{}, par
 	req, err := http.NewRequest(methodName, url, r)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(h.vm, err.Error())
 	}
 
 	for key, value := range params.Headers {
@@ -119,7 +123,7 @@ func (h *httpObject) Method(methodName string, url string, body interface{}, par
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(h.vm, err.Error())
 	}
 
 	return h.makeResponse(resp)
@@ -137,11 +141,14 @@ func (h *httpObject) makeResponse(resp *http.Response) HttpResponse {
 	bodyRaw, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		panic(err)
+		util.ThrowError(h.vm, err.Error())
 	}
 
 	return HttpResponse{
 		StatusCode: resp.StatusCode,
-		Body:       bodyRaw,
+		Body: Body{
+			data: bodyRaw,
+			vm:   h.vm,
+		},
 	}
 }

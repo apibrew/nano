@@ -2,6 +2,7 @@ package aws
 
 import (
 	"github.com/apibrew/apibrew/pkg/util"
+	util2 "github.com/apibrew/nano/pkg/addons/util"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -14,6 +15,7 @@ import (
 type s3Object struct {
 	session    *session.Session
 	bucketName string
+	vm         *goja.Runtime
 }
 
 func (s *s3Object) PreSignDownload(fileName string) string {
@@ -29,7 +31,7 @@ func (s *s3Object) PreSignDownload(fileName string) string {
 	url, _, err := s3Req.PresignRequest(expireDuration)
 
 	if err != nil {
-		panic(err)
+		util2.ThrowError(s.vm, err.Error())
 	}
 
 	return url
@@ -48,7 +50,7 @@ func (s *s3Object) PreSignUpload(fileName string) string {
 	url, _, err := s3Req.PresignRequest(expireDuration)
 
 	if err != nil {
-		panic(err)
+		util2.ThrowError(s.vm, err.Error())
 	}
 
 	return url
@@ -63,7 +65,7 @@ func (s *s3Object) Delete(fileName string) {
 	})
 
 	if err != nil {
-		panic(err)
+		util2.ThrowError(s.vm, err.Error())
 	}
 }
 
@@ -90,7 +92,7 @@ func prepareAwsConfig(config Config) *aws.Config {
 func Register(vm *goja.Runtime) error {
 	return vm.Set("s3", func(config Config, bucketName string) map[string]interface{} {
 		sess := session.Must(session.NewSession(prepareAwsConfig(config)))
-		obj := &s3Object{session: sess, bucketName: bucketName}
+		obj := &s3Object{vm: vm, session: sess, bucketName: bucketName}
 
 		return map[string]interface{}{
 			"preSignDownload": obj.PreSignDownload,

@@ -11,5 +11,9 @@ func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, container service.
 		return err
 	}
 
+	if err := vm.Set("throwError", throwError(vm)); err != nil {
+		return err
+	}
+
 	return nil
 }

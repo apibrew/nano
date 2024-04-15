@@ -2,6 +2,7 @@ package execute
 
 import (
 	"github.com/apibrew/nano/pkg/abs"
+	"github.com/apibrew/nano/pkg/addons/util"
 	"github.com/dop251/goja"
 	"strings"
 )
@@ -36,7 +37,7 @@ func executeFn(vm *goja.Runtime) func(script string, params Params) interface{} 
 			_, err := executionVm.RunString(fnContent)
 
 			if err != nil {
-				panic(err)
+				util.ThrowError(vm, err.Error())
 			}
 
 			fn := executionVm.Get("execute__").Export().(func(call goja.FunctionCall) goja.Value)
@@ -52,14 +53,14 @@ func executeFn(vm *goja.Runtime) func(script string, params Params) interface{} 
 		} else {
 			for key, value := range params.Args {
 				if err := executionVm.Set(key, value); err != nil {
-					panic(err)
+					util.ThrowError(vm, err.Error())
 				}
 			}
 
 			value, err := executionVm.RunString(script)
 
 			if err != nil {
-				panic(err)
+				util.ThrowError(vm, err.Error())
 			}
 
 			return value.Export()
@@ -72,7 +73,7 @@ func initVmFn(s abs.CodeExecutorService) func(options abs.VmOptions) *goja.Runti
 		vm, err := s.NewVm(options)
 
 		if err != nil {
-			panic(err)
+			util.ThrowError(vm, err.Error())
 		}
 
 		return vm

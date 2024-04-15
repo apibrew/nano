@@ -60,7 +60,7 @@ func (s codeExecutorService) GetGlobalObject() abs.GlobalObject {
 func (s codeExecutorService) runScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
 
@@ -105,7 +105,7 @@ func (s codeExecutorService) runScript(ctx context.Context, script *model.Script
 func (s codeExecutorService) runInlineScript(ctx context.Context, identifier string, source string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
 	vm := goja.New()
@@ -141,7 +141,7 @@ func (s codeExecutorService) runInlineScript(ctx context.Context, identifier str
 func (s codeExecutorService) registerCode(code *model.Code) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
 	decodedBytes, err := base64.StdEncoding.DecodeString(code.Content)

@@ -35,7 +35,7 @@ func (m module) Init() {
 		m.container,
 		model2.FunctionResource,
 	); err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	if err := RegisterResourceProcessor[*model2.Code](
@@ -47,7 +47,7 @@ func (m module) Init() {
 		m.container,
 		model2.CodeResource,
 	); err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	if err := RegisterResourceProcessor[*model2.CronJob](
@@ -60,7 +60,7 @@ func (m module) Init() {
 		m.container,
 		model2.CronJobResource,
 	); err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -78,7 +78,7 @@ func (m module) ensureNamespace() {
 	})
 
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -98,16 +98,16 @@ func (m module) ensureResources() {
 			err = m.container.GetResourceService().Update(util.SystemContext, resource, true, true)
 
 			if err != nil {
-				log.Panic(err)
+				log.Fatal(err)
 			}
 		} else if err.Is(errors.ResourceNotFoundError) {
 			_, err = m.container.GetResourceService().Create(util.SystemContext, resource, true, true)
 
 			if err != nil {
-				log.Panic(err)
+				log.Fatal(err)
 			}
 		} else if err != nil {
-			log.Panic(err)
+			log.Fatal(err)
 		}
 	}
 }

@@ -10,34 +10,34 @@ import (
 func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, container service.Container) error {
 	apiInterface := api.NewInterface(container)
 
-	if err := vm.Set("create", create(cec, apiInterface)); err != nil {
+	if err := vm.Set("create", create(cec, vm, apiInterface)); err != nil {
 		return err
 	}
 
-	if err := vm.Set("update", update(cec, apiInterface)); err != nil {
+	if err := vm.Set("update", update(cec, vm, apiInterface)); err != nil {
 		return err
 	}
 
-	if err := vm.Set("apply", apply(cec, apiInterface)); err != nil {
+	if err := vm.Set("apply", apply(cec, vm, apiInterface)); err != nil {
 		return err
 	}
 
-	if err := vm.Set("delete_", delete_(cec, apiInterface)); err != nil {
+	if err := vm.Set("delete_", delete_(cec, vm, apiInterface)); err != nil {
 		return err
 	}
-	if err := vm.Set("delete", delete_(cec, apiInterface)); err != nil {
-		return err
-	}
-
-	if err := vm.Set("load", load(cec, apiInterface)); err != nil {
+	if err := vm.Set("delete", delete_(cec, vm, apiInterface)); err != nil {
 		return err
 	}
 
-	if err := vm.Set("list", list(cec, apiInterface)); err != nil {
+	if err := vm.Set("load", load(cec, vm, apiInterface)); err != nil {
 		return err
 	}
 
-	if err := vm.Set("resourceByName", resourceByName(cec, apiInterface)); err != nil {
+	if err := vm.Set("list", list(cec, vm, apiInterface)); err != nil {
+		return err
+	}
+
+	if err := vm.Set("resourceByName", resourceByName(cec, vm, apiInterface)); err != nil {
 		return err
 	}
 
