@@ -102,7 +102,12 @@ func (s codeExecutorService) runScript(ctx context.Context, script *model.Script
 	return result.Export(), nil
 }
 
-func (s codeExecutorService) runInlineScript(ctx context.Context, identifier string, source string) error {
+func (s codeExecutorService) runInlineScript(ctx context.Context, identifier string, source string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
@@ -116,7 +121,7 @@ func (s codeExecutorService) runInlineScript(ctx context.Context, identifier str
 	cec.vm = vm
 	cec.identifier = identifier
 	cec.scriptMode = true
-	err := s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
+	err = s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
 
 	s.codeContext[cec.identifier] = cec
 
