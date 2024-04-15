@@ -25,6 +25,7 @@ func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, container service.
 	if err := vm.Set("delete_", delete_(cec, vm, apiInterface)); err != nil {
 		return err
 	}
+
 	if err := vm.Set("delete", delete_(cec, vm, apiInterface)); err != nil {
 		return err
 	}
@@ -38,6 +39,18 @@ func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, container service.
 	}
 
 	if err := vm.Set("resourceByName", resourceByName(cec, vm, apiInterface)); err != nil {
+		return err
+	}
+
+	if err := vm.Set("begin", begin(cec, vm, apiInterface)); err != nil {
+		return err
+	}
+
+	if err := vm.Set("commit", commit(cec, vm, apiInterface)); err != nil {
+		return err
+	}
+
+	if err := vm.Set("rollback", rollback(cec, vm, apiInterface)); err != nil {
 		return err
 	}
 

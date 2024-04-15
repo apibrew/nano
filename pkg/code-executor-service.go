@@ -230,6 +230,10 @@ func (s codeExecutorService) registerBuiltIns(codeName string, vm *goja.Runtime,
 		return err
 	}
 
+	if _, err := vm.RunScript("transactional.js", GetBuiltinJs("transactional.js")); err != nil {
+		return err
+	}
+
 	if !cec.scriptMode {
 		if _, err := vm.RunScript("handle.js", GetBuiltinJs("handle.js")); err != nil {
 			return err

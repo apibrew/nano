@@ -10,12 +10,25 @@ import (
 	"github.com/dop251/goja"
 )
 
+func collect(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) {
+
+}
+
 func create(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(record unstructured.Unstructured) unstructured.Unstructured {
 	return func(record unstructured.Unstructured) unstructured.Unstructured {
+		var typ = record["type"].(string)
+
 		result, err := apiInterface.Create(cec.Context(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
+		}
+
+		if cec.TransactionalEnabled() {
+			cec.RegisterRevert(func() error {
+				result["type"] = typ
+				return apiInterface.Delete(cec.Context(), result)
+			})
 		}
 
 		return result
@@ -24,10 +37,32 @@ func create(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Int
 
 func update(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(record unstructured.Unstructured) unstructured.Unstructured {
 	return func(record unstructured.Unstructured) unstructured.Unstructured {
+		var typ = record["type"].(string)
+		var existingRecord unstructured.Unstructured
+
+		if cec.TransactionalEnabled() {
+			var err error
+			existingRecord, err = apiInterface.Load(cec.Context(), record, api.LoadParams{})
+
+			if err != nil {
+				util2.ThrowError(vm, err.Error())
+			}
+		}
+
+		record["type"] = typ
 		result, err := apiInterface.Update(cec.Context(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
+		}
+
+		if cec.TransactionalEnabled() {
+			cec.RegisterRevert(func() error {
+				existingRecord["type"] = typ
+				_, err := apiInterface.Update(cec.Context(), existingRecord)
+
+				return err
+			})
 		}
 
 		return result
@@ -36,10 +71,30 @@ func update(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Int
 
 func apply(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(record unstructured.Unstructured) unstructured.Unstructured {
 	return func(record unstructured.Unstructured) unstructured.Unstructured {
+		var typ = record["type"].(string)
+		var existingRecord unstructured.Unstructured = nil
+
+		if cec.TransactionalEnabled() {
+			existingRecord, _ = apiInterface.Load(cec.Context(), record, api.LoadParams{})
+		}
+
 		result, err := apiInterface.Apply(cec.Context(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
+		}
+
+		if cec.TransactionalEnabled() {
+			cec.RegisterRevert(func() error {
+				if existingRecord == nil {
+					result["type"] = typ
+					return apiInterface.Delete(cec.Context(), result)
+				} else {
+					existingRecord["type"] = typ
+					_, err := apiInterface.Update(cec.Context(), existingRecord)
+					return err
+				}
+			})
 		}
 
 		return result
@@ -48,10 +103,33 @@ func apply(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Inte
 
 func delete_(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(record unstructured.Unstructured) {
 	return func(record unstructured.Unstructured) {
+		var typ = record["type"].(string)
+		var existingRecord unstructured.Unstructured
+
+		if cec.TransactionalEnabled() {
+			var err error
+			existingRecord, err = apiInterface.Load(cec.Context(), record, api.LoadParams{})
+
+			if err != nil {
+				util2.ThrowError(vm, err.Error())
+			}
+		}
+
+		record["type"] = typ
 		err := apiInterface.Delete(cec.Context(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
+		}
+
+		if cec.TransactionalEnabled() {
+			cec.RegisterRevert(func() error {
+				existingRecord["type"] = typ
+				_, err := apiInterface.Create(cec.Context(), existingRecord)
+
+				return err
+			})
+
 		}
 	}
 }
@@ -81,6 +159,30 @@ func list(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Inter
 				return item
 			}),
 			"total": result.Total,
+		}
+	}
+}
+
+func begin(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func() {
+	return func() {
+		if err := cec.BeginTransaction(); err != nil {
+			util2.ThrowError(vm, err.Error())
+		}
+	}
+}
+
+func commit(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func() {
+	return func() {
+		if err := cec.CommitTransaction(); err != nil {
+			util2.ThrowError(vm, err.Error())
+		}
+	}
+}
+
+func rollback(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func() {
+	return func() {
+		if err := cec.RollbackTransaction(); err != nil {
+			util2.ThrowError(vm, err.Error())
 		}
 	}
 }

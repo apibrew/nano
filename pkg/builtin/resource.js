@@ -167,6 +167,16 @@ class Resource {
         })
     }
 
+    deleteAll() {
+        const records = this.list({
+            limit: 10000
+        })
+
+        records.content.forEach(record => {
+            this.delete(record)
+        })
+    }
+
     get(id, params) {
         return this.load({
             id,
@@ -312,7 +322,25 @@ class Resource {
 
 function resource(...args) {
     if (args.length === 1) {
-        return new Resource(args[0])
+        if (typeof args[0] === 'object' && args[0] !== null) {
+            const resObj = args[0]
+            let type = ''
+
+            if (resObj.namespace && resObj.namespace.name && resObj.namespace.name !== 'default') {
+                type = resObj.namespace.name + '/' + resObj.name
+            } else {
+                type = resObj.name
+            }
+
+            apply({
+                type: 'system/Resource',
+                ...resObj
+            })
+
+            return new Resource(type)
+        } else {
+            return new Resource(args[0])
+        }
     } else if (args.length === 2) {
         return new Resource(args[0] + '/' + args[1])
     } else {

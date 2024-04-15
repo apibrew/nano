@@ -28,4 +28,9 @@ type CodeExecutionContext interface {
 	Context() context.Context
 	GetCodeIdentifier() string
 	IsScriptMode() bool
+	RegisterRevert(f func() error)
+	TransactionalEnabled() bool
+	BeginTransaction() error
+	CommitTransaction() error
+	RollbackTransaction() error
 }

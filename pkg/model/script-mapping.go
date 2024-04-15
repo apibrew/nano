@@ -63,6 +63,28 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
+	var_Source := script.Source
+
+	var var_Source_mapped *structpb.Value
+
+	var var_Source_err error
+	var_Source_mapped, var_Source_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Source)
+	if var_Source_err != nil {
+		panic(var_Source_err)
+	}
+	properties["source"] = var_Source_mapped
+
+	var_ContentFormat := script.ContentFormat
+
+	var var_ContentFormat_mapped *structpb.Value
+
+	var var_ContentFormat_err error
+	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
+	if var_ContentFormat_err != nil {
+		panic(var_ContentFormat_err)
+	}
+	properties["contentFormat"] = var_ContentFormat_mapped
+
 	var_Annotations := script.Annotations
 
 	if var_Annotations != nil {
@@ -111,28 +133,6 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 	}
 	properties["language"] = var_Language_mapped
 
-	var_Source := script.Source
-
-	var var_Source_mapped *structpb.Value
-
-	var var_Source_err error
-	var_Source_mapped, var_Source_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Source)
-	if var_Source_err != nil {
-		panic(var_Source_err)
-	}
-	properties["source"] = var_Source_mapped
-
-	var_ContentFormat := script.ContentFormat
-
-	var var_ContentFormat_mapped *structpb.Value
-
-	var var_ContentFormat_err error
-	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
-	if var_ContentFormat_err != nil {
-		panic(var_ContentFormat_err)
-	}
-	properties["contentFormat"] = var_ContentFormat_mapped
-
 	var_Version := script.Version
 
 	var var_Version_mapped *structpb.Value
@@ -171,6 +171,26 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 
 		s.Id = var_Id_mapped
 	}
+	if properties["source"] != nil && properties["source"].AsInterface() != nil {
+
+		var_Source := properties["source"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Source)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_Source_mapped := val.(string)
+
+		s.Source = var_Source_mapped
+	}
+	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
+
+		var_ContentFormat := properties["contentFormat"]
+		var_ContentFormat_mapped := (ScriptContentFormat)(var_ContentFormat.GetStringValue())
+
+		s.ContentFormat = var_ContentFormat_mapped
+	}
 	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
 
 		var_Annotations := properties["annotations"]
@@ -205,26 +225,6 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 		var_Language_mapped := (ScriptLanguage)(var_Language.GetStringValue())
 
 		s.Language = var_Language_mapped
-	}
-	if properties["source"] != nil && properties["source"].AsInterface() != nil {
-
-		var_Source := properties["source"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Source)
-
-		if err != nil {
-			panic(err)
-		}
-
-		var_Source_mapped := val.(string)
-
-		s.Source = var_Source_mapped
-	}
-	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
-
-		var_ContentFormat := properties["contentFormat"]
-		var_ContentFormat_mapped := (ScriptContentFormat)(var_ContentFormat.GetStringValue())
-
-		s.ContentFormat = var_ContentFormat_mapped
 	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
@@ -264,6 +264,20 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 		properties["id"] = var_Id_mapped
 	}
 
+	var_Source := script.Source
+
+	var var_Source_mapped interface{}
+
+	var_Source_mapped = var_Source
+	properties["source"] = var_Source_mapped
+
+	var_ContentFormat := script.ContentFormat
+
+	var var_ContentFormat_mapped interface{}
+
+	var_ContentFormat_mapped = string(var_ContentFormat)
+	properties["contentFormat"] = var_ContentFormat_mapped
+
 	var_Annotations := script.Annotations
 
 	if var_Annotations != nil {
@@ -298,20 +312,6 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 
 	var_Language_mapped = string(var_Language)
 	properties["language"] = var_Language_mapped
-
-	var_Source := script.Source
-
-	var var_Source_mapped interface{}
-
-	var_Source_mapped = var_Source
-	properties["source"] = var_Source_mapped
-
-	var_ContentFormat := script.ContentFormat
-
-	var var_ContentFormat_mapped interface{}
-
-	var_ContentFormat_mapped = string(var_ContentFormat)
-	properties["contentFormat"] = var_ContentFormat_mapped
 
 	var_Version := script.Version
 
