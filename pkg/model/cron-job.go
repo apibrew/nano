@@ -11,20 +11,29 @@ import "time"
 
 type CronJob struct {
 	Id                 *uuid.UUID           `json:"id,omitempty"`
+	LastExecutionTime  *time.Time           `json:"lastExecutionTime,omitempty"`
+	LastExecutionError *string              `json:"lastExecutionError,omitempty"`
+	Name               string               `json:"name,omitempty"`
 	Expression         string               `json:"expression,omitempty"`
 	Language           CronJobLanguage      `json:"language,omitempty"`
 	Source             string               `json:"source,omitempty"`
 	ContentFormat      CronJobContentFormat `json:"contentFormat,omitempty"`
 	Annotations        map[string]string    `json:"annotations,omitempty"`
-	LastExecutionTime  *time.Time           `json:"lastExecutionTime,omitempty"`
-	LastExecutionError *string              `json:"lastExecutionError,omitempty"`
-	Name               string               `json:"name,omitempty"`
 	Version            int32                `json:"version,omitempty"`
 	AuditData          *CronJobAuditData    `json:"auditData,omitempty"`
 }
 
 func (s CronJob) GetId() *uuid.UUID {
 	return s.Id
+}
+func (s CronJob) GetLastExecutionTime() *time.Time {
+	return s.LastExecutionTime
+}
+func (s CronJob) GetLastExecutionError() *string {
+	return s.LastExecutionError
+}
+func (s CronJob) GetName() string {
+	return s.Name
 }
 func (s CronJob) GetExpression() string {
 	return s.Expression
@@ -40,15 +49,6 @@ func (s CronJob) GetContentFormat() CronJobContentFormat {
 }
 func (s CronJob) GetAnnotations() map[string]string {
 	return s.Annotations
-}
-func (s CronJob) GetLastExecutionTime() *time.Time {
-	return s.LastExecutionTime
-}
-func (s CronJob) GetLastExecutionError() *string {
-	return s.LastExecutionError
-}
-func (s CronJob) GetName() string {
-	return s.Name
 }
 func (s CronJob) GetVersion() int32 {
 	return s.Version

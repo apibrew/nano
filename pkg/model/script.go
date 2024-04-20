@@ -11,17 +11,23 @@ import "time"
 
 type Script struct {
 	Id            *uuid.UUID          `json:"id,omitempty"`
+	Output        interface{}         `json:"output,omitempty"`
+	Language      ScriptLanguage      `json:"language,omitempty"`
 	Source        string              `json:"source,omitempty"`
 	ContentFormat ScriptContentFormat `json:"contentFormat,omitempty"`
 	Annotations   map[string]string   `json:"annotations,omitempty"`
-	Output        interface{}         `json:"output,omitempty"`
-	Language      ScriptLanguage      `json:"language,omitempty"`
 	Version       int32               `json:"version,omitempty"`
 	AuditData     *ScriptAuditData    `json:"auditData,omitempty"`
 }
 
 func (s Script) GetId() *uuid.UUID {
 	return s.Id
+}
+func (s Script) GetOutput() interface{} {
+	return s.Output
+}
+func (s Script) GetLanguage() ScriptLanguage {
+	return s.Language
 }
 func (s Script) GetSource() string {
 	return s.Source
@@ -31,12 +37,6 @@ func (s Script) GetContentFormat() ScriptContentFormat {
 }
 func (s Script) GetAnnotations() map[string]string {
 	return s.Annotations
-}
-func (s Script) GetOutput() interface{} {
-	return s.Output
-}
-func (s Script) GetLanguage() ScriptLanguage {
-	return s.Language
 }
 func (s Script) GetVersion() int32 {
 	return s.Version
@@ -65,16 +65,16 @@ func (s ScriptAuditData) GetUpdatedOn() *time.Time {
 	return s.UpdatedOn
 }
 
+type ScriptLanguage string
+
+const (
+	ScriptLanguage_JAVASCRIPT ScriptLanguage = "JAVASCRIPT"
+)
+
 type ScriptContentFormat string
 
 const (
 	ScriptContentFormat_TEXT  ScriptContentFormat = "TEXT"
 	ScriptContentFormat_TAR   ScriptContentFormat = "TAR"
 	ScriptContentFormat_TARGZ ScriptContentFormat = "TAR_GZ"
-)
-
-type ScriptLanguage string
-
-const (
-	ScriptLanguage_JAVASCRIPT ScriptLanguage = "JAVASCRIPT"
 )

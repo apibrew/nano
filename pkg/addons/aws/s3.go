@@ -21,7 +21,7 @@ type s3Object struct {
 func (s *s3Object) PreSignDownload(fileName string) string {
 	uploader := s3manager.NewDownloader(s.session)
 
-	var expireDuration = time.Hour * 24 * 7
+	var expireDuration = time.Hour * 24 * 7 * 1024
 
 	s3Req, _ := uploader.S3.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: util.Pointer(s.bucketName),
@@ -40,7 +40,7 @@ func (s *s3Object) PreSignDownload(fileName string) string {
 func (s *s3Object) PreSignUpload(fileName string) string {
 	uploader := s3manager.NewUploader(s.session)
 
-	var expireDuration = time.Hour * 24 * 7
+	var expireDuration = time.Hour * 24 * 7 * 1024
 
 	s3Req, _ := uploader.S3.PutObjectRequest(&s3.PutObjectInput{
 		Bucket: util.Pointer(s.bucketName),

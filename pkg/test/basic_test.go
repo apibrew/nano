@@ -1,4 +1,4 @@
-package nano
+package test
 
 import "testing"
 

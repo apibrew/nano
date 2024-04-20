@@ -11,17 +11,23 @@ import "time"
 
 type Function struct {
 	Id            *uuid.UUID            `json:"id,omitempty"`
+	ContentFormat FunctionContentFormat `json:"contentFormat,omitempty"`
+	Annotations   map[string]string     `json:"annotations,omitempty"`
 	Name          string                `json:"name,omitempty"`
 	Language      FunctionLanguage      `json:"language,omitempty"`
 	Source        string                `json:"source,omitempty"`
-	ContentFormat FunctionContentFormat `json:"contentFormat,omitempty"`
-	Annotations   map[string]string     `json:"annotations,omitempty"`
 	Version       int32                 `json:"version,omitempty"`
 	AuditData     *FunctionAuditData    `json:"auditData,omitempty"`
 }
 
 func (s Function) GetId() *uuid.UUID {
 	return s.Id
+}
+func (s Function) GetContentFormat() FunctionContentFormat {
+	return s.ContentFormat
+}
+func (s Function) GetAnnotations() map[string]string {
+	return s.Annotations
 }
 func (s Function) GetName() string {
 	return s.Name
@@ -31,12 +37,6 @@ func (s Function) GetLanguage() FunctionLanguage {
 }
 func (s Function) GetSource() string {
 	return s.Source
-}
-func (s Function) GetContentFormat() FunctionContentFormat {
-	return s.ContentFormat
-}
-func (s Function) GetAnnotations() map[string]string {
-	return s.Annotations
 }
 func (s Function) GetVersion() int32 {
 	return s.Version
@@ -65,16 +65,16 @@ func (s FunctionAuditData) GetUpdatedOn() *time.Time {
 	return s.UpdatedOn
 }
 
-type FunctionLanguage string
-
-const (
-	FunctionLanguage_JAVASCRIPT FunctionLanguage = "JAVASCRIPT"
-)
-
 type FunctionContentFormat string
 
 const (
 	FunctionContentFormat_TEXT  FunctionContentFormat = "TEXT"
 	FunctionContentFormat_TAR   FunctionContentFormat = "TAR"
 	FunctionContentFormat_TARGZ FunctionContentFormat = "TAR_GZ"
+)
+
+type FunctionLanguage string
+
+const (
+	FunctionLanguage_JAVASCRIPT FunctionLanguage = "JAVASCRIPT"
 )

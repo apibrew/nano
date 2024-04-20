@@ -8,13 +8,13 @@ package model
 
 import (
 	"github.com/apibrew/apibrew/pkg/abs"
+	"github.com/apibrew/apibrew/pkg/formats/unstructured"
 	"github.com/apibrew/apibrew/pkg/model"
 	"github.com/apibrew/apibrew/pkg/types"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 import "github.com/google/uuid"
-import "github.com/apibrew/apibrew/pkg/formats/unstructured"
 import "time"
 
 type ScriptMapper struct {
@@ -63,6 +63,30 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
+	var_Output := script.Output
+
+	if var_Output != nil {
+		var var_Output_mapped *structpb.Value
+
+		var var_Output_err error
+		var_Output_mapped, var_Output_err = types.ByResourcePropertyType(model.ResourceProperty_OBJECT).Pack(var_Output)
+		if var_Output_err != nil {
+			panic(var_Output_err)
+		}
+		properties["output"] = var_Output_mapped
+	}
+
+	var_Language := script.Language
+
+	var var_Language_mapped *structpb.Value
+
+	var var_Language_err error
+	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
+	if var_Language_err != nil {
+		panic(var_Language_err)
+	}
+	properties["language"] = var_Language_mapped
+
 	var_Source := script.Source
 
 	var var_Source_mapped *structpb.Value
@@ -109,30 +133,6 @@ func (m *ScriptMapper) ToProperties(script *Script) map[string]*structpb.Value {
 		properties["annotations"] = var_Annotations_mapped
 	}
 
-	var_Output := script.Output
-
-	if var_Output != nil {
-		var var_Output_mapped *structpb.Value
-
-		var var_Output_err error
-		var_Output_mapped, var_Output_err = types.ByResourcePropertyType(model.ResourceProperty_OBJECT).Pack(var_Output)
-		if var_Output_err != nil {
-			panic(var_Output_err)
-		}
-		properties["output"] = var_Output_mapped
-	}
-
-	var_Language := script.Language
-
-	var var_Language_mapped *structpb.Value
-
-	var var_Language_err error
-	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
-	if var_Language_err != nil {
-		panic(var_Language_err)
-	}
-	properties["language"] = var_Language_mapped
-
 	var_Version := script.Version
 
 	var var_Version_mapped *structpb.Value
@@ -170,6 +170,21 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
+	}
+	if properties["output"] != nil && properties["output"].AsInterface() != nil {
+
+		var_Output := properties["output"]
+		var_Output_mapped := new(interface{})
+		*var_Output_mapped = unstructured.FromValue(var_Output)
+
+		s.Output = var_Output_mapped
+	}
+	if properties["language"] != nil && properties["language"].AsInterface() != nil {
+
+		var_Language := properties["language"]
+		var_Language_mapped := (ScriptLanguage)(var_Language.GetStringValue())
+
+		s.Language = var_Language_mapped
 	}
 	if properties["source"] != nil && properties["source"].AsInterface() != nil {
 
@@ -211,21 +226,6 @@ func (m *ScriptMapper) FromProperties(properties map[string]*structpb.Value) *Sc
 
 		s.Annotations = var_Annotations_mapped
 	}
-	if properties["output"] != nil && properties["output"].AsInterface() != nil {
-
-		var_Output := properties["output"]
-		var_Output_mapped := new(interface{})
-		*var_Output_mapped = unstructured.FromValue(var_Output)
-
-		s.Output = var_Output_mapped
-	}
-	if properties["language"] != nil && properties["language"].AsInterface() != nil {
-
-		var_Language := properties["language"]
-		var_Language_mapped := (ScriptLanguage)(var_Language.GetStringValue())
-
-		s.Language = var_Language_mapped
-	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -264,6 +264,22 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 		properties["id"] = var_Id_mapped
 	}
 
+	var_Output := script.Output
+
+	if var_Output != nil {
+		var var_Output_mapped interface{}
+
+		var_Output_mapped = var_Output
+		properties["output"] = var_Output_mapped
+	}
+
+	var_Language := script.Language
+
+	var var_Language_mapped interface{}
+
+	var_Language_mapped = string(var_Language)
+	properties["language"] = var_Language_mapped
+
 	var_Source := script.Source
 
 	var var_Source_mapped interface{}
@@ -296,22 +312,6 @@ func (m *ScriptMapper) ToUnstructured(script *Script) unstructured.Unstructured 
 		var_Annotations_mapped = var_Annotations_st
 		properties["annotations"] = var_Annotations_mapped
 	}
-
-	var_Output := script.Output
-
-	if var_Output != nil {
-		var var_Output_mapped interface{}
-
-		var_Output_mapped = var_Output
-		properties["output"] = var_Output_mapped
-	}
-
-	var_Language := script.Language
-
-	var var_Language_mapped interface{}
-
-	var_Language_mapped = string(var_Language)
-	properties["language"] = var_Language_mapped
 
 	var_Version := script.Version
 
