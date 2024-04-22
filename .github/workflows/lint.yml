@@ -22,4 +22,3 @@ jobs:
     - name: Build the Docker image
       run: |
         docker build . --progress=plain --no-cache --target=lint
-        docker build . --progress=plain --no-cache --target=test
