@@ -39,7 +39,7 @@ func (s *codeExecutorService) GetGlobalObject() abs.GlobalObject {
 	return s.globalObject
 }
 
-func (s *codeExecutorService) runScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
+func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
@@ -83,7 +83,7 @@ func (s *codeExecutorService) runScript(ctx context.Context, script *model.Scrip
 	return result.Export(), nil
 }
 
-func (s *codeExecutorService) runInlineScript(ctx context.Context, identifier string, source string) (err error) {
+func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier string, source string) (result any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
@@ -106,16 +106,17 @@ func (s *codeExecutorService) runInlineScript(ctx context.Context, identifier st
 	err = s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = vm.RunString(source)
+	var res goja.Value
+	res, err = vm.RunString(source)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return res.Export(), nil
 }
 
 func (s *codeExecutorService) registerCode(code *model.Code) (err error) {

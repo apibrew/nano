@@ -137,7 +137,7 @@ func (m module) scriptListenerHandler(ctx context.Context, event *model.Event) (
 
 		switch event.Action {
 		case model.Event_CREATE:
-			output, err := m.codeExecutor.runScript(ctx, script)
+			output, err := m.codeExecutor.RunScript(ctx, script)
 
 			if output != nil {
 				st, err := structpb.NewValue(output)

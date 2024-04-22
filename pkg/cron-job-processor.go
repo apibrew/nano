@@ -65,7 +65,7 @@ func (f *cronJobProcessor) execute(executionNumber int32, cronId string) {
 	}
 	log.Debug("Executing CronJob:", record["name"], executionNumber)
 
-	err := f.codeExecutor.runInlineScript(util.SystemContext, record["name"].(string)+"-"+strconv.Itoa(int(executionNumber)), record["source"].(string))
+	_, err := f.codeExecutor.RunInlineScript(util.SystemContext, record["name"].(string)+"-"+strconv.Itoa(int(executionNumber)), record["source"].(string))
 
 	record = make(unstructured.Unstructured)
 	record["id"] = cronId

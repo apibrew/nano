@@ -18,6 +18,7 @@ type VmOptions struct {
 }
 
 type CodeExecutorService interface {
+	RunInlineScript(ctx context.Context, identifier string, source string) (result any, err error)
 	GetContainer() service.Container
 	GetBackendEventHandler() backend_event_handler.BackendEventHandler
 	GetGlobalObject() GlobalObject

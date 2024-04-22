@@ -76,7 +76,7 @@ func (h *httpObject) Get(url string, params HttpRequest) HttpResponse {
 }
 
 func (h *httpObject) Delete(url string, params HttpRequest) HttpResponse {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("DELETE	", url, nil)
 
 	if err != nil {
 		util.ThrowError(h.vm, err.Error())
