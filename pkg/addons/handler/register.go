@@ -1,4 +1,4 @@
-package resource
+package handler
 
 import (
 	"github.com/apibrew/nano/pkg/abs"

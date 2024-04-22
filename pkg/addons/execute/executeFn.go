@@ -68,24 +68,8 @@ func executeFn(vm *goja.Runtime) func(script string, params Params) interface{} 
 	}
 }
 
-func initVmFn(s abs.CodeExecutorService) func(options abs.VmOptions) *goja.Runtime {
-	return func(options abs.VmOptions) *goja.Runtime {
-		vm, err := s.NewVm(options)
-
-		if err != nil {
-			util.ThrowError(vm, err.Error())
-		}
-
-		return vm
-	}
-}
-
 func Register(vm *goja.Runtime, s abs.CodeExecutorService) error {
 	if err := vm.Set("execute", executeFn(vm)); err != nil {
-		return err
-	}
-
-	if err := vm.Set("initVm", initVmFn(s)); err != nil {
 		return err
 	}
 

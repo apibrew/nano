@@ -42,6 +42,12 @@ properties:
       - TAR
       - TAR_GZ
     defaultValue: TEXT
+  concurrencyLevel:
+    title: Concurrency Level
+    description: Concurrency level
+    type: INT32
+    required: false
+    defaultValue: 8
   annotations:
     type: MAP
     required: false

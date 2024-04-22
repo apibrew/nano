@@ -9,17 +9,8 @@ import (
 )
 
 func TestNanoScriptBasic(t *testing.T) {
-	var api = api.NewInterface(container)
-
-	var testFn = new(model.Script)
-	testFn.Source = `5 + 6`
-	testFn.Language = model.ScriptLanguage_JAVASCRIPT
-	testFn.ContentFormat = model.ScriptContentFormat_TEXT
-
-	result, err := api.Apply(util.SystemContext, model.ScriptMapperInstance.ToUnstructured(testFn))
-
-	if err != nil {
-		t.Error(err)
+	result := runScript(t, `5 + 6`)
+	if t.Failed() {
 		return
 	}
 

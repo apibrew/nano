@@ -3,6 +3,7 @@ package nano
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/apibrew/apibrew/pkg/service"
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
@@ -10,6 +11,7 @@ import (
 	"github.com/apibrew/nano/pkg/abs"
 	"github.com/apibrew/nano/pkg/addons"
 	"github.com/apibrew/nano/pkg/model"
+	util2 "github.com/apibrew/nano/pkg/util"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
 	log "github.com/sirupsen/logrus"
@@ -20,44 +22,24 @@ import (
 type codeExecutorService struct {
 	container           service.Container
 	backendEventHandler backend_event_handler.BackendEventHandler
-	codeContext         map[string]*codeExecutionContext
+	codeContext         util2.Map[string, *codeExecutionContext]
 	globalObject        *globalObject
-	functions           map[string]string
+	functions           util2.Map[string, string]
 }
 
-func (s codeExecutorService) NewVm(options abs.VmOptions) (*goja.Runtime, error) {
-	vm := goja.New()
-	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
-
-	registry := new(require.Registry) // this can be shared by multiple runtimes
-
-	runtime := goja.New()
-	registry.Enable(runtime)
-
-	cec := &codeExecutionContext{}
-	cec.ctx = util.WithSystemContext(context.Background())
-	err := s.registerBuiltIns("", vm, cec)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return vm, nil
-}
-
-func (s codeExecutorService) GetContainer() service.Container {
+func (s *codeExecutorService) GetContainer() service.Container {
 	return s.container
 }
 
-func (s codeExecutorService) GetBackendEventHandler() backend_event_handler.BackendEventHandler {
+func (s *codeExecutorService) GetBackendEventHandler() backend_event_handler.BackendEventHandler {
 	return s.backendEventHandler
 }
 
-func (s codeExecutorService) GetGlobalObject() abs.GlobalObject {
+func (s *codeExecutorService) GetGlobalObject() abs.GlobalObject {
 	return s.globalObject
 }
 
-func (s codeExecutorService) runScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
+func (s *codeExecutorService) runScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
@@ -81,13 +63,12 @@ func (s codeExecutorService) runScript(ctx context.Context, script *model.Script
 	registry.Enable(runtime)
 
 	cec := &codeExecutionContext{}
-	cec.ctx = util.WithSystemContext(context.Background())
-	cec.vm = vm
+	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
+	cec.ctx = ctx
+	cec.cancel = cancel
 	cec.identifier = script.Id.String() + "-" + strconv.Itoa(int(script.Version))
 	cec.scriptMode = true
 	err = s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
-
-	s.codeContext[cec.identifier] = cec
 
 	if err != nil {
 		return nil, err
@@ -102,7 +83,7 @@ func (s codeExecutorService) runScript(ctx context.Context, script *model.Script
 	return result.Export(), nil
 }
 
-func (s codeExecutorService) runInlineScript(ctx context.Context, identifier string, source string) (err error) {
+func (s *codeExecutorService) runInlineScript(ctx context.Context, identifier string, source string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
@@ -117,13 +98,12 @@ func (s codeExecutorService) runInlineScript(ctx context.Context, identifier str
 	registry.Enable(runtime)
 
 	cec := &codeExecutionContext{}
-	cec.ctx = util.WithSystemContext(context.Background())
-	cec.vm = vm
+	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
+	cec.ctx = ctx
+	cec.cancel = cancel
 	cec.identifier = identifier
 	cec.scriptMode = true
 	err = s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
-
-	s.codeContext[cec.identifier] = cec
 
 	if err != nil {
 		return err
@@ -138,7 +118,7 @@ func (s codeExecutorService) runInlineScript(ctx context.Context, identifier str
 	return nil
 }
 
-func (s codeExecutorService) registerCode(code *model.Code) (err error) {
+func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
@@ -152,8 +132,11 @@ func (s codeExecutorService) registerCode(code *model.Code) (err error) {
 
 	log.Debug("Registering code: " + code.Name)
 
-	vm := goja.New()
-	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
+	program, err := goja.Compile(code.Name, code.Content, true)
+
+	if err != nil {
+		return err
+	}
 
 	registry := new(require.Registry) // this can be shared by multiple runtimes
 
@@ -161,26 +144,40 @@ func (s codeExecutorService) registerCode(code *model.Code) (err error) {
 	registry.Enable(runtime)
 
 	cec := &codeExecutionContext{}
-	cec.ctx = util.WithSystemContext(context.Background())
-	cec.vm = vm
+	ctx, cancel := context.WithCancel(util.WithSystemContext(context.Background()))
+	cec.ctx = ctx
+	cec.cancel = cancel
+
+	cec.handlerMap = util2.NewConcurrentSyncMap[string, *abs.HandlerData]()
 	cec.identifier = code.Id.String() + "-" + strconv.Itoa(int(code.Version))
-	err = s.registerBuiltIns(code.Name, vm, cec)
+	s.codeContext.Set(code.Name, cec)
 
-	s.codeContext[code.Name] = cec
-
-	if err != nil {
-		return err
+	var concurrencyLevel = 8
+	if code.ConcurrencyLevel != nil {
+		concurrencyLevel = int(*code.ConcurrencyLevel)
 	}
 
-	_, err = vm.RunString(code.Content)
-	if err != nil {
-		return err
+	for i := 0; i < concurrencyLevel; i++ {
+		vm := goja.New()
+		vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
+		err = s.registerBuiltIns(code.Name, vm, cec)
+
+		if err != nil {
+			return err
+		}
+
+		_, err = vm.RunProgram(program)
+		if err != nil {
+			return err
+		}
+
+		cec.vms = append(cec.vms, vm)
 	}
 
 	return nil
 }
 
-func (s codeExecutorService) updateCode(code *model.Code) error {
+func (s *codeExecutorService) updateCode(code *model.Code) error {
 	if err := s.unRegisterCode(code); err != nil {
 		return err
 	}
@@ -192,24 +189,19 @@ func (s codeExecutorService) updateCode(code *model.Code) error {
 	return nil
 }
 
-func (s codeExecutorService) unRegisterCode(code *model.Code) error {
-	cec := s.codeContext[code.Name]
-	if len(cec.handlerIds) > 0 {
-		for _, handlerId := range s.codeContext[code.Name].handlerIds {
-			s.backendEventHandler.UnRegisterHandler(backend_event_handler.Handler{
-				Id: handlerId,
-			})
-		}
+func (s *codeExecutorService) unRegisterCode(code *model.Code) error {
+	cec, ok := s.codeContext.Find(code.Name)
+
+	if !ok {
+		return errors.New("code context not found")
 	}
 
-	for _, cancelFn := range cec.closeHandlers {
-		cancelFn()
-	}
+	cec.cancel()
 
 	return nil
 }
 
-func (s codeExecutorService) registerBuiltIns(codeName string, vm *goja.Runtime, cec *codeExecutionContext) error {
+func (s *codeExecutorService) registerBuiltIns(codeName string, vm *goja.Runtime, cec *codeExecutionContext) error {
 	if err := addons.Register(vm, cec, s, codeName, s.container); err != nil {
 		return err
 	}
@@ -242,7 +234,8 @@ func (s codeExecutorService) registerBuiltIns(codeName string, vm *goja.Runtime,
 
 	// register functions
 
-	for name, handler := range s.functions {
+	for _, name := range s.functions.Keys() {
+		handler := s.functions.Get(name)
 		var fn, err = vm.RunString(handler)
 
 		if err != nil {
@@ -257,7 +250,7 @@ func (s codeExecutorService) registerBuiltIns(codeName string, vm *goja.Runtime,
 	return nil
 }
 
-func (s codeExecutorService) registerTimeoutFunctions(vm *goja.Runtime, cec *codeExecutionContext) error {
+func (s *codeExecutorService) registerTimeoutFunctions(vm *goja.Runtime, cec *codeExecutionContext) error {
 	if err := vm.Set("setTimeout", s.setTimeoutFn(cec)); err != nil {
 		return err
 	}
@@ -281,13 +274,12 @@ func (s codeExecutorService) registerTimeoutFunctions(vm *goja.Runtime, cec *cod
 	return nil
 }
 
-func (s codeExecutorService) setTimeoutFn(cec *codeExecutionContext) func(fn func(), duration int64) func() {
+func (s *codeExecutorService) setTimeoutFn(cec *codeExecutionContext) func(fn func(), duration int64) func() {
 	return func(fn func(), duration int64) func() {
 		cancel := make(chan struct{})
 		cancelFn := func() {
 			close(cancel)
 		}
-		cec.closeHandlers = append(cec.closeHandlers, cancelFn) // fixme (potential memory leak)
 
 		go func() {
 			defer func() {
@@ -299,6 +291,7 @@ func (s codeExecutorService) setTimeoutFn(cec *codeExecutionContext) func(fn fun
 			case <-time.After(time.Duration(duration) * time.Millisecond):
 				fn()
 			case <-cancel:
+			case <-cec.ctx.Done():
 				// Cancel the timeout
 			}
 		}()
@@ -306,7 +299,7 @@ func (s codeExecutorService) setTimeoutFn(cec *codeExecutionContext) func(fn fun
 	}
 }
 
-func (s codeExecutorService) clearTimeoutFn(cec *codeExecutionContext) func(clearFn func()) {
+func (s *codeExecutorService) clearTimeoutFn(cec *codeExecutionContext) func(clearFn func()) {
 	return func(clearFn func()) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -317,13 +310,12 @@ func (s codeExecutorService) clearTimeoutFn(cec *codeExecutionContext) func(clea
 	}
 }
 
-func (s codeExecutorService) setIntervalFn(cec *codeExecutionContext) func(fn func(), duration int64) func() {
+func (s *codeExecutorService) setIntervalFn(cec *codeExecutionContext) func(fn func(), duration int64) func() {
 	return func(fn func(), duration int64) func() {
 		cancel := make(chan struct{})
 		cancelFn := func() {
 			close(cancel)
 		}
-		cec.closeHandlers = append(cec.closeHandlers, cancelFn) // fixme (potential memory leak)
 
 		go func() {
 		Loop:
@@ -336,6 +328,8 @@ func (s codeExecutorService) setIntervalFn(cec *codeExecutionContext) func(fn fu
 				select {
 				case <-time.After(time.Duration(duration) * time.Millisecond):
 					fn()
+				case <-cec.ctx.Done():
+					break Loop
 				case <-cancel:
 					break Loop
 				}
@@ -345,7 +339,7 @@ func (s codeExecutorService) setIntervalFn(cec *codeExecutionContext) func(fn fu
 	}
 }
 
-func (s codeExecutorService) clearIntervalFn(cec *codeExecutionContext) func(clearFn func()) {
+func (s *codeExecutorService) clearIntervalFn(cec *codeExecutionContext) func(clearFn func()) {
 	return func(clearFn func()) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -356,58 +350,66 @@ func (s codeExecutorService) clearIntervalFn(cec *codeExecutionContext) func(cle
 	}
 }
 
-func (s codeExecutorService) sleepFn(cec *codeExecutionContext) func(duration int32) {
+func (s *codeExecutorService) sleepFn(cec *codeExecutionContext) func(duration int32) {
 	return func(duration int32) {
-		time.Sleep(time.Duration(duration) * time.Millisecond)
+		select {
+		case <-time.After(time.Duration(duration) * time.Millisecond):
+		case <-cec.ctx.Done():
+		}
 	}
 }
 
 func (s *codeExecutorService) registerFunction(function *model.Function) error {
 	var handler = fmt.Sprintf(`(function(a, b, c, d, e, f, g, h, i, j, k, l, m, n) {%s})`, function.Source)
 
-	s.functions[function.Name] = handler
+	s.functions.Set(function.Name, handler)
 
-	for _, cctx := range s.codeContext {
-		err := cctx.vm.Try(func() {
-			var fn, err = cctx.vm.RunString(handler)
+	for _, cctx := range s.codeContext.Values() {
+		for _, vm := range cctx.vms {
+			err := vm.Try(func() {
+				var fn, err = vm.RunString(handler)
+
+				if err != nil {
+					log.Error(err)
+				}
+
+				err = vm.Set(function.Name, fn)
+
+				if err != nil {
+					log.Error(err)
+				}
+			})
 
 			if err != nil {
 				log.Error(err)
 			}
-
-			err = cctx.vm.Set(function.Name, fn)
-
-			if err != nil {
-				log.Error(err)
-			}
-		})
-
-		if err != nil {
-			log.Error(err)
 		}
+
 	}
 
 	return nil
 }
 
-func (s codeExecutorService) updateFunction(function *model.Function) error {
+func (s *codeExecutorService) updateFunction(function *model.Function) error {
 	return s.registerFunction(function)
 }
 
-func (s codeExecutorService) unRegisterFunction(function *model.Function) error {
-	delete(s.functions, function.Name)
+func (s *codeExecutorService) unRegisterFunction(function *model.Function) error {
+	s.functions.Delete(function.Name)
 
-	for _, cctx := range s.codeContext {
-		err := cctx.vm.Try(func() {
-			err := cctx.vm.Set(function.Name, nil)
+	for _, cctx := range s.codeContext.Values() {
+		for _, vm := range cctx.vms {
+			err := vm.Try(func() {
+				err := vm.Set(function.Name, nil)
+
+				if err != nil {
+					log.Error(err)
+				}
+			})
 
 			if err != nil {
 				log.Error(err)
 			}
-		})
-
-		if err != nil {
-			log.Error(err)
 		}
 	}
 
@@ -415,5 +417,11 @@ func (s codeExecutorService) unRegisterFunction(function *model.Function) error 
 }
 
 func newCodeExecutorService(container service.Container, backendEventHandler backend_event_handler.BackendEventHandler) *codeExecutorService {
-	return &codeExecutorService{container: container, backendEventHandler: backendEventHandler, codeContext: make(map[string]*codeExecutionContext), globalObject: newGlobalObject(), functions: make(map[string]string)}
+	return &codeExecutorService{
+		container:           container,
+		backendEventHandler: backendEventHandler,
+		codeContext:         util2.NewConcurrentSyncMap[string, *codeExecutionContext](),
+		globalObject:        newGlobalObject(),
+		functions:           util2.NewConcurrentSyncMap[string, string](),
+	}
 }

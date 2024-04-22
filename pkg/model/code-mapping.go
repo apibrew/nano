@@ -63,17 +63,6 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Name := code.Name
-
-	var var_Name_mapped *structpb.Value
-
-	var var_Name_err error
-	var_Name_mapped, var_Name_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Name)
-	if var_Name_err != nil {
-		panic(var_Name_err)
-	}
-	properties["name"] = var_Name_mapped
-
 	var_Language := code.Language
 
 	var var_Language_mapped *structpb.Value
@@ -107,6 +96,19 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 	}
 	properties["contentFormat"] = var_ContentFormat_mapped
 
+	var_ConcurrencyLevel := code.ConcurrencyLevel
+
+	if var_ConcurrencyLevel != nil {
+		var var_ConcurrencyLevel_mapped *structpb.Value
+
+		var var_ConcurrencyLevel_err error
+		var_ConcurrencyLevel_mapped, var_ConcurrencyLevel_err = types.ByResourcePropertyType(model.ResourceProperty_INT32).Pack(*var_ConcurrencyLevel)
+		if var_ConcurrencyLevel_err != nil {
+			panic(var_ConcurrencyLevel_err)
+		}
+		properties["concurrencyLevel"] = var_ConcurrencyLevel_mapped
+	}
+
 	var_Annotations := code.Annotations
 
 	if var_Annotations != nil {
@@ -130,6 +132,17 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 		var_Annotations_mapped = structpb.NewStructValue(var_Annotations_st)
 		properties["annotations"] = var_Annotations_mapped
 	}
+
+	var_Name := code.Name
+
+	var var_Name_mapped *structpb.Value
+
+	var var_Name_err error
+	var_Name_mapped, var_Name_err = types.ByResourcePropertyType(model.ResourceProperty_STRING).Pack(var_Name)
+	if var_Name_err != nil {
+		panic(var_Name_err)
+	}
+	properties["name"] = var_Name_mapped
 
 	var_Version := code.Version
 
@@ -169,19 +182,6 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 
 		s.Id = var_Id_mapped
 	}
-	if properties["name"] != nil && properties["name"].AsInterface() != nil {
-
-		var_Name := properties["name"]
-		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Name)
-
-		if err != nil {
-			panic(err)
-		}
-
-		var_Name_mapped := val.(string)
-
-		s.Name = var_Name_mapped
-	}
 	if properties["language"] != nil && properties["language"].AsInterface() != nil {
 
 		var_Language := properties["language"]
@@ -209,6 +209,20 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 
 		s.ContentFormat = var_ContentFormat_mapped
 	}
+	if properties["concurrencyLevel"] != nil && properties["concurrencyLevel"].AsInterface() != nil {
+
+		var_ConcurrencyLevel := properties["concurrencyLevel"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_INT32).UnPack(var_ConcurrencyLevel)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_ConcurrencyLevel_mapped := new(int32)
+		*var_ConcurrencyLevel_mapped = val.(int32)
+
+		s.ConcurrencyLevel = var_ConcurrencyLevel_mapped
+	}
 	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
 
 		var_Annotations := properties["annotations"]
@@ -228,6 +242,19 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 		}
 
 		s.Annotations = var_Annotations_mapped
+	}
+	if properties["name"] != nil && properties["name"].AsInterface() != nil {
+
+		var_Name := properties["name"]
+		val, err := types.ByResourcePropertyType(model.ResourceProperty_STRING).UnPack(var_Name)
+
+		if err != nil {
+			panic(err)
+		}
+
+		var_Name_mapped := val.(string)
+
+		s.Name = var_Name_mapped
 	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
@@ -267,13 +294,6 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Name := code.Name
-
-	var var_Name_mapped interface{}
-
-	var_Name_mapped = var_Name
-	properties["name"] = var_Name_mapped
-
 	var_Language := code.Language
 
 	var var_Language_mapped interface{}
@@ -295,6 +315,15 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 	var_ContentFormat_mapped = string(var_ContentFormat)
 	properties["contentFormat"] = var_ContentFormat_mapped
 
+	var_ConcurrencyLevel := code.ConcurrencyLevel
+
+	if var_ConcurrencyLevel != nil {
+		var var_ConcurrencyLevel_mapped interface{}
+
+		var_ConcurrencyLevel_mapped = *var_ConcurrencyLevel
+		properties["concurrencyLevel"] = var_ConcurrencyLevel_mapped
+	}
+
 	var_Annotations := code.Annotations
 
 	if var_Annotations != nil {
@@ -313,6 +342,13 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 		var_Annotations_mapped = var_Annotations_st
 		properties["annotations"] = var_Annotations_mapped
 	}
+
+	var_Name := code.Name
+
+	var var_Name_mapped interface{}
+
+	var_Name_mapped = var_Name
+	properties["name"] = var_Name_mapped
 
 	var_Version := code.Version
 

@@ -1,4 +1,4 @@
-package resource
+package handler
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
 	"github.com/apibrew/apibrew/pkg/util"
 	"github.com/apibrew/nano/pkg/abs"
+	log "github.com/sirupsen/logrus"
 	"runtime/debug"
 )
 
@@ -26,7 +27,7 @@ type Handler struct {
 	Responds  bool
 }
 
-func handle(cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
+func _(cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
 	return func(handler Handler) {
 		if cec.IsScriptMode() {
 			panic("Handlers are not supported in script mode")
@@ -34,23 +35,82 @@ func handle(cec abs.CodeExecutionContext, backendEventHandler backend_event_hand
 
 		handlerId := "nano-" + cec.GetCodeIdentifier() + "-" + util.RandomHex(8)
 
-		cec.AddHandlerId(handlerId)
-
-		backendEventHandler.RegisterHandler(backend_event_handler.Handler{
+		var handlerTemplate = backend_event_handler.Handler{
 			Id:        handlerId,
 			Name:      cec.GetCodeIdentifier() + "-" + handler.Name,
-			Fn:        recordHandlerFn(handler),
 			Selector:  extramappings.EventSelectorToProto(handler.Selector),
 			Order:     handler.Order,
 			Sync:      handler.Sync,
 			Responds:  handler.Responds,
 			Finalizes: handler.Finalizes,
-		})
+		}
+
+		handlerTemplate.Id = handlerId
+		handlerTemplate.Fn = recordHandlerFn(handler.Fn)
+
+		go func() {
+			<-cec.Context().Done()
+
+			backendEventHandler.UnRegisterHandler(handlerTemplate)
+		}()
+
+		backendEventHandler.RegisterHandler(handlerTemplate)
 	}
 }
 
-func recordHandlerFn(handler Handler) backend_event_handler.HandlerFunc {
-	fn := handler.Fn
+func handle(cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
+	return func(handler Handler) {
+		if cec.IsScriptMode() {
+			panic("Handlers are not supported in script mode")
+		}
+
+		handlerData := cec.HandlerMap().Get(handler.Name)
+
+		if handlerData == nil {
+			handlerData = &abs.HandlerData{}
+			handlerData.Ch = make(chan *abs.EventWithContext, 100)
+			cec.HandlerMap().Set(handler.Name, handlerData)
+
+			handlerId := "nano-" + cec.GetCodeIdentifier() + "-" + util.RandomHex(8)
+
+			var handlerTemplate = backend_event_handler.Handler{
+				Id:        handlerId,
+				Name:      cec.GetCodeIdentifier() + "-" + handler.Name,
+				Selector:  extramappings.EventSelectorToProto(handler.Selector),
+				Order:     handler.Order,
+				Sync:      handler.Sync,
+				Responds:  handler.Responds,
+				Finalizes: handler.Finalizes,
+			}
+
+			handlerTemplate.Id = handlerId
+			handlerTemplate.Fn = processThrowHandlerData(handlerData)
+
+			backendEventHandler.RegisterHandler(handlerTemplate)
+
+			go func() {
+				<-cec.Context().Done()
+
+				backendEventHandler.UnRegisterHandler(handlerTemplate)
+				close(handlerData.Ch)
+			}()
+		}
+
+		go func() {
+			for item := range handlerData.Ch {
+				processedEvent, err := recordHandlerFn(handler.Fn)(item.Ctx, item.Event)
+
+				item.Signal <- abs.EventWithContextSignal{
+					ProcessedEvent: processedEvent,
+					Err:            err,
+				}
+			}
+			log.Println("Handler finished")
+		}()
+	}
+}
+
+func recordHandlerFn(fn HandlerFunc) backend_event_handler.HandlerFunc {
 	return func(ctx context.Context, event *model.Event) (processedEvent *model.Event, err errors.ServiceError) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -116,6 +176,25 @@ func recordHandlerFn(handler Handler) backend_event_handler.HandlerFunc {
 		event.Records = processedRecords
 
 		return event, nil
+	}
+}
+
+func processThrowHandlerData(data *abs.HandlerData) backend_event_handler.HandlerFunc {
+	return func(ctx context.Context, event *model.Event) (*model.Event, errors.ServiceError) {
+		log.Debug("Begin dispatching event: " + event.Id)
+		ec := &abs.EventWithContext{
+			Ctx:    ctx,
+			Event:  event,
+			Signal: make(chan abs.EventWithContextSignal),
+		}
+
+		data.Ch <- ec
+
+		log.Debug("Starting to wait for signal: " + event.Id)
+		res := <-ec.Signal
+
+		log.Debug("Received signal: " + event.Id)
+		return res.ProcessedEvent, res.Err
 	}
 }
 

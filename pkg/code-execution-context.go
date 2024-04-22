@@ -2,19 +2,25 @@ package nano
 
 import (
 	"context"
+	"github.com/apibrew/nano/pkg/abs"
+	"github.com/apibrew/nano/pkg/util"
 	"github.com/dop251/goja"
 	log "github.com/sirupsen/logrus"
 )
 
 type codeExecutionContext struct {
-	handlerIds             []string
-	closeHandlers          []func()
 	ctx                    context.Context
-	vm                     *goja.Runtime
+	cancel                 context.CancelFunc
+	vms                    []*goja.Runtime
 	identifier             string
 	scriptMode             bool
 	insideTransaction      bool
 	transactionRollbackBag []func() error
+	handlerMap             util.Map[string, *abs.HandlerData]
+}
+
+func (c *codeExecutionContext) HandlerMap() util.Map[string, *abs.HandlerData] {
+	return c.handlerMap
 }
 
 func (c *codeExecutionContext) BeginTransaction() error {
@@ -46,19 +52,6 @@ func (c *codeExecutionContext) RegisterRevert(f func() error) {
 
 func (c *codeExecutionContext) TransactionalEnabled() bool {
 	return c.insideTransaction
-}
-
-func (c *codeExecutionContext) AddHandlerId(id string) {
-	c.handlerIds = append(c.handlerIds, id)
-}
-
-func (c *codeExecutionContext) RemoveHandlerId(id string) {
-	for i, handlerId := range c.handlerIds {
-		if handlerId == id {
-			c.handlerIds = append(c.handlerIds[:i], c.handlerIds[i+1:]...)
-			return
-		}
-	}
 }
 
 func (c *codeExecutionContext) Context() context.Context {

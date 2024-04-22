@@ -9,9 +9,9 @@ import (
 	"github.com/apibrew/nano/pkg/addons/console"
 	"github.com/apibrew/nano/pkg/addons/execute"
 	"github.com/apibrew/nano/pkg/addons/global"
+	"github.com/apibrew/nano/pkg/addons/handler"
 	"github.com/apibrew/nano/pkg/addons/http"
 	"github.com/apibrew/nano/pkg/addons/mail"
-	"github.com/apibrew/nano/pkg/addons/resource"
 	"github.com/apibrew/nano/pkg/addons/util"
 	"github.com/dop251/goja"
 )
@@ -21,7 +21,7 @@ func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, s abs.CodeExecutor
 		return err
 	}
 
-	if err := resource.Register(vm, cec, s); err != nil {
+	if err := handler.Register(vm, cec, s); err != nil {
 		return err
 	}
 

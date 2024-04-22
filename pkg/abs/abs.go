@@ -2,9 +2,11 @@ package abs
 
 import (
 	"context"
+	"github.com/apibrew/apibrew/pkg/errors"
+	"github.com/apibrew/apibrew/pkg/model"
 	"github.com/apibrew/apibrew/pkg/service"
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
-	"github.com/dop251/goja"
+	"github.com/apibrew/nano/pkg/util"
 )
 
 type GlobalObject interface {
@@ -19,12 +21,25 @@ type CodeExecutorService interface {
 	GetContainer() service.Container
 	GetBackendEventHandler() backend_event_handler.BackendEventHandler
 	GetGlobalObject() GlobalObject
-	NewVm(options VmOptions) (*goja.Runtime, error)
+}
+
+type EventWithContextSignal struct {
+	ProcessedEvent *model.Event
+	Err            errors.ServiceError
+}
+
+type EventWithContext struct {
+	Ctx    context.Context
+	Event  *model.Event
+	Signal chan EventWithContextSignal
+}
+
+type HandlerData struct {
+	Ch chan *EventWithContext
 }
 
 type CodeExecutionContext interface {
-	AddHandlerId(id string)
-	RemoveHandlerId(id string)
+	HandlerMap() util.Map[string, *HandlerData]
 	Context() context.Context
 	GetCodeIdentifier() string
 	IsScriptMode() bool

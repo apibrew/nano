@@ -10,10 +10,6 @@ import (
 	"github.com/dop251/goja"
 )
 
-func collect(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) {
-
-}
-
 func create(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(record unstructured.Unstructured) unstructured.Unstructured {
 	return func(record unstructured.Unstructured) unstructured.Unstructured {
 		var typ = record["type"].(string)
