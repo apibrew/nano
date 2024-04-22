@@ -133,7 +133,7 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 
 	log.Debug("Registering code: " + code.Name)
 
-	program, err := goja.Compile(code.Name, code.Content, true)
+	program, err := goja.Compile(code.Name, code.Content, false)
 
 	if err != nil {
 		return err
