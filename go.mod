@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/apibrew/apibrew v1.3.85
-	github.com/aws/aws-sdk-go v1.50.19
+	github.com/aws/aws-sdk-go v1.51.29
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/dop251/goja_nodejs v0.0.0-20211022123610-8dd9abb0616d
 	github.com/google/uuid v1.5.0
