@@ -2,6 +2,7 @@ package nano
 
 import (
 	"context"
+	errors2 "errors"
 	"fmt"
 	"github.com/apibrew/apibrew/pkg/api"
 	"github.com/apibrew/apibrew/pkg/errors"
@@ -100,7 +101,7 @@ func (m module) ensureResources() {
 			if err != nil {
 				log.Fatal(err)
 			}
-		} else if err.Is(errors.ResourceNotFoundError) {
+		} else if errors2.Is(err, errors.ResourceNotFoundError) {
 			_, err = m.container.GetResourceService().Create(util.SystemContext, resource, true, true)
 
 			if err != nil {
@@ -131,7 +132,7 @@ func (m module) initScriptListeners() {
 	})
 }
 
-func (m module) scriptListenerHandler(ctx context.Context, event *model.Event) (*model.Event, errors.ServiceError) {
+func (m module) scriptListenerHandler(ctx context.Context, event *model.Event) (*model.Event, error) {
 	for _, record := range event.Records {
 		script := model2.ScriptMapperInstance.FromRecord(record)
 

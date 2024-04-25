@@ -2,7 +2,6 @@ package abs
 
 import (
 	"context"
-	"github.com/apibrew/apibrew/pkg/errors"
 	"github.com/apibrew/apibrew/pkg/model"
 	"github.com/apibrew/apibrew/pkg/service"
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
@@ -26,7 +25,7 @@ type CodeExecutorService interface {
 
 type EventWithContextSignal struct {
 	ProcessedEvent *model.Event
-	Err            errors.ServiceError
+	Err            error
 }
 
 type EventWithContext struct {

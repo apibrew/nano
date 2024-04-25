@@ -49,6 +49,9 @@ github.com/apibrew/apibrew v1.3.67 h1:LV4XZVRSlofs533L2pZDnu1x+yLDlt4rllTKK1wyJA
 github.com/apibrew/apibrew v1.3.67/go.mod h1:d/dwbFcV8lQV+4SpI1kO9Yl8o297Ly9OGlnse+i2oLY=
 github.com/apibrew/apibrew v1.3.76 h1:KyqrKiTYOvkJoKFFWva1s7VDyAqn6xpGbA43FbDA13Y=
 github.com/apibrew/apibrew v1.3.76/go.mod h1:d/dwbFcV8lQV+4SpI1kO9Yl8o297Ly9OGlnse+i2oLY=
+github.com/apibrew/apibrew v1.3.84/go.mod h1:51eBifYScgC9wgVsjEHTApvyXYQiJsAz4B0TjKZQpzE=
+github.com/apibrew/apibrew v1.3.85 h1:DnAnDgxM2dAAQtbwXekHcVDhXTMd6OSqvFnDxtIGl1Q=
+github.com/apibrew/apibrew v1.3.85/go.mod h1:QdxYOH5KhRQToWYag98DD8Q1KsumQLUE80vyTuRMtSk=
 github.com/aws/aws-sdk-go v1.50.19 h1:YSIDKRSkh/TW0RPWoocdLqtC/T5W6IGBVhFs6P7Qcac=
 github.com/aws/aws-sdk-go v1.50.19/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=

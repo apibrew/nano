@@ -111,7 +111,7 @@ func handle(cec abs.CodeExecutionContext, backendEventHandler backend_event_hand
 }
 
 func recordHandlerFn(fn HandlerFunc) backend_event_handler.HandlerFunc {
-	return func(ctx context.Context, event *model.Event) (processedEvent *model.Event, err errors.ServiceError) {
+	return func(ctx context.Context, event *model.Event) (processedEvent *model.Event, err error) {
 		defer func() {
 			if r := recover(); r != nil {
 				debug.Stack()
@@ -180,7 +180,7 @@ func recordHandlerFn(fn HandlerFunc) backend_event_handler.HandlerFunc {
 }
 
 func processThrowHandlerData(data *abs.HandlerData) backend_event_handler.HandlerFunc {
-	return func(ctx context.Context, event *model.Event) (*model.Event, errors.ServiceError) {
+	return func(ctx context.Context, event *model.Event) (*model.Event, error) {
 		log.Debug("Begin dispatching event: " + event.Id)
 		ec := &abs.EventWithContext{
 			Ctx:    ctx,
