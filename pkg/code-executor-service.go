@@ -12,10 +12,12 @@ import (
 	"github.com/apibrew/nano/pkg/addons"
 	"github.com/apibrew/nano/pkg/model"
 	util2 "github.com/apibrew/nano/pkg/util"
+	"github.com/clarkmcc/go-typescript"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
 	log "github.com/sirupsen/logrus"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -46,21 +48,31 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 		}
 	}()
 
+	var source = script.Source
+
 	decodedBytes, err := base64.StdEncoding.DecodeString(script.Source)
 
 	if err == nil {
-		script.Source = string(decodedBytes)
+		source = string(decodedBytes)
 	}
 
 	log.Debug("Registering script: " + script.Id.String())
+
+	if script.Language == model.ScriptLanguage_TYPESCRIPT {
+		transpiled, err := typescript.TranspileCtx(ctx, strings.NewReader(source), s.typescriptOptions)
+
+		if err != nil {
+			return nil, err
+		}
+
+		source = transpiled
+	}
 
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
 	registry := new(require.Registry) // this can be shared by multiple runtimes
-
-	runtime := goja.New()
-	registry.Enable(runtime)
+	registry.Enable(vm)
 
 	cec := &codeExecutionContext{}
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
@@ -74,7 +86,7 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 		return nil, err
 	}
 
-	result, err := vm.RunString(script.Source)
+	result, err := vm.RunString(source)
 
 	if err != nil {
 		return nil, err
@@ -89,13 +101,12 @@ func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier st
 			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
+
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
 	registry := new(require.Registry) // this can be shared by multiple runtimes
-
-	runtime := goja.New()
-	registry.Enable(runtime)
+	registry.Enable(vm)
 
 	cec := &codeExecutionContext{}
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
@@ -127,22 +138,29 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 	}()
 	decodedBytes, err := base64.StdEncoding.DecodeString(code.Content)
 
+	var source = code.Content
+
 	if err == nil {
-		code.Content = string(decodedBytes)
+		source = string(decodedBytes)
+	}
+
+	if code.Language == model.CodeLanguage_TYPESCRIPT {
+		transpiled, err := typescript.TranspileCtx(context.TODO(), strings.NewReader(source), s.typescriptOptions)
+
+		if err != nil {
+			return err
+		}
+
+		source = transpiled
 	}
 
 	log.Debug("Registering code: " + code.Name)
 
-	program, err := goja.Compile(code.Name, code.Content, false)
+	program, err := goja.Compile(code.Name, source, false)
 
 	if err != nil {
 		return err
 	}
-
-	registry := new(require.Registry) // this can be shared by multiple runtimes
-
-	runtime := goja.New()
-	registry.Enable(runtime)
 
 	cec := &codeExecutionContext{}
 	ctx, cancel := context.WithCancel(util.WithSystemContext(context.Background()))
@@ -160,6 +178,8 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 
 	for i := 0; i < concurrencyLevel; i++ {
 		vm := goja.New()
+		registry := new(require.Registry) // this can be shared by multiple runtimes
+		registry.Enable(vm)
 		vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 		err = s.registerBuiltIns(code.Name, vm, cec)
 
@@ -415,6 +435,10 @@ func (s *codeExecutorService) unRegisterFunction(function *model.Function) error
 	}
 
 	return nil
+}
+
+func (s *codeExecutorService) typescriptOptions(config *typescript.Config) {
+
 }
 
 func newCodeExecutorService(container service.Container, backendEventHandler backend_event_handler.BackendEventHandler) *codeExecutorService {

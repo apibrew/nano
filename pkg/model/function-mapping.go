@@ -63,17 +63,6 @@ func (m *FunctionMapper) ToProperties(function *Function) map[string]*structpb.V
 		properties["id"] = var_Id_mapped
 	}
 
-	var_ContentFormat := function.ContentFormat
-
-	var var_ContentFormat_mapped *structpb.Value
-
-	var var_ContentFormat_err error
-	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
-	if var_ContentFormat_err != nil {
-		panic(var_ContentFormat_err)
-	}
-	properties["contentFormat"] = var_ContentFormat_mapped
-
 	var_Annotations := function.Annotations
 
 	if var_Annotations != nil {
@@ -131,6 +120,17 @@ func (m *FunctionMapper) ToProperties(function *Function) map[string]*structpb.V
 	}
 	properties["source"] = var_Source_mapped
 
+	var_ContentFormat := function.ContentFormat
+
+	var var_ContentFormat_mapped *structpb.Value
+
+	var var_ContentFormat_err error
+	var_ContentFormat_mapped, var_ContentFormat_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_ContentFormat))
+	if var_ContentFormat_err != nil {
+		panic(var_ContentFormat_err)
+	}
+	properties["contentFormat"] = var_ContentFormat_mapped
+
 	var_Version := function.Version
 
 	var var_Version_mapped *structpb.Value
@@ -168,13 +168,6 @@ func (m *FunctionMapper) FromProperties(properties map[string]*structpb.Value) *
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
-	}
-	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
-
-		var_ContentFormat := properties["contentFormat"]
-		var_ContentFormat_mapped := (FunctionContentFormat)(var_ContentFormat.GetStringValue())
-
-		s.ContentFormat = var_ContentFormat_mapped
 	}
 	if properties["annotations"] != nil && properties["annotations"].AsInterface() != nil {
 
@@ -229,6 +222,13 @@ func (m *FunctionMapper) FromProperties(properties map[string]*structpb.Value) *
 
 		s.Source = var_Source_mapped
 	}
+	if properties["contentFormat"] != nil && properties["contentFormat"].AsInterface() != nil {
+
+		var_ContentFormat := properties["contentFormat"]
+		var_ContentFormat_mapped := (FunctionContentFormat)(var_ContentFormat.GetStringValue())
+
+		s.ContentFormat = var_ContentFormat_mapped
+	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -266,13 +266,6 @@ func (m *FunctionMapper) ToUnstructured(function *Function) unstructured.Unstruc
 		var_Id_mapped = var_Id.String()
 		properties["id"] = var_Id_mapped
 	}
-
-	var_ContentFormat := function.ContentFormat
-
-	var var_ContentFormat_mapped interface{}
-
-	var_ContentFormat_mapped = string(var_ContentFormat)
-	properties["contentFormat"] = var_ContentFormat_mapped
 
 	var_Annotations := function.Annotations
 
@@ -313,6 +306,13 @@ func (m *FunctionMapper) ToUnstructured(function *Function) unstructured.Unstruc
 
 	var_Source_mapped = var_Source
 	properties["source"] = var_Source_mapped
+
+	var_ContentFormat := function.ContentFormat
+
+	var var_ContentFormat_mapped interface{}
+
+	var_ContentFormat_mapped = string(var_ContentFormat)
+	properties["contentFormat"] = var_ContentFormat_mapped
 
 	var_Version := function.Version
 
@@ -473,7 +473,6 @@ func (m *FunctionAuditDataMapper) FromProperties(properties map[string]*structpb
 
 func (m *FunctionAuditDataMapper) ToUnstructured(functionAuditData *FunctionAuditData) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
-	properties["type"] = "nano/Function"
 
 	var_CreatedBy := functionAuditData.CreatedBy
 

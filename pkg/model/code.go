@@ -11,21 +11,18 @@ import "time"
 
 type Code struct {
 	Id               *uuid.UUID        `json:"id,omitempty"`
-	Language         CodeLanguage      `json:"language,omitempty"`
 	Content          string            `json:"content,omitempty"`
 	ContentFormat    CodeContentFormat `json:"contentFormat,omitempty"`
 	ConcurrencyLevel *int32            `json:"concurrencyLevel,omitempty"`
 	Annotations      map[string]string `json:"annotations,omitempty"`
 	Name             string            `json:"name,omitempty"`
+	Language         CodeLanguage      `json:"language,omitempty"`
 	Version          int32             `json:"version,omitempty"`
 	AuditData        *CodeAuditData    `json:"auditData,omitempty"`
 }
 
 func (s Code) GetId() *uuid.UUID {
 	return s.Id
-}
-func (s Code) GetLanguage() CodeLanguage {
-	return s.Language
 }
 func (s Code) GetContent() string {
 	return s.Content
@@ -41,6 +38,9 @@ func (s Code) GetAnnotations() map[string]string {
 }
 func (s Code) GetName() string {
 	return s.Name
+}
+func (s Code) GetLanguage() CodeLanguage {
+	return s.Language
 }
 func (s Code) GetVersion() int32 {
 	return s.Version
@@ -69,16 +69,17 @@ func (s CodeAuditData) GetUpdatedOn() *time.Time {
 	return s.UpdatedOn
 }
 
-type CodeLanguage string
-
-const (
-	CodeLanguage_JAVASCRIPT CodeLanguage = "JAVASCRIPT"
-)
-
 type CodeContentFormat string
 
 const (
 	CodeContentFormat_TEXT  CodeContentFormat = "TEXT"
 	CodeContentFormat_TAR   CodeContentFormat = "TAR"
 	CodeContentFormat_TARGZ CodeContentFormat = "TAR_GZ"
+)
+
+type CodeLanguage string
+
+const (
+	CodeLanguage_JAVASCRIPT CodeLanguage = "JAVASCRIPT"
+	CodeLanguage_TYPESCRIPT CodeLanguage = "TYPESCRIPT"
 )

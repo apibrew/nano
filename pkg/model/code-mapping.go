@@ -63,17 +63,6 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 		properties["id"] = var_Id_mapped
 	}
 
-	var_Language := code.Language
-
-	var var_Language_mapped *structpb.Value
-
-	var var_Language_err error
-	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
-	if var_Language_err != nil {
-		panic(var_Language_err)
-	}
-	properties["language"] = var_Language_mapped
-
 	var_Content := code.Content
 
 	var var_Content_mapped *structpb.Value
@@ -144,6 +133,17 @@ func (m *CodeMapper) ToProperties(code *Code) map[string]*structpb.Value {
 	}
 	properties["name"] = var_Name_mapped
 
+	var_Language := code.Language
+
+	var var_Language_mapped *structpb.Value
+
+	var var_Language_err error
+	var_Language_mapped, var_Language_err = types.ByResourcePropertyType(model.ResourceProperty_ENUM).Pack(string(var_Language))
+	if var_Language_err != nil {
+		panic(var_Language_err)
+	}
+	properties["language"] = var_Language_mapped
+
 	var_Version := code.Version
 
 	var var_Version_mapped *structpb.Value
@@ -181,13 +181,6 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 		*var_Id_mapped = val.(uuid.UUID)
 
 		s.Id = var_Id_mapped
-	}
-	if properties["language"] != nil && properties["language"].AsInterface() != nil {
-
-		var_Language := properties["language"]
-		var_Language_mapped := (CodeLanguage)(var_Language.GetStringValue())
-
-		s.Language = var_Language_mapped
 	}
 	if properties["content"] != nil && properties["content"].AsInterface() != nil {
 
@@ -256,6 +249,13 @@ func (m *CodeMapper) FromProperties(properties map[string]*structpb.Value) *Code
 
 		s.Name = var_Name_mapped
 	}
+	if properties["language"] != nil && properties["language"].AsInterface() != nil {
+
+		var_Language := properties["language"]
+		var_Language_mapped := (CodeLanguage)(var_Language.GetStringValue())
+
+		s.Language = var_Language_mapped
+	}
 	if properties["version"] != nil && properties["version"].AsInterface() != nil {
 
 		var_Version := properties["version"]
@@ -293,13 +293,6 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 		var_Id_mapped = var_Id.String()
 		properties["id"] = var_Id_mapped
 	}
-
-	var_Language := code.Language
-
-	var var_Language_mapped interface{}
-
-	var_Language_mapped = string(var_Language)
-	properties["language"] = var_Language_mapped
 
 	var_Content := code.Content
 
@@ -349,6 +342,13 @@ func (m *CodeMapper) ToUnstructured(code *Code) unstructured.Unstructured {
 
 	var_Name_mapped = var_Name
 	properties["name"] = var_Name_mapped
+
+	var_Language := code.Language
+
+	var var_Language_mapped interface{}
+
+	var_Language_mapped = string(var_Language)
+	properties["language"] = var_Language_mapped
 
 	var_Version := code.Version
 
@@ -509,7 +509,6 @@ func (m *CodeAuditDataMapper) FromProperties(properties map[string]*structpb.Val
 
 func (m *CodeAuditDataMapper) ToUnstructured(codeAuditData *CodeAuditData) unstructured.Unstructured {
 	var properties unstructured.Unstructured = make(unstructured.Unstructured)
-	properties["type"] = "nano/Code"
 
 	var_CreatedBy := codeAuditData.CreatedBy
 

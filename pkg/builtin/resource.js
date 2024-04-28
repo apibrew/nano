@@ -19,6 +19,9 @@ class Resource {
             this.namespace = parts[0]
             this.name = parts[1]
         }
+
+
+        this.initDynamicMethods()
     }
 
     handle(fn, order, action, sync = true) {
@@ -26,12 +29,19 @@ class Resource {
         if (order === 'after') {
             orderNumber = 101
         }
+
+        let actions = [action.toUpperCase()]
+
+        if (action === 'read') {
+            actions = ['GET', 'LIST']
+        }
+
         handle({
             name: `${this.type}[${order}${action.charAt(0).toUpperCase() + action.slice(1)}]`,
             selector: {
                 namespaces: [this.namespace],
                 resources: [this.name],
-                actions: [action.toUpperCase()],
+                actions: [actions],
             },
             order: orderNumber,
             sync: sync,
@@ -40,54 +50,25 @@ class Resource {
         })
     }
 
-    beforeCreate(fn) {
-        this.handle(fn, 'before', 'create')
+    initDynamicMethods() {
+        const orders = ['before', 'after']
+        const actions = ['create', 'update', 'delete', 'get', 'list', 'read']
+
+        for (let order of orders) {
+            for (let action of actions) {
+                this[order + capitalizeFirstLetter(action)] = (fn) => {
+                    this.handle(fn, order, action, true)
+                }
+
+                this[order + capitalizeFirstLetter(action) + 'Async'] = (fn) => {
+                    this.handle(fn, order, action, false)
+                }
+            }
+        }
     }
 
-    beforeUpdate(fn) {
-        this.handle(fn, 'before', 'update')
-    }
-
-    beforeDelete(fn) {
-        this.handle(fn, 'before', 'delete')
-    }
-
-    beforeGet(fn) {
-        this.handle(fn, 'before', 'get')
-    }
-
-    beforeList(fn) {
-        this.handle(fn, 'before', 'list')
-    }
-
-    beforeRead(fn) {
-        this.handle(fn, 'before', 'get')
-        this.handle(fn, 'before', 'list')
-    }
-
-    afterCreate(fn) {
-        this.handle(fn, 'after', 'create')
-    }
-
-    afterUpdate(fn) {
-        this.handle(fn, 'after', 'update')
-    }
-
-    afterDelete(fn) {
-        this.handle(fn, 'after', 'delete')
-    }
-
-    afterGet(fn) {
-        this.handle(fn, 'after', 'get')
-    }
-
-    afterList(fn) {
-        this.handle(fn, 'after', 'list')
-    }
-
-    afterRead(fn) {
-        this.handle(fn, 'after', 'get')
-        this.handle(fn, 'after', 'list')
+    on(fn) {
+        this.beforeCreate(fn)
     }
 
     modifier(fn) {
@@ -121,15 +102,19 @@ class Resource {
         })
     }
 
-    autoLoadBackReference(referencedProperty) {
-
-    }
-
     list(params) {
         return list({
             type: this.type,
             ...params
         })
+    }
+
+    find(params) {
+        return this.load(params)
+    }
+
+    findBy(property, value) {
+        return this.find({[property]: value})
     }
 
     load(params) {
@@ -346,4 +331,11 @@ function resource(...args) {
     } else {
         throw new Error('Invalid resource type')
     }
+}
+
+function capitalizeFirstLetter(str) {
+    if (typeof str !== 'string' || str.length === 0) {
+        return '';
+    }
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
