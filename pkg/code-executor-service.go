@@ -44,11 +44,11 @@ func (s *codeExecutorService) GetGlobalObject() abs.GlobalObject {
 }
 
 func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
-	//defer func() {
-	//	if r := recover(); r != nil {
-	//		err = fmt.Errorf("panic: %v", r)
-	//	}
-	//}()
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+	}()
 
 	var source = script.Source
 
@@ -66,9 +66,13 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 		}
 
 		source = transpiled
+
+		source = "exports = {};" + source
 	}
 
 	log.Debug("Registering script: " + script.Id.String())
+
+	log.Println(source)
 
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
@@ -151,7 +155,7 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 			return err
 		}
 
-		source = transpiled
+		source = "exports = {};" + transpiled
 	}
 
 	log.Debug("Registering code: " + code.Name)
@@ -437,7 +441,11 @@ func (s *codeExecutorService) unRegisterFunction(function *model.Function) error
 }
 
 func (s *codeExecutorService) typescriptOptions(config *typescript.Config) {
-
+	config.Verbose = true
+	config.CompileOptions = map[string]interface{}{
+		"module": "commonJS",
+		"target": "es5",
+	}
 }
 
 func (s *codeExecutorService) registerModule(module *model.Module) error {
@@ -460,6 +468,8 @@ func (s *codeExecutorService) registerModule(module *model.Module) error {
 	}
 
 	s.modules.Set(module.Name, source)
+
+	log.Println("Registering module: " + module.Name)
 
 	return nil
 }

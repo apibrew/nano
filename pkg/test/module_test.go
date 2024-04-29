@@ -71,7 +71,51 @@ func TestBasicModuleTypescript(t *testing.T) {
 	result := runScriptWithLanguage(t, `
 		import {add} from 'module1';
 
-		dd(5, 6);
+		add(5, 6);
+`, model.ScriptLanguage_TYPESCRIPT)
+	if t.Failed() {
+		return
+	}
+
+	assert.NotNil(t, result["output"])
+
+	if t.Failed() {
+		return
+	}
+
+	output := result["output"]
+
+	assert.Equal(t, float64(11), output)
+}
+
+func TestComplexModuleTypescript(t *testing.T) {
+	var api = api.NewInterface(container)
+
+	var module1 = new(model.Module)
+	module1.Name = `module3`
+	module1.Source = `
+		export class Person {
+			add(a: number, b: number): number {
+				return a + b;
+			}
+		}
+`
+	module1.Language = model.ModuleLanguage_TYPESCRIPT
+	module1.ContentFormat = model.ModuleContentFormat_TEXT
+
+	_, err := api.Apply(util.SystemContext, model.ModuleMapperInstance.ToUnstructured(module1))
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	result := runScriptWithLanguage(t, `
+		import {Person} from 'module3';
+		
+		const person = new Person();
+
+		person.add(5, 6);
 `, model.ScriptLanguage_TYPESCRIPT)
 	if t.Failed() {
 		return
