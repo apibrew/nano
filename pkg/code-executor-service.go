@@ -27,6 +27,8 @@ type codeExecutorService struct {
 	codeContext         util2.Map[string, *codeExecutionContext]
 	globalObject        *globalObject
 	functions           util2.Map[string, string]
+	modules             util2.Map[string, string]
+	registry            *require.Registry
 }
 
 func (s *codeExecutorService) GetContainer() service.Container {
@@ -42,11 +44,11 @@ func (s *codeExecutorService) GetGlobalObject() abs.GlobalObject {
 }
 
 func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("panic: %v", r)
-		}
-	}()
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		err = fmt.Errorf("panic: %v", r)
+	//	}
+	//}()
 
 	var source = script.Source
 
@@ -55,8 +57,6 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 	if err == nil {
 		source = string(decodedBytes)
 	}
-
-	log.Debug("Registering script: " + script.Id.String())
 
 	if script.Language == model.ScriptLanguage_TYPESCRIPT {
 		transpiled, err := typescript.TranspileCtx(ctx, strings.NewReader(source), s.typescriptOptions)
@@ -68,11 +68,12 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 		source = transpiled
 	}
 
+	log.Debug("Registering script: " + script.Id.String())
+
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
-	registry := new(require.Registry) // this can be shared by multiple runtimes
-	registry.Enable(vm)
+	s.registry.Enable(vm)
 
 	cec := &codeExecutionContext{}
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
@@ -105,8 +106,7 @@ func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier st
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
-	registry := new(require.Registry) // this can be shared by multiple runtimes
-	registry.Enable(vm)
+	s.registry.Enable(vm)
 
 	cec := &codeExecutionContext{}
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
@@ -178,8 +178,7 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 
 	for i := 0; i < concurrencyLevel; i++ {
 		vm := goja.New()
-		registry := new(require.Registry) // this can be shared by multiple runtimes
-		registry.Enable(vm)
+		s.registry.Enable(vm)
 		vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 		err = s.registerBuiltIns(code.Name, vm, cec)
 
@@ -441,12 +440,77 @@ func (s *codeExecutorService) typescriptOptions(config *typescript.Config) {
 
 }
 
+func (s *codeExecutorService) registerModule(module *model.Module) error {
+	var source = module.Source
+
+	decodedBytes, err := base64.StdEncoding.DecodeString(module.Source)
+
+	if err == nil {
+		source = string(decodedBytes)
+	}
+
+	if module.Language == model.ModuleLanguage_TYPESCRIPT {
+		transpiled, err := typescript.TranspileCtx(context.TODO(), strings.NewReader(source), s.typescriptOptions)
+
+		if err != nil {
+			return err
+		}
+
+		source = transpiled
+	}
+
+	s.modules.Set(module.Name, source)
+
+	return nil
+}
+
+func (s *codeExecutorService) updateModule(module *model.Module) error {
+	if err := s.unRegisterModule(module); err != nil {
+		return err
+	}
+
+	return s.registerModule(module)
+}
+
+func (s *codeExecutorService) unRegisterModule(module *model.Module) error {
+	s.modules.Delete(module.Name)
+
+	return nil
+}
+
+func (s *codeExecutorService) srcLoader(path string) ([]byte, error) {
+	if strings.HasPrefix(path, "node_modules/") {
+		path = path[12:]
+	}
+
+	if strings.HasPrefix(path, "./") {
+		path = path[2:]
+	}
+
+	if strings.HasPrefix(path, "/") {
+		path = path[1:]
+	}
+
+	if source, ok := s.modules.Find(path); ok {
+		return []byte(source), nil
+	}
+
+	return nil, errors.New("module not found with name: " + path)
+}
+
 func newCodeExecutorService(container service.Container, backendEventHandler backend_event_handler.BackendEventHandler) *codeExecutorService {
-	return &codeExecutorService{
+	ces := &codeExecutorService{
 		container:           container,
 		backendEventHandler: backendEventHandler,
 		codeContext:         util2.NewConcurrentSyncMap[string, *codeExecutionContext](),
+		modules:             util2.NewConcurrentSyncMap[string, string](),
 		globalObject:        newGlobalObject(),
 		functions:           util2.NewConcurrentSyncMap[string, string](),
 	}
+
+	registry := require.NewRegistryWithLoader(ces.srcLoader)
+
+	ces.registry = registry
+
+	return ces
 }

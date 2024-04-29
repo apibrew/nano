@@ -12,11 +12,11 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-var CronJobResource = &model.Resource{
-	Name:        "CronJob",
+var ModuleResource = &model.Resource{
+	Name:        "Module",
 	Namespace:   "nano",
-	Title:       util.Pointer("Cron Job"),
-	Description: util.Pointer("Cron Job"),
+	Title:       util.Pointer("Module"),
+	Description: util.Pointer("Nano function"),
 	Types: []*model.ResourceSubType{
 		{
 			Name:        "AuditData",
@@ -66,8 +66,8 @@ var CronJobResource = &model.Resource{
 			},
 
 			Annotations: map[string]string{
-				"EnableAudit":  "true",
 				"OpenApiGroup": "meta",
+				"EnableAudit":  "true",
 			},
 		},
 	},
@@ -93,26 +93,12 @@ var CronJobResource = &model.Resource{
 			},
 		},
 		{
-			Name: "lastExecutionTime",
-			Type: model.ResourceProperty_TIMESTAMP,
-		},
-		{
-			Name: "lastExecutionError",
-			Type: model.ResourceProperty_STRING,
-		},
-		{
 			Name:      "name",
 			Type:      model.ResourceProperty_STRING,
 			Length:    255,
 			Required:  true,
 			Unique:    true,
 			Immutable: true,
-		},
-		{
-			Name:     "expression",
-			Type:     model.ResourceProperty_STRING,
-			Length:   255,
-			Required: true,
 		},
 		{
 			Name:         "language",
@@ -146,15 +132,15 @@ var CronJobResource = &model.Resource{
 			ExampleValue: structpb.NewNumberValue(1),
 
 			Annotations: map[string]string{
-				"AllowEmptyPrimitive": "true",
 				"SpecialProperty":     "true",
+				"AllowEmptyPrimitive": "true",
 			},
 		},
 		{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-30T02:53:13+04:00"), "updatedOn": structpb.NewStringValue("2024-04-30T02:53:13+04:00"), "createdBy": structpb.NewStringValue("admin")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdOn": structpb.NewStringValue("2024-04-30T02:53:13+04:00"), "updatedOn": structpb.NewStringValue("2024-04-30T02:53:13+04:00"), "createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
@@ -163,7 +149,7 @@ var CronJobResource = &model.Resource{
 	},
 
 	Annotations: map[string]string{
-		"EnableAudit":  "true",
 		"OpenApiGroup": "meta",
+		"EnableAudit":  "true",
 	},
 }

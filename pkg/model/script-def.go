@@ -48,7 +48,7 @@ var ScriptResource = &model.Resource{
 					Name:         "createdOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
 					Immutable:    true,
-					ExampleValue: structpb.NewStringValue("2024-04-29T01:58:23+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-30T02:53:13+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -57,7 +57,7 @@ var ScriptResource = &model.Resource{
 				{
 					Name:         "updatedOn",
 					Type:         model.ResourceProperty_TIMESTAMP,
-					ExampleValue: structpb.NewStringValue("2024-04-29T01:58:23+04:00"),
+					ExampleValue: structpb.NewStringValue("2024-04-30T02:53:13+04:00"),
 
 					Annotations: map[string]string{
 						"SpecialProperty": "true",
@@ -85,21 +85,6 @@ var ScriptResource = &model.Resource{
 			},
 		},
 		{
-			Name:         "contentFormat",
-			Type:         model.ResourceProperty_ENUM,
-			Required:     true,
-			DefaultValue: structpb.NewStringValue("TEXT"),
-			EnumValues:   []string{"TEXT", "TAR", "TAR_GZ"},
-		},
-		{
-			Name: "annotations",
-			Type: model.ResourceProperty_MAP,
-			Item: &model.ResourceProperty{
-				Name: "",
-				Type: model.ResourceProperty_STRING,
-			},
-		},
-		{
 			Name: "output",
 			Type: model.ResourceProperty_OBJECT,
 		},
@@ -121,6 +106,21 @@ var ScriptResource = &model.Resource{
 			},
 		},
 		{
+			Name:         "contentFormat",
+			Type:         model.ResourceProperty_ENUM,
+			Required:     true,
+			DefaultValue: structpb.NewStringValue("TEXT"),
+			EnumValues:   []string{"TEXT", "TAR", "TAR_GZ"},
+		},
+		{
+			Name: "annotations",
+			Type: model.ResourceProperty_MAP,
+			Item: &model.ResourceProperty{
+				Name: "",
+				Type: model.ResourceProperty_STRING,
+			},
+		},
+		{
 			Name:         "version",
 			Type:         model.ResourceProperty_INT32,
 			Required:     true,
@@ -136,7 +136,7 @@ var ScriptResource = &model.Resource{
 			Name:         "auditData",
 			Type:         model.ResourceProperty_STRUCT,
 			TypeRef:      util.Pointer("AuditData"),
-			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-29T01:58:23+04:00"), "updatedOn": structpb.NewStringValue("2024-04-29T01:58:23+04:00")}}),
+			ExampleValue: structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{"createdBy": structpb.NewStringValue("admin"), "updatedBy": structpb.NewStringValue("admin"), "createdOn": structpb.NewStringValue("2024-04-30T02:53:13+04:00"), "updatedOn": structpb.NewStringValue("2024-04-30T02:53:13+04:00")}}),
 
 			Annotations: map[string]string{
 				"SpecialProperty": "true",
