@@ -28,6 +28,7 @@ type codeExecutorService struct {
 	globalObject        *globalObject
 	functions           util2.Map[string, string]
 	modules             util2.Map[string, string]
+	systemModules       util2.Map[string, string]
 	registry            *require.Registry
 }
 
@@ -501,6 +502,10 @@ func (s *codeExecutorService) srcLoader(path string) ([]byte, error) {
 		path = path[1:]
 	}
 
+	if source, ok := s.systemModules.Find(path); ok {
+		return []byte(source), nil
+	}
+
 	if source, ok := s.modules.Find(path); ok {
 		return []byte(source), nil
 	}
@@ -508,15 +513,22 @@ func (s *codeExecutorService) srcLoader(path string) ([]byte, error) {
 	return nil, errors.New("module not found with name: " + path)
 }
 
+func (s *codeExecutorService) init() {
+	s.systemModules.Set("@apibrew/nano", GetBuiltinJs("nano.js"))
+}
+
 func newCodeExecutorService(container service.Container, backendEventHandler backend_event_handler.BackendEventHandler) *codeExecutorService {
 	ces := &codeExecutorService{
 		container:           container,
 		backendEventHandler: backendEventHandler,
 		codeContext:         util2.NewConcurrentSyncMap[string, *codeExecutionContext](),
+		systemModules:       util2.NewConcurrentSyncMap[string, string](),
 		modules:             util2.NewConcurrentSyncMap[string, string](),
 		globalObject:        newGlobalObject(),
 		functions:           util2.NewConcurrentSyncMap[string, string](),
 	}
+
+	ces.init()
 
 	registry := require.NewRegistryWithLoader(ces.srcLoader)
 

@@ -27,6 +27,18 @@ func (m module) Init() {
 	m.ensureResources()
 	m.initScriptListeners()
 
+	if err := RegisterResourceProcessor[*model2.Module](
+		"nano-module-listener",
+		&moduleProcessor{
+			codeExecutor: m.codeExecutor,
+		},
+		m.backendEventHandler,
+		m.container,
+		model2.ModuleResource,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := RegisterResourceProcessor[*model2.Function](
 		"nano-function-listener",
 		&functionProcessor{
@@ -60,18 +72,6 @@ func (m module) Init() {
 		m.backendEventHandler,
 		m.container,
 		model2.CronJobResource,
-	); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := RegisterResourceProcessor[*model2.Module](
-		"nano-module-listener",
-		&moduleProcessor{
-			codeExecutor: m.codeExecutor,
-		},
-		m.backendEventHandler,
-		m.container,
-		model2.ModuleResource,
 	); err != nil {
 		log.Fatal(err)
 	}

@@ -11,6 +11,8 @@ import (
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
 	"github.com/apibrew/apibrew/pkg/util"
 	"github.com/apibrew/nano/pkg/abs"
+	util2 "github.com/apibrew/nano/pkg/addons/util"
+	"github.com/dop251/goja"
 	log "github.com/sirupsen/logrus"
 	"runtime/debug"
 )
@@ -27,41 +29,10 @@ type Handler struct {
 	Responds  bool
 }
 
-func _(cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
+func handle(vm *goja.Runtime, cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
 	return func(handler Handler) {
 		if cec.IsScriptMode() {
-			panic("Handlers are not supported in script mode")
-		}
-
-		handlerId := "nano-" + cec.GetCodeIdentifier() + "-" + util.RandomHex(8)
-
-		var handlerTemplate = backend_event_handler.Handler{
-			Id:        handlerId,
-			Name:      cec.GetCodeIdentifier() + "-" + handler.Name,
-			Selector:  extramappings.EventSelectorToProto(handler.Selector),
-			Order:     handler.Order,
-			Sync:      handler.Sync,
-			Responds:  handler.Responds,
-			Finalizes: handler.Finalizes,
-		}
-
-		handlerTemplate.Id = handlerId
-		handlerTemplate.Fn = recordHandlerFn(handler.Fn)
-
-		go func() {
-			<-cec.Context().Done()
-
-			backendEventHandler.UnRegisterHandler(handlerTemplate)
-		}()
-
-		backendEventHandler.RegisterHandler(handlerTemplate)
-	}
-}
-
-func handle(cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
-	return func(handler Handler) {
-		if cec.IsScriptMode() {
-			panic("Handlers are not supported in script mode")
+			util2.ThrowError(vm, "Handlers are not supported in script mode")
 		}
 
 		handlerData := cec.HandlerMap().Get(handler.Name)

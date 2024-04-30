@@ -118,3 +118,5 @@ function targetResource(targetConfig, ...args) {
         throw new Error('Invalid resource type')
     }
 }
+
+console.log('targetResource defined')

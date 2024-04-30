@@ -5,5 +5,9 @@ import (
 )
 
 func Register(vm *goja.Runtime) error {
-	return vm.Set("http", &httpObject{vm: vm})
+	if err := vm.Set("http", &httpObject{vm: vm}); err != nil {
+		return err
+	}
+
+	return nil
 }

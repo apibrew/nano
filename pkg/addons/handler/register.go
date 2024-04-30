@@ -6,5 +6,13 @@ import (
 )
 
 func Register(vm *goja.Runtime, cec abs.CodeExecutionContext, s abs.CodeExecutorService) error {
-	return vm.Set("handle", handle(cec, s.GetBackendEventHandler()))
+	if err := vm.Set("handle", handle(vm, cec, s.GetBackendEventHandler())); err != nil {
+		return err
+	}
+
+	if err := vm.Set("handleExported", handle(vm, cec, s.GetBackendEventHandler())); err != nil {
+		return err
+	}
+
+	return nil
 }

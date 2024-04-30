@@ -36,8 +36,12 @@ class Resource {
             actions = ['GET', 'LIST']
         }
 
+        const name = `${this.type}[${order}${action.charAt(0).toUpperCase() + action.slice(1)}]`
+
+        console.log('registering handler with name: '+ name)
+
         handle({
-            name: `${this.type}[${order}${action.charAt(0).toUpperCase() + action.slice(1)}]`,
+            name: name,
             selector: {
                 namespaces: [this.namespace],
                 resources: [this.name],
@@ -68,6 +72,7 @@ class Resource {
     }
 
     on(fn) {
+        console.log('registering on handler', fn)
         this.beforeCreate(fn)
     }
 
