@@ -490,17 +490,8 @@ func (s *codeExecutorService) unRegisterModule(module *model.Module) error {
 }
 
 func (s *codeExecutorService) srcLoader(path string) ([]byte, error) {
-	if strings.HasPrefix(path, "node_modules/") {
-		path = path[12:]
-	}
-
-	if strings.HasPrefix(path, "./") {
-		path = path[2:]
-	}
-
-	if strings.HasPrefix(path, "/") {
-		path = path[1:]
-	}
+	path = strings.TrimPrefix(path, "node_modules/")
+	path = strings.TrimPrefix(path, "./")
 
 	if source, ok := s.systemModules.Find(path); ok {
 		return []byte(source), nil
