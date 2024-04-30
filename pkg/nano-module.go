@@ -39,18 +39,6 @@ func (m module) Init() {
 		log.Fatal(err)
 	}
 
-	if err := RegisterResourceProcessor[*model2.Function](
-		"nano-function-listener",
-		&functionProcessor{
-			codeExecutor: m.codeExecutor,
-		},
-		m.backendEventHandler,
-		m.container,
-		model2.FunctionResource,
-	); err != nil {
-		log.Fatal(err)
-	}
-
 	if err := RegisterResourceProcessor[*model2.Code](
 		"nano-code-listener",
 		&codeProcessor{
@@ -96,15 +84,14 @@ func (m module) ensureNamespace() {
 }
 
 func (m module) ensureResources() {
-	var resources = []*model.Resource{
+	var list = []*model.Resource{
 		model2.CodeResource,
 		model2.ScriptResource,
-		model2.FunctionResource,
 		model2.CronJobResource,
 		model2.ModuleResource,
 	}
 
-	for _, resource := range resources {
+	for _, resource := range list {
 		existingResource, err := m.container.GetResourceService().GetResourceByName(util.SystemContext, resource.Namespace, resource.Name)
 
 		if err == nil {

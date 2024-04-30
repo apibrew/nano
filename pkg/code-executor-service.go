@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/apibrew/apibrew/pkg/api"
+	"github.com/apibrew/apibrew/pkg/formats/unstructured"
 	"github.com/apibrew/apibrew/pkg/service"
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
 	"github.com/apibrew/apibrew/pkg/util"
@@ -26,7 +28,6 @@ type codeExecutorService struct {
 	backendEventHandler backend_event_handler.BackendEventHandler
 	codeContext         util2.Map[string, *codeExecutionContext]
 	globalObject        *globalObject
-	functions           util2.Map[string, string]
 	modules             util2.Map[string, string]
 	systemModules       util2.Map[string, string]
 	registry            *require.Registry
@@ -257,21 +258,6 @@ func (s *codeExecutorService) registerBuiltIns(codeName string, vm *goja.Runtime
 		}
 	}
 
-	// register functions
-
-	for _, name := range s.functions.Keys() {
-		handler := s.functions.Get(name)
-		var fn, err = vm.RunString(handler)
-
-		if err != nil {
-			return err
-		}
-
-		if err = vm.Set(name, fn); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -384,63 +370,6 @@ func (s *codeExecutorService) sleepFn(cec *codeExecutionContext) func(duration i
 	}
 }
 
-func (s *codeExecutorService) registerFunction(function *model.Function) error {
-	var handler = fmt.Sprintf(`(function(a, b, c, d, e, f, g, h, i, j, k, l, m, n) {%s})`, function.Source)
-
-	s.functions.Set(function.Name, handler)
-
-	for _, cctx := range s.codeContext.Values() {
-		for _, vm := range cctx.vms {
-			err := vm.Try(func() {
-				var fn, err = vm.RunString(handler)
-
-				if err != nil {
-					log.Error(err)
-				}
-
-				err = vm.Set(function.Name, fn)
-
-				if err != nil {
-					log.Error(err)
-				}
-			})
-
-			if err != nil {
-				log.Error(err)
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (s *codeExecutorService) updateFunction(function *model.Function) error {
-	return s.registerFunction(function)
-}
-
-func (s *codeExecutorService) unRegisterFunction(function *model.Function) error {
-	s.functions.Delete(function.Name)
-
-	for _, cctx := range s.codeContext.Values() {
-		for _, vm := range cctx.vms {
-			err := vm.Try(func() {
-				err := vm.Set(function.Name, nil)
-
-				if err != nil {
-					log.Error(err)
-				}
-			})
-
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-
-	return nil
-}
-
 func (s *codeExecutorService) typescriptOptions(config *typescript.Config) {
 	config.Verbose = true
 	config.CompileOptions = map[string]interface{}{
@@ -480,7 +409,13 @@ func (s *codeExecutorService) updateModule(module *model.Module) error {
 		return err
 	}
 
-	return s.registerModule(module)
+	if err := s.registerModule(module); err != nil {
+		return err
+	}
+
+	s.restartCodeContext()
+
+	return nil
 }
 
 func (s *codeExecutorService) unRegisterModule(module *model.Module) error {
@@ -508,6 +443,34 @@ func (s *codeExecutorService) init() {
 	s.systemModules.Set("@apibrew/nano", GetBuiltinJs("nano.js"))
 }
 
+func (s *codeExecutorService) restartCodeContext() {
+	s.registry = require.NewRegistryWithLoader(s.srcLoader)
+
+	apiInterface := api.NewInterface(s.container)
+
+	list, err := apiInterface.List(util.SystemContext, api.ListParams{
+		Type: "nano/Code",
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, codeObj := range list.Content {
+		codeRecord, err := unstructured.ToRecord(codeObj)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		code := model.CodeMapperInstance.FromRecord(codeRecord)
+
+		if err := s.updateCode(code); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func newCodeExecutorService(container service.Container, backendEventHandler backend_event_handler.BackendEventHandler) *codeExecutorService {
 	ces := &codeExecutorService{
 		container:           container,
@@ -516,7 +479,6 @@ func newCodeExecutorService(container service.Container, backendEventHandler bac
 		systemModules:       util2.NewConcurrentSyncMap[string, string](),
 		modules:             util2.NewConcurrentSyncMap[string, string](),
 		globalObject:        newGlobalObject(),
-		functions:           util2.NewConcurrentSyncMap[string, string](),
 	}
 
 	ces.init()
