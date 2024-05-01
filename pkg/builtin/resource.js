@@ -38,14 +38,14 @@ class Resource {
 
         const name = `${this.type}[${order}${action.charAt(0).toUpperCase() + action.slice(1)}]`
 
-        console.log('registering handler with name: '+ name)
+        console.log('registering handler with name: '+ name, actions, orderNumber, sync, fn)
 
         handle({
             name: name,
             selector: {
                 namespaces: [this.namespace],
                 resources: [this.name],
-                actions: [actions],
+                actions: actions,
             },
             order: orderNumber,
             sync: sync,
@@ -93,6 +93,7 @@ class Resource {
     }
 
     postModifier(fn) {
+        console.log('this.afterRead', this.afterRead)
         this.afterRead((record, event) => {
             if (!record) {
                 return

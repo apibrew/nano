@@ -23,6 +23,7 @@ type module struct {
 }
 
 func (m module) Init() {
+	log.Println("nano module is enabled")
 	m.ensureNamespace()
 	m.ensureResources()
 	m.initScriptListeners()
