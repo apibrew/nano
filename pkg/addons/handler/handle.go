@@ -90,7 +90,7 @@ func recordHandlerFn(cec abs.CodeExecutionContext, fn HandlerFunc) backend_event
 
 		defer func() {
 			if r := recover(); r != nil {
-				debug.Stack()
+				debug.PrintStack()
 				err = errors.RecordValidationError.WithDetails(fmt.Sprintf("%v", r))
 			}
 		}()

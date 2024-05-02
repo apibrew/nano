@@ -9,6 +9,7 @@ import (
 )
 
 type codeExecutionContext struct {
+	id                     string
 	codeCtx                context.Context
 	localCtx               context.Context
 	cancel                 context.CancelFunc
@@ -21,10 +22,16 @@ type codeExecutionContext struct {
 }
 
 func (c *codeExecutionContext) WithContext(ctx context.Context) func() {
-	c.localCtx = ctx
+	c.localCtx = context.WithValue(ctx, "ctxParentContext", c.localCtx)
 
 	return func() {
-		c.localCtx = nil
+		if c.localCtx != nil {
+			if c.localCtx.Value("ctxParentContext") == nil {
+				c.localCtx = nil
+			} else {
+				c.localCtx = c.localCtx.Value("ctxParentContext").(context.Context)
+			}
+		}
 	}
 }
 

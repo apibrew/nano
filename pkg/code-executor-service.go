@@ -18,6 +18,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
 	log "github.com/sirupsen/logrus"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -48,6 +49,7 @@ func (s *codeExecutorService) GetGlobalObject() abs.GlobalObject {
 func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
+			debug.PrintStack()
 			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
@@ -80,6 +82,7 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 	s.registry.Enable(vm)
 
 	cec := &codeExecutionContext{}
+	cec.id = util.RandomHex(8)
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
 	cec.codeCtx = ctx
 	cec.cancel = cancel
@@ -107,6 +110,7 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier string, source string) (result any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
+			debug.PrintStack()
 			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
@@ -117,6 +121,7 @@ func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier st
 	s.registry.Enable(vm)
 
 	cec := &codeExecutionContext{}
+	cec.id = util.RandomHex(8)
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
 	cec.codeCtx = ctx
 	cec.cancel = cancel
@@ -145,6 +150,7 @@ func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier st
 func (s *codeExecutorService) registerCode(ctx context.Context, code *model.Code) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
+			debug.PrintStack()
 			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
@@ -193,6 +199,7 @@ func (s *codeExecutorService) registerCode(ctx context.Context, code *model.Code
 
 	for i := 0; i < concurrencyLevel; i++ {
 		cec := &codeExecutionContext{}
+		cec.id = util.RandomHex(8)
 		ctx, cancel := context.WithCancel(util.WithSystemContext(context.Background()))
 		cec.codeCtx = ctx
 		cec.cancel = cancel
@@ -342,6 +349,7 @@ func (s *codeExecutorService) clearTimeoutFn(cec *codeExecutionContext) func(cle
 	return func(clearFn func()) {
 		defer func() {
 			if r := recover(); r != nil {
+				debug.PrintStack()
 				log.Warn(r)
 			}
 		}()
@@ -382,6 +390,7 @@ func (s *codeExecutorService) clearIntervalFn(cec *codeExecutionContext) func(cl
 	return func(clearFn func()) {
 		defer func() {
 			if r := recover(); r != nil {
+				debug.PrintStack()
 				log.Warn(r)
 			}
 		}()
