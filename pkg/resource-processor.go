@@ -2,13 +2,12 @@ package nano
 
 import (
 	"context"
-	"fmt"
-	"github.com/apibrew/apibrew/pkg/errors"
 	"github.com/apibrew/apibrew/pkg/model"
 	"github.com/apibrew/apibrew/pkg/service"
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
 	"github.com/apibrew/apibrew/pkg/util"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type ResourceProcessor[T any] interface {
@@ -26,26 +25,46 @@ func RegisterResourceProcessor[T any](handlerName string,
 	resource *model.Resource) error {
 	handler := func(ctx context.Context, event *model.Event) (*model.Event, error) {
 		for _, record := range event.Records {
-			entity := processor.MapperTo(record)
 
 			switch event.Action {
 			case model.Event_CREATE:
+				entity := processor.MapperTo(record)
 				err := processor.Register(entity)
 
 				if err != nil {
-					return nil, errors.RecordValidationError.WithMessage(fmt.Sprintf("%v", err))
+					return nil, err
 				}
 			case model.Event_UPDATE:
-				err := processor.Update(entity)
+				existing, err := container.GetRecordService().Load(util.SystemContext, event.Resource.Namespace, event.Resource.Name, record.Properties, service.RecordLoadParams{})
 
 				if err != nil {
-					return nil, errors.RecordValidationError.WithMessage(fmt.Sprintf("%v", err))
+					return nil, err
+				}
+
+				record = mergeRecords(existing, record)
+
+				entity := processor.MapperTo(record)
+
+				err = processor.Update(entity)
+
+				if err != nil {
+					return nil, err
 				}
 			case model.Event_DELETE:
-				err := processor.UnRegister(entity)
+				existing, err := container.GetRecordService().Load(util.SystemContext, event.Resource.Namespace, event.Resource.Name, record.Properties, service.RecordLoadParams{})
 
 				if err != nil {
-					return nil, errors.RecordValidationError.WithMessage(fmt.Sprintf("%v", err))
+					return nil, err
+				}
+
+				record = mergeRecords(existing, record)
+
+				entity := processor.MapperTo(record)
+
+				err = processor.UnRegister(entity)
+
+				if err != nil {
+					return nil, err
 				}
 			}
 		}
@@ -94,4 +113,20 @@ func RegisterResourceProcessor[T any](handlerName string,
 	}
 
 	return nil
+}
+
+func mergeRecords(existing *model.Record, record *model.Record) *model.Record {
+	var result = &model.Record{
+		Properties: make(map[string]*structpb.Value),
+	}
+
+	for key, value := range existing.Properties {
+		result.Properties[key] = value
+	}
+
+	for key, value := range record.Properties {
+		result.Properties[key] = value
+	}
+
+	return result
 }

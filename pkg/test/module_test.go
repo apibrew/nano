@@ -321,3 +321,118 @@ func TestModuleReload(t *testing.T) {
 		assert.Equal(t, float64(-1), output)
 	}
 }
+
+func TestModuleReload2(t *testing.T) {
+	var api = api.NewInterface(container)
+
+	for I := 0; I < 2; I++ {
+		var module1 = new(model.Module)
+		module1.Name = `module4`
+		module1.Language = model.ModuleLanguage_TYPESCRIPT
+		module1.ContentFormat = model.ModuleContentFormat_TEXT
+
+		module1.Source = `
+		export class Person {
+			add(a: number, b: number): number {
+				return a + b;
+			}
+		}
+	`
+		moduleResult, err := api.Apply(util.SystemContext, model.ModuleMapperInstance.ToUnstructured(module1))
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		_, err = api.Apply(util.SystemContext, unstructured.Unstructured{
+			"type":             "nano/Code",
+			"name":             "TestAction1.ts",
+			"concurrencyLevel": 8,
+			"language":         "TYPESCRIPT",
+			"content": `
+		import {Person} from './module4'
+
+		import {resource} from '@apibrew/nano'
+
+		const TestAction1 = resource({
+			name: "TestModuleReloadResource",
+			virtual: true,
+			properties: {
+				output: {
+					type: "int32",
+				}
+			}
+		})
+
+		TestAction1.on(req => {
+			const person = new Person()
+			req.output = person.add(5, 6)
+			return req
+		})
+`,
+		})
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		result, err := api.Create(util.SystemContext, unstructured.Unstructured{
+			"type": "TestModuleReloadResource",
+		})
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		assert.NotNil(t, result["output"])
+
+		if t.Failed() {
+			return
+		}
+
+		output := result["output"]
+
+		assert.Equal(t, float64(11), output)
+
+		if t.Failed() {
+			return
+		}
+
+		_, err = api.Apply(util.SystemContext, unstructured.Unstructured{
+			"type": "nano/Module",
+			"id":   moduleResult["id"],
+			"source": `export class Person {
+			add(a: number, b: number): number {
+				return a - b;
+			}
+		}`,
+		})
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		result, err = api.Create(util.SystemContext, unstructured.Unstructured{
+			"type": "TestModuleReloadResource",
+		})
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		assert.NotNil(t, result["output"])
+
+		if t.Failed() {
+			return
+		}
+
+		output = result["output"]
+
+		assert.Equal(t, float64(-1), output)
+	}
+}
