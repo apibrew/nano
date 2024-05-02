@@ -413,8 +413,6 @@ func (s *codeExecutorService) updateModule(module *model.Module) error {
 		return err
 	}
 
-	s.restartCodeContext()
-
 	return nil
 }
 
@@ -433,6 +431,7 @@ func (s *codeExecutorService) srcLoader(path string) ([]byte, error) {
 	}
 
 	if source, ok := s.modules.Find(path); ok {
+		log.Println("Loading module: "+path, " len: ", len(source))
 		return []byte(source), nil
 	}
 

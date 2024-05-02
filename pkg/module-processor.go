@@ -18,9 +18,21 @@ func (f moduleProcessor) Register(entity *model2.Module) error {
 }
 
 func (f moduleProcessor) Update(entity *model2.Module) error {
-	return f.codeExecutor.updateModule(entity)
+	if err := f.codeExecutor.updateModule(entity); err != nil {
+		return err
+	}
+
+	f.codeExecutor.restartCodeContext()
+
+	return nil
 }
 
 func (f moduleProcessor) UnRegister(entity *model2.Module) error {
-	return f.codeExecutor.unRegisterModule(entity)
+	if err := f.codeExecutor.unRegisterModule(entity); err != nil {
+		return err
+	}
+
+	f.codeExecutor.restartCodeContext()
+
+	return nil
 }
