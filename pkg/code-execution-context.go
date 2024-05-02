@@ -9,14 +9,23 @@ import (
 )
 
 type codeExecutionContext struct {
-	ctx                    context.Context
+	codeCtx                context.Context
+	localCtx               context.Context
 	cancel                 context.CancelFunc
-	vms                    []*goja.Runtime
+	vm                     *goja.Runtime
 	identifier             string
 	scriptMode             bool
 	insideTransaction      bool
 	transactionRollbackBag []func() error
 	handlerMap             util.Map[string, *abs.HandlerData]
+}
+
+func (c *codeExecutionContext) WithContext(ctx context.Context) func() {
+	c.localCtx = ctx
+
+	return func() {
+		c.localCtx = nil
+	}
 }
 
 func (c *codeExecutionContext) HandlerMap() util.Map[string, *abs.HandlerData] {
@@ -54,8 +63,12 @@ func (c *codeExecutionContext) TransactionalEnabled() bool {
 	return c.insideTransaction
 }
 
-func (c *codeExecutionContext) Context() context.Context {
-	return c.ctx
+func (c *codeExecutionContext) CodeContext() context.Context {
+	return c.codeCtx
+}
+
+func (c *codeExecutionContext) LocalContext() context.Context {
+	return c.localCtx
 }
 
 func (c *codeExecutionContext) GetCodeIdentifier() string {

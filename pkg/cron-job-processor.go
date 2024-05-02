@@ -1,6 +1,7 @@
 package nano
 
 import (
+	"context"
 	"github.com/apibrew/apibrew/pkg/api"
 	"github.com/apibrew/apibrew/pkg/formats/unstructured"
 	"github.com/apibrew/apibrew/pkg/model"
@@ -25,7 +26,7 @@ func (f *cronJobProcessor) MapperTo(record *model.Record) *model2.CronJob {
 	return model2.CronJobMapperInstance.FromRecord(record)
 }
 
-func (f *cronJobProcessor) Register(entity *model2.CronJob) error {
+func (f *cronJobProcessor) Register(ctx context.Context, entity *model2.CronJob) error {
 	f.m.Lock()
 	defer f.m.Unlock()
 
@@ -41,7 +42,7 @@ func (f *cronJobProcessor) Register(entity *model2.CronJob) error {
 	_, err := c.AddFunc(entity.Expression, func() {
 		atomic.AddInt32(&executionNumber, 1)
 
-		f.execute(executionNumber, entity.Id.String())
+		f.execute(context.Background(), executionNumber, entity.Id.String())
 	})
 
 	if err != nil {
@@ -53,8 +54,8 @@ func (f *cronJobProcessor) Register(entity *model2.CronJob) error {
 	return nil
 }
 
-func (f *cronJobProcessor) execute(executionNumber int32, cronId string) {
-	record, serr := f.api.Load(util.SystemContext, unstructured.Unstructured{
+func (f *cronJobProcessor) execute(ctx context.Context, executionNumber int32, cronId string) {
+	record, serr := f.api.Load(ctx, unstructured.Unstructured{
 		"type": "nano/CronJob",
 		"id":   cronId,
 	}, api.LoadParams{})
@@ -65,7 +66,7 @@ func (f *cronJobProcessor) execute(executionNumber int32, cronId string) {
 	}
 	log.Debug("Executing CronJob:", record["name"], executionNumber)
 
-	_, err := f.codeExecutor.RunInlineScript(util.SystemContext, record["name"].(string)+"-"+strconv.Itoa(int(executionNumber)), record["source"].(string))
+	_, err := f.codeExecutor.RunInlineScript(ctx, record["name"].(string)+"-"+strconv.Itoa(int(executionNumber)), record["source"].(string))
 
 	record = make(unstructured.Unstructured)
 	record["id"] = cronId
@@ -87,19 +88,19 @@ func (f *cronJobProcessor) execute(executionNumber int32, cronId string) {
 	}
 }
 
-func (f *cronJobProcessor) Update(entity *model2.CronJob) error {
+func (f *cronJobProcessor) Update(ctx context.Context, entity *model2.CronJob) error {
 	if entity.Expression == "" && entity.Source == "" {
 		return nil
 	}
 
-	if err := f.UnRegister(entity); err != nil {
+	if err := f.UnRegister(ctx, entity); err != nil {
 		return err
 	}
 
-	return f.Register(entity)
+	return f.Register(ctx, entity)
 }
 
-func (f *cronJobProcessor) UnRegister(entity *model2.CronJob) error {
+func (f *cronJobProcessor) UnRegister(ctx context.Context, entity *model2.CronJob) error {
 	f.m.Lock()
 	defer f.m.Unlock()
 

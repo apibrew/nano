@@ -14,7 +14,7 @@ func create(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Int
 	return func(record unstructured.Unstructured) unstructured.Unstructured {
 		var typ = record["type"].(string)
 
-		result, err := apiInterface.Create(cec.Context(), record)
+		result, err := apiInterface.Create(cec.LocalContext(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
@@ -23,7 +23,7 @@ func create(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Int
 		if cec.TransactionalEnabled() {
 			cec.RegisterRevert(func() error {
 				result["type"] = typ
-				return apiInterface.Delete(cec.Context(), result)
+				return apiInterface.Delete(cec.LocalContext(), result)
 			})
 		}
 
@@ -38,7 +38,7 @@ func update(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Int
 
 		if cec.TransactionalEnabled() {
 			var err error
-			existingRecord, err = apiInterface.Load(cec.Context(), record, api.LoadParams{})
+			existingRecord, err = apiInterface.Load(cec.LocalContext(), record, api.LoadParams{})
 
 			if err != nil {
 				util2.ThrowError(vm, err.Error())
@@ -46,7 +46,7 @@ func update(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Int
 		}
 
 		record["type"] = typ
-		result, err := apiInterface.Update(cec.Context(), record)
+		result, err := apiInterface.Update(cec.LocalContext(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
@@ -55,7 +55,7 @@ func update(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Int
 		if cec.TransactionalEnabled() {
 			cec.RegisterRevert(func() error {
 				existingRecord["type"] = typ
-				_, err := apiInterface.Update(cec.Context(), existingRecord)
+				_, err := apiInterface.Update(cec.LocalContext(), existingRecord)
 
 				return err
 			})
@@ -71,10 +71,10 @@ func apply(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Inte
 		var existingRecord unstructured.Unstructured = nil
 
 		if cec.TransactionalEnabled() {
-			existingRecord, _ = apiInterface.Load(cec.Context(), record, api.LoadParams{})
+			existingRecord, _ = apiInterface.Load(cec.LocalContext(), record, api.LoadParams{})
 		}
 
-		result, err := apiInterface.Apply(cec.Context(), record)
+		result, err := apiInterface.Apply(cec.LocalContext(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
@@ -84,10 +84,10 @@ func apply(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Inte
 			cec.RegisterRevert(func() error {
 				if existingRecord == nil {
 					result["type"] = typ
-					return apiInterface.Delete(cec.Context(), result)
+					return apiInterface.Delete(cec.LocalContext(), result)
 				} else {
 					existingRecord["type"] = typ
-					_, err := apiInterface.Update(cec.Context(), existingRecord)
+					_, err := apiInterface.Update(cec.LocalContext(), existingRecord)
 					return err
 				}
 			})
@@ -104,7 +104,7 @@ func delete_(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.In
 
 		if cec.TransactionalEnabled() {
 			var err error
-			existingRecord, err = apiInterface.Load(cec.Context(), record, api.LoadParams{})
+			existingRecord, err = apiInterface.Load(cec.LocalContext(), record, api.LoadParams{})
 
 			if err != nil {
 				util2.ThrowError(vm, err.Error())
@@ -112,7 +112,7 @@ func delete_(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.In
 		}
 
 		record["type"] = typ
-		err := apiInterface.Delete(cec.Context(), record)
+		err := apiInterface.Delete(cec.LocalContext(), record)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
@@ -121,7 +121,7 @@ func delete_(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.In
 		if cec.TransactionalEnabled() {
 			cec.RegisterRevert(func() error {
 				existingRecord["type"] = typ
-				_, err := apiInterface.Create(cec.Context(), existingRecord)
+				_, err := apiInterface.Create(cec.LocalContext(), existingRecord)
 
 				return err
 			})
@@ -132,7 +132,7 @@ func delete_(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.In
 
 func load(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(record unstructured.Unstructured, params api.LoadParams) unstructured.Unstructured {
 	return func(record unstructured.Unstructured, params api.LoadParams) unstructured.Unstructured {
-		result, err := apiInterface.Load(cec.Context(), record, params)
+		result, err := apiInterface.Load(cec.LocalContext(), record, params)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
@@ -144,7 +144,7 @@ func load(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Inter
 
 func list(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(params api.ListParams) unstructured.Unstructured {
 	return func(params api.ListParams) unstructured.Unstructured {
-		result, err := apiInterface.List(cec.Context(), params)
+		result, err := apiInterface.List(cec.LocalContext(), params)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())
@@ -185,7 +185,7 @@ func rollback(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.I
 
 func resourceByName(cec abs.CodeExecutionContext, vm *goja.Runtime, apiInterface api.Interface) func(typeName string) *resource_model.Resource {
 	return func(typeName string) *resource_model.Resource {
-		result, err := apiInterface.GetResourceByType(cec.Context(), typeName)
+		result, err := apiInterface.GetResourceByType(cec.LocalContext(), typeName)
 
 		if err != nil {
 			util2.ThrowError(vm, err.Error())

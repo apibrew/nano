@@ -13,9 +13,9 @@ import (
 type ResourceProcessor[T any] interface {
 	MapperTo(record *model.Record) T
 
-	Register(entity T) error
-	Update(entity T) error
-	UnRegister(entity T) error
+	Register(ctx context.Context, entity T) error
+	Update(ctx context.Context, entity T) error
+	UnRegister(ctx context.Context, entity T) error
 }
 
 func RegisterResourceProcessor[T any](handlerName string,
@@ -29,13 +29,13 @@ func RegisterResourceProcessor[T any](handlerName string,
 			switch event.Action {
 			case model.Event_CREATE:
 				entity := processor.MapperTo(record)
-				err := processor.Register(entity)
+				err := processor.Register(ctx, entity)
 
 				if err != nil {
 					return nil, err
 				}
 			case model.Event_UPDATE:
-				existing, err := container.GetRecordService().Load(util.SystemContext, event.Resource.Namespace, event.Resource.Name, record.Properties, service.RecordLoadParams{})
+				existing, err := container.GetRecordService().Load(ctx, event.Resource.Namespace, event.Resource.Name, record.Properties, service.RecordLoadParams{})
 
 				if err != nil {
 					return nil, err
@@ -45,13 +45,13 @@ func RegisterResourceProcessor[T any](handlerName string,
 
 				entity := processor.MapperTo(record)
 
-				err = processor.Update(entity)
+				err = processor.Update(ctx, entity)
 
 				if err != nil {
 					return nil, err
 				}
 			case model.Event_DELETE:
-				existing, err := container.GetRecordService().Load(util.SystemContext, event.Resource.Namespace, event.Resource.Name, record.Properties, service.RecordLoadParams{})
+				existing, err := container.GetRecordService().Load(ctx, event.Resource.Namespace, event.Resource.Name, record.Properties, service.RecordLoadParams{})
 
 				if err != nil {
 					return nil, err
@@ -61,7 +61,7 @@ func RegisterResourceProcessor[T any](handlerName string,
 
 				entity := processor.MapperTo(record)
 
-				err = processor.UnRegister(entity)
+				err = processor.UnRegister(ctx, entity)
 
 				if err != nil {
 					return nil, err
@@ -101,11 +101,7 @@ func RegisterResourceProcessor[T any](handlerName string,
 	for _, record := range codeRecords {
 		entity := processor.MapperTo(record)
 
-		if err != nil {
-			return err
-		}
-
-		err := processor.Register(entity)
+		err := processor.Register(util.SystemContext, entity)
 
 		if err != nil {
 			logrus.Error(err)

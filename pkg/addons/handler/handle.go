@@ -55,34 +55,39 @@ func handle(vm *goja.Runtime, cec abs.CodeExecutionContext, backendEventHandler 
 			}
 
 			handlerTemplate.Id = handlerId
+			handlerData.Id = handlerId
 			handlerTemplate.Fn = processThrowHandlerData(handlerData)
 
 			backendEventHandler.RegisterHandler(handlerTemplate)
 
 			go func() {
-				<-cec.Context().Done()
-
+				<-cec.CodeContext().Done()
+				log.Println("Closing Handler: ", handlerData.Id)
 				backendEventHandler.UnRegisterHandler(handlerTemplate)
+				handlerData.Closed = true
 				close(handlerData.Ch)
+				log.Println("Close Handler: ", handlerData.Id)
 			}()
 		}
 
 		go func() {
 			for item := range handlerData.Ch {
-				processedEvent, err := recordHandlerFn(handler.Fn)(item.Ctx, item.Event)
+				processedEvent, err := recordHandlerFn(cec, handler.Fn)(item.Ctx, item.Event)
 
 				item.Signal <- abs.EventWithContextSignal{
 					ProcessedEvent: processedEvent,
 					Err:            err,
 				}
 			}
-			log.Println("Handler finished")
 		}()
 	}
 }
 
-func recordHandlerFn(fn HandlerFunc) backend_event_handler.HandlerFunc {
+func recordHandlerFn(cec abs.CodeExecutionContext, fn HandlerFunc) backend_event_handler.HandlerFunc {
 	return func(ctx context.Context, event *model.Event) (processedEvent *model.Event, err error) {
+		cleanUpContext := cec.WithContext(util.WithSystemContext(ctx))
+		defer cleanUpContext()
+
 		defer func() {
 			if r := recover(); r != nil {
 				debug.Stack()
@@ -92,6 +97,7 @@ func recordHandlerFn(fn HandlerFunc) backend_event_handler.HandlerFunc {
 		e := extramappings.EventFromProto(event)
 
 		if len(event.Records) == 0 {
+
 			result := fn(nil, e)
 
 			if result != nil {
@@ -159,6 +165,9 @@ func processThrowHandlerData(data *abs.HandlerData) backend_event_handler.Handle
 			Signal: make(chan abs.EventWithContextSignal),
 		}
 
+		if data.Closed {
+			return nil, errors.RecordValidationError.WithDetails("Handler is closed: " + data.Id)
+		}
 		data.Ch <- ec
 
 		log.Debug("Starting to wait for signal: " + event.Id)

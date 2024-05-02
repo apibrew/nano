@@ -4,6 +4,7 @@ import (
 	"github.com/apibrew/apibrew/pkg/api"
 	"github.com/apibrew/apibrew/pkg/formats/unstructured"
 	"github.com/apibrew/apibrew/pkg/util"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
@@ -55,6 +56,12 @@ func TestScriptConcurrency(t *testing.T) {
 }
 
 func TestCodeConcurrency(t *testing.T) {
+	log.SetLevel(log.InfoLevel)
+
+	defer func() {
+		log.SetLevel(log.DebugLevel)
+	}()
+
 	t.Log("Testing concurrency")
 
 	var wg sync.WaitGroup

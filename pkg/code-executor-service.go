@@ -26,7 +26,7 @@ import (
 type codeExecutorService struct {
 	container           service.Container
 	backendEventHandler backend_event_handler.BackendEventHandler
-	codeContext         util2.Map[string, *codeExecutionContext]
+	codeContext         util2.Map[string, []*codeExecutionContext]
 	globalObject        *globalObject
 	modules             util2.Map[string, string]
 	systemModules       util2.Map[string, string]
@@ -74,8 +74,6 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 
 	log.Debug("Registering script: " + script.Id.String())
 
-	log.Println(source)
-
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
@@ -83,10 +81,14 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 
 	cec := &codeExecutionContext{}
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
-	cec.ctx = ctx
+	cec.codeCtx = ctx
 	cec.cancel = cancel
 	cec.identifier = script.Id.String() + "-" + strconv.Itoa(int(script.Version))
 	cec.scriptMode = true
+
+	cleanUpContext := cec.WithContext(ctx)
+	defer cleanUpContext()
+
 	err = s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
 
 	if err != nil {
@@ -116,10 +118,14 @@ func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier st
 
 	cec := &codeExecutionContext{}
 	ctx, cancel := context.WithCancel(util.WithSystemContext(ctx))
-	cec.ctx = ctx
+	cec.codeCtx = ctx
 	cec.cancel = cancel
 	cec.identifier = identifier
 	cec.scriptMode = true
+
+	cleanUpContext := cec.WithContext(ctx)
+	defer cleanUpContext()
+
 	err = s.registerBuiltIns("["+cec.identifier+"]", vm, cec)
 
 	if err != nil {
@@ -136,7 +142,7 @@ func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier st
 	return res.Export(), nil
 }
 
-func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
+func (s *codeExecutorService) registerCode(ctx context.Context, code *model.Code) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
@@ -151,7 +157,7 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 	}
 
 	if code.Language == model.CodeLanguage_TYPESCRIPT {
-		transpiled, err := typescript.TranspileCtx(context.TODO(), strings.NewReader(source), s.typescriptOptions)
+		transpiled, err := typescript.TranspileCtx(ctx, strings.NewReader(source), s.typescriptOptions)
 
 		if err != nil {
 			return err
@@ -168,21 +174,35 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 		return err
 	}
 
-	cec := &codeExecutionContext{}
-	ctx, cancel := context.WithCancel(util.WithSystemContext(context.Background()))
-	cec.ctx = ctx
-	cec.cancel = cancel
-
-	cec.handlerMap = util2.NewConcurrentSyncMap[string, *abs.HandlerData]()
-	cec.identifier = code.Id.String() + "-" + strconv.Itoa(int(code.Version))
-	s.codeContext.Set(code.Name, cec)
-
 	var concurrencyLevel = 8
 	if code.ConcurrencyLevel != nil {
 		concurrencyLevel = int(*code.ConcurrencyLevel)
 	}
 
+	cleanUpList := make([]func(), 0)
+
+	defer func() {
+		for _, cleanUp := range cleanUpList {
+			cleanUp()
+		}
+	}()
+
+	cecList := make([]*codeExecutionContext, 0)
+
+	var handlerMap = util2.NewConcurrentSyncMap[string, *abs.HandlerData]()
+
 	for i := 0; i < concurrencyLevel; i++ {
+		cec := &codeExecutionContext{}
+		ctx, cancel := context.WithCancel(util.WithSystemContext(context.Background()))
+		cec.codeCtx = ctx
+		cec.cancel = cancel
+
+		cleanUpContext := cec.WithContext(ctx)
+		cleanUpList = append(cleanUpList, cleanUpContext)
+
+		cec.handlerMap = handlerMap
+		cec.identifier = code.Id.String() + "-" + strconv.Itoa(int(code.Version))
+
 		vm := goja.New()
 		s.registry.Enable(vm)
 		vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
@@ -197,32 +217,40 @@ func (s *codeExecutorService) registerCode(code *model.Code) (err error) {
 			return err
 		}
 
-		cec.vms = append(cec.vms, vm)
+		cec.vm = vm
+
+		cecList = append(cecList, cec)
+	}
+
+	s.codeContext.Set(code.Name, cecList)
+
+	return nil
+}
+
+func (s *codeExecutorService) updateCode(ctx context.Context, code *model.Code) error {
+	if err := s.unRegisterCode(ctx, code); err != nil {
+		return err
+	}
+
+	if err := s.registerCode(ctx, code); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (s *codeExecutorService) updateCode(code *model.Code) error {
-	if err := s.unRegisterCode(code); err != nil {
-		return err
-	}
-
-	if err := s.registerCode(code); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *codeExecutorService) unRegisterCode(code *model.Code) error {
-	cec, ok := s.codeContext.Find(code.Name)
+func (s *codeExecutorService) unRegisterCode(ctx context.Context, code *model.Code) error {
+	cecs, ok := s.codeContext.Find(code.Name)
 
 	if !ok {
 		return errors.New("code context not found")
 	}
 
-	cec.cancel()
+	log.Info("Unregistering code: " + code.Name)
+
+	for _, cec := range cecs {
+		cec.cancel()
+	}
 
 	return nil
 }
@@ -302,7 +330,7 @@ func (s *codeExecutorService) setTimeoutFn(cec *codeExecutionContext) func(fn fu
 			case <-time.After(time.Duration(duration) * time.Millisecond):
 				fn()
 			case <-cancel:
-			case <-cec.ctx.Done():
+			case <-cec.codeCtx.Done():
 				// Cancel the timeout
 			}
 		}()
@@ -339,7 +367,7 @@ func (s *codeExecutorService) setIntervalFn(cec *codeExecutionContext) func(fn f
 				select {
 				case <-time.After(time.Duration(duration) * time.Millisecond):
 					fn()
-				case <-cec.ctx.Done():
+				case <-cec.codeCtx.Done():
 					break Loop
 				case <-cancel:
 					break Loop
@@ -365,7 +393,7 @@ func (s *codeExecutorService) sleepFn(cec *codeExecutionContext) func(duration i
 	return func(duration int32) {
 		select {
 		case <-time.After(time.Duration(duration) * time.Millisecond):
-		case <-cec.ctx.Done():
+		case <-cec.codeCtx.Done():
 		}
 	}
 }
@@ -378,7 +406,7 @@ func (s *codeExecutorService) typescriptOptions(config *typescript.Config) {
 	}
 }
 
-func (s *codeExecutorService) registerModule(module *model.Module) error {
+func (s *codeExecutorService) registerModule(ctx context.Context, module *model.Module) error {
 	var source = module.Source
 
 	decodedBytes, err := base64.StdEncoding.DecodeString(module.Source)
@@ -388,7 +416,7 @@ func (s *codeExecutorService) registerModule(module *model.Module) error {
 	}
 
 	if module.Language == model.ModuleLanguage_TYPESCRIPT {
-		transpiled, err := typescript.TranspileCtx(context.TODO(), strings.NewReader(source), s.typescriptOptions)
+		transpiled, err := typescript.TranspileCtx(ctx, strings.NewReader(source), s.typescriptOptions)
 
 		if err != nil {
 			return err
@@ -404,19 +432,19 @@ func (s *codeExecutorService) registerModule(module *model.Module) error {
 	return nil
 }
 
-func (s *codeExecutorService) updateModule(module *model.Module) error {
-	if err := s.unRegisterModule(module); err != nil {
+func (s *codeExecutorService) updateModule(ctx context.Context, module *model.Module) error {
+	if err := s.unRegisterModule(ctx, module); err != nil {
 		return err
 	}
 
-	if err := s.registerModule(module); err != nil {
+	if err := s.registerModule(ctx, module); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *codeExecutorService) unRegisterModule(module *model.Module) error {
+func (s *codeExecutorService) unRegisterModule(ctx context.Context, module *model.Module) error {
 	s.modules.Delete(module.Name)
 
 	return nil
@@ -442,12 +470,12 @@ func (s *codeExecutorService) init() {
 	s.systemModules.Set("@apibrew/nano", GetBuiltinJs("nano.js"))
 }
 
-func (s *codeExecutorService) restartCodeContext() {
+func (s *codeExecutorService) restartCodeContext(ctx context.Context) {
 	s.registry = require.NewRegistryWithLoader(s.srcLoader)
 
 	apiInterface := api.NewInterface(s.container)
 
-	list, err := apiInterface.List(util.SystemContext, api.ListParams{
+	list, err := apiInterface.List(ctx, api.ListParams{
 		Type: "nano/Code",
 	})
 
@@ -464,7 +492,7 @@ func (s *codeExecutorService) restartCodeContext() {
 
 		code := model.CodeMapperInstance.FromRecord(codeRecord)
 
-		if err := s.updateCode(code); err != nil {
+		if err := s.updateCode(ctx, code); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -474,7 +502,7 @@ func newCodeExecutorService(container service.Container, backendEventHandler bac
 	ces := &codeExecutorService{
 		container:           container,
 		backendEventHandler: backendEventHandler,
-		codeContext:         util2.NewConcurrentSyncMap[string, *codeExecutionContext](),
+		codeContext:         util2.NewConcurrentSyncMap[string, []*codeExecutionContext](),
 		systemModules:       util2.NewConcurrentSyncMap[string, string](),
 		modules:             util2.NewConcurrentSyncMap[string, string](),
 		globalObject:        newGlobalObject(),

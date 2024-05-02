@@ -35,12 +35,15 @@ type EventWithContext struct {
 }
 
 type HandlerData struct {
-	Ch chan *EventWithContext
+	Ch     chan *EventWithContext
+	Closed bool
+	Id     string
 }
 
 type CodeExecutionContext interface {
 	HandlerMap() util.Map[string, *HandlerData]
-	Context() context.Context
+	CodeContext() context.Context
+	LocalContext() context.Context
 	GetCodeIdentifier() string
 	IsScriptMode() bool
 	RegisterRevert(f func() error)
@@ -48,4 +51,5 @@ type CodeExecutionContext interface {
 	BeginTransaction() error
 	CommitTransaction() error
 	RollbackTransaction() error
+	WithContext(ctx context.Context) func()
 }
