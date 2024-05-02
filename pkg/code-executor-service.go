@@ -451,8 +451,9 @@ func (s *codeExecutorService) unRegisterModule(ctx context.Context, module *mode
 }
 
 func (s *codeExecutorService) srcLoader(path string) ([]byte, error) {
-	path = strings.TrimPrefix(path, "node_modules/")
+	path = strings.ReplaceAll(path, "node_modules/", "")
 	path = strings.TrimPrefix(path, "./")
+	path = strings.TrimPrefix(path, "/")
 
 	if source, ok := s.systemModules.Find(path); ok {
 		return []byte(source), nil
