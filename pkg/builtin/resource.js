@@ -38,7 +38,7 @@ class Resource {
 
         const name = `${this.type}[${order}${action.charAt(0).toUpperCase() + action.slice(1)}]`
 
-        console.log('registering handler with name: '+ name, actions, orderNumber, sync, fn)
+        console.log('registering handler with name: ' + name, actions, orderNumber, sync, fn)
 
         handle({
             name: name,
@@ -250,6 +250,10 @@ class Resource {
 
     bindList(toResource, mapFrom, mapTo) {
         this.bind(toResource, 'list', mapFrom, mapTo)
+    }
+
+    each(fn, params) {
+        this.list({limit: 1000, ...params}).content.forEach(fn)
     }
 
     handleEach(fn, sync) {
