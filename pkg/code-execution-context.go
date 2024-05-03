@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var ctxParentContextKey struct{}
+
 type codeExecutionContext struct {
 	id                     string
 	codeCtx                context.Context
@@ -22,14 +24,14 @@ type codeExecutionContext struct {
 }
 
 func (c *codeExecutionContext) WithContext(ctx context.Context) func() {
-	c.localCtx = context.WithValue(ctx, "ctxParentContext", c.localCtx)
+	c.localCtx = context.WithValue(ctx, ctxParentContextKey, c.localCtx)
 
 	return func() {
 		if c.localCtx != nil {
-			if c.localCtx.Value("ctxParentContext") == nil {
+			if c.localCtx.Value(ctxParentContextKey) == nil {
 				c.localCtx = nil
 			} else {
-				c.localCtx = c.localCtx.Value("ctxParentContext").(context.Context)
+				c.localCtx = c.localCtx.Value(ctxParentContextKey).(context.Context)
 			}
 		}
 	}
