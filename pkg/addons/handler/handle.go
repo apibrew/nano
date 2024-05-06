@@ -13,6 +13,7 @@ import (
 	"github.com/apibrew/nano/pkg/abs"
 	util2 "github.com/apibrew/nano/pkg/addons/util"
 	"github.com/dop251/goja"
+	"github.com/hashicorp/go-metrics"
 	log "github.com/sirupsen/logrus"
 	"runtime/debug"
 )
@@ -31,6 +32,12 @@ type Handler struct {
 
 func handle(vm *goja.Runtime, cec abs.CodeExecutionContext, backendEventHandler backend_event_handler.BackendEventHandler) func(handler Handler) {
 	return func(handler Handler) {
+		metrics.IncrCounterWithLabels([]string{"NanoMetrics"}, float32(1), []metrics.Label{
+			{Name: "type", Value: "registerHandler"},
+			{Name: "name", Value: handler.Name},
+			{Name: "cecId", Value: cec.GetCodeIdentifier()},
+		})
+
 		if cec.IsScriptMode() {
 			util2.ThrowError(vm, "Handlers are not supported in script mode")
 		}
@@ -56,7 +63,7 @@ func handle(vm *goja.Runtime, cec abs.CodeExecutionContext, backendEventHandler 
 
 			handlerTemplate.Id = handlerId
 			handlerData.Id = handlerId
-			handlerTemplate.Fn = processThrowHandlerData(handlerData)
+			handlerTemplate.Fn = processThrowHandlerData(cec, handler, handlerData)
 
 			backendEventHandler.RegisterHandler(handlerTemplate)
 
@@ -156,8 +163,14 @@ func recordHandlerFn(cec abs.CodeExecutionContext, fn HandlerFunc) backend_event
 	}
 }
 
-func processThrowHandlerData(data *abs.HandlerData) backend_event_handler.HandlerFunc {
+func processThrowHandlerData(cec abs.CodeExecutionContext, handler Handler, data *abs.HandlerData) backend_event_handler.HandlerFunc {
 	return func(ctx context.Context, event *model.Event) (*model.Event, error) {
+		metrics.IncrCounterWithLabels([]string{"NanoMetrics"}, float32(1), []metrics.Label{
+			{Name: "type", Value: "handleEvent"},
+			{Name: "name", Value: handler.Name},
+			{Name: "cecId", Value: cec.GetCodeIdentifier()},
+		})
+
 		log.Debug("Begin dispatching event: " + event.Id)
 		ec := &abs.EventWithContext{
 			Ctx:    ctx,

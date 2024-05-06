@@ -17,6 +17,7 @@ import (
 	"github.com/clarkmcc/go-typescript"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
+	"github.com/hashicorp/go-metrics"
 	log "github.com/sirupsen/logrus"
 	"runtime/debug"
 	"strconv"
@@ -47,6 +48,10 @@ func (s *codeExecutorService) GetGlobalObject() abs.GlobalObject {
 }
 
 func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Script) (output interface{}, err error) {
+	metrics.IncrCounterWithLabels([]string{"NanoMetrics"}, float32(1), []metrics.Label{
+		{Name: "type", Value: "executeScript"},
+	})
+
 	defer func() {
 		if r := recover(); r != nil {
 			debug.PrintStack()
@@ -108,6 +113,10 @@ func (s *codeExecutorService) RunScript(ctx context.Context, script *model.Scrip
 }
 
 func (s *codeExecutorService) RunInlineScript(ctx context.Context, identifier string, source string) (result any, err error) {
+	metrics.IncrCounterWithLabels([]string{"NanoMetrics"}, float32(1), []metrics.Label{
+		{Name: "type", Value: "executeInlineScript"},
+	})
+
 	defer func() {
 		if r := recover(); r != nil {
 			debug.PrintStack()
@@ -154,6 +163,17 @@ func (s *codeExecutorService) registerCode(ctx context.Context, code *model.Code
 			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
+
+	var concurrencyLevel = 8
+	if code.ConcurrencyLevel != nil {
+		concurrencyLevel = int(*code.ConcurrencyLevel)
+	}
+
+	metrics.IncrCounterWithLabels([]string{"NanoMetrics"}, float32(concurrencyLevel), []metrics.Label{
+		{Name: "type", Value: "registerCode"},
+		{Name: "name", Value: code.Name},
+	})
+
 	decodedBytes, err := base64.StdEncoding.DecodeString(code.Content)
 
 	var source = code.Content
@@ -178,11 +198,6 @@ func (s *codeExecutorService) registerCode(ctx context.Context, code *model.Code
 
 	if err != nil {
 		return err
-	}
-
-	var concurrencyLevel = 8
-	if code.ConcurrencyLevel != nil {
-		concurrencyLevel = int(*code.ConcurrencyLevel)
 	}
 
 	cleanUpList := make([]func(), 0)
@@ -416,6 +431,11 @@ func (s *codeExecutorService) typescriptOptions(config *typescript.Config) {
 }
 
 func (s *codeExecutorService) registerModule(ctx context.Context, module *model.Module) error {
+	metrics.IncrCounterWithLabels([]string{"NanoMetrics"}, float32(1), []metrics.Label{
+		{Name: "type", Value: "registerModule"},
+		{Name: "name", Value: module.Name},
+	})
+
 	var source = module.Source
 
 	decodedBytes, err := base64.StdEncoding.DecodeString(module.Source)
