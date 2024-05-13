@@ -2,23 +2,27 @@ module github.com/apibrew/nano
 
 go 1.20
 
+replace github.com/apibrew/apibrew => ../apibrew
+
 require (
-	github.com/apibrew/apibrew v1.3.85
+	github.com/apibrew/apibrew v1.3.97
 	github.com/aws/aws-sdk-go v1.50.19
 	github.com/clarkmcc/go-typescript v0.7.0
 	github.com/dop251/goja v0.0.0-20240220182346-e401ed450204
 	github.com/dop251/goja_nodejs v0.0.0-20240418154818-2aae10d4cbcf
 	github.com/google/uuid v1.5.0
+	github.com/hashicorp/go-metrics v0.5.1
 	github.com/rakyll/statik v0.1.7
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/sync v0.1.0
-	google.golang.org/protobuf v1.30.0
+	golang.org/x/sync v0.4.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/mail.v2 v2.3.1
 )
 
 require (
+	github.com/apibrew/metrics v1.0.17 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
@@ -39,7 +43,6 @@ require (
 	github.com/google/pprof v0.0.0-20230926050212-f7f687d19a98 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
-	github.com/hashicorp/go-metrics v0.5.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
@@ -78,8 +81,10 @@ require (
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	google.golang.org/grpc v1.55.0 // indirect
+	google.golang.org/genproto v0.0.0-20231002182017-d307bd883b97 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20231002182017-d307bd883b97 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
+	google.golang.org/grpc v1.60.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

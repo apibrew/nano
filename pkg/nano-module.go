@@ -64,6 +64,20 @@ func (m module) Init() {
 	); err != nil {
 		log.Fatal(err)
 	}
+
+	if err := RegisterResourceProcessor[*model2.Action](
+		"nano-action-listener",
+		&actionProcessor{
+			backendEventHandler: m.backendEventHandler,
+			codeExecutor:        m.codeExecutor,
+			api:                 api.NewInterface(m.container),
+		},
+		m.backendEventHandler,
+		m.container,
+		model2.ActionResource,
+	); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (m module) ensureNamespace() {
@@ -82,6 +96,22 @@ func (m module) ensureNamespace() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	_, err = m.container.GetRecordService().Apply(util.SystemContext, service.RecordUpdateParams{
+		Namespace: resources.NamespaceResource.Namespace,
+		Resource:  resources.NamespaceResource.Name,
+		Records: []*model.Record{
+			{
+				Properties: map[string]*structpb.Value{
+					"name": structpb.NewStringValue("actions"),
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (m module) ensureResources() {
@@ -90,6 +120,7 @@ func (m module) ensureResources() {
 		model2.ScriptResource,
 		model2.CronJobResource,
 		model2.ModuleResource,
+		model2.ActionResource,
 	}
 
 	for _, resource := range list {
