@@ -6,7 +6,7 @@ replace github.com/apibrew/apibrew => ../apibrew
 
 require (
 	github.com/apibrew/apibrew v1.3.97
-	github.com/aws/aws-sdk-go v1.50.19
+	github.com/aws/aws-sdk-go v1.53.0
 	github.com/clarkmcc/go-typescript v0.7.0
 	github.com/dop251/goja v0.0.0-20240220182346-e401ed450204
 	github.com/dop251/goja_nodejs v0.0.0-20240418154818-2aae10d4cbcf
