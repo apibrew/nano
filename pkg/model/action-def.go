@@ -295,7 +295,7 @@ var ActionResource = &model.Resource{
 			Type:     model.ResourceProperty_STRING,
 			Length:   255,
 			Required: false,
-			Unique:   true,
+			Unique:   false,
 
 			Annotations: map[string]string{
 				"SourceMatchKey": "318f4023e862",

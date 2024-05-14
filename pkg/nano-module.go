@@ -90,17 +90,6 @@ func (m module) ensureNamespace() {
 					"name": structpb.NewStringValue("nano"),
 				},
 			},
-		},
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = m.container.GetRecordService().Apply(util.SystemContext, service.RecordUpdateParams{
-		Namespace: resources.NamespaceResource.Namespace,
-		Resource:  resources.NamespaceResource.Name,
-		Records: []*model.Record{
 			{
 				Properties: map[string]*structpb.Value{
 					"name": structpb.NewStringValue("actions"),

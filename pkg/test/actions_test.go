@@ -112,7 +112,7 @@ func TestActionUpdateSource(t *testing.T) {
 	testAction.Language = model.ActionLanguage_JAVASCRIPT
 	testAction.ContentFormat = model.ActionContentFormat_TEXT
 
-	res, err := api.Apply(util.SystemContext, model.ActionMapperInstance.ToUnstructured(testAction))
+	_, err := api.Apply(util.SystemContext, model.ActionMapperInstance.ToUnstructured(testAction))
 
 	if err != nil {
 		t.Error(err)
@@ -130,7 +130,7 @@ func TestActionUpdateSource(t *testing.T) {
 		return
 	}
 
-	res, err = api.Create(util.SystemContext, map[string]interface{}{
+	res, err := api.Create(util.SystemContext, map[string]interface{}{
 		"type": "actions/TestAction",
 		"input": map[string]interface{}{
 			"a": 5,

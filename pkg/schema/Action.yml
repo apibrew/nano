@@ -22,7 +22,6 @@ properties:
     type: STRING
     length: 255
     required: false
-    unique: true
   inputSchema:
     title: Input Schema
     description: Input Schema
