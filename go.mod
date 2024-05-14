@@ -13,7 +13,7 @@ require (
 	github.com/rakyll/statik v0.1.7
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/sync v0.4.0
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/mail.v2 v2.3.1
