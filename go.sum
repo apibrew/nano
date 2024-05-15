@@ -43,8 +43,7 @@ github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuy
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
-github.com/apibrew/apibrew v1.4.17 h1:9QnoIkVWdMjxjkfY5HCHiPvT1EXnkWluGVZ8X4f3i8o=
-github.com/apibrew/apibrew v1.4.17/go.mod h1:JQBWXQasaPZ4BU3n32c089Jd0dBEG/0YuC1O9Mqj7d0=
+github.com/apibrew/apibrew v1.4.21 h1:JhbK0HQBoMer+ACEsTDrCadRrehPlCNSHoBZJurrJaw=
 github.com/apibrew/apibrew v1.4.21/go.mod h1:r3G1GXEmQo5MIpOy8n0VxIySinWMpWW8fIJXpLXZuWE=
 github.com/apibrew/metrics v1.0.17 h1:prlEqfu2E0sGHz+dempVgvZuAqJ0hVRnv0fJm3gqWUM=
 github.com/apibrew/metrics v1.0.17/go.mod h1:dpYHJM4v6bsusBJwprnjHsxySn8X+OACJQyUNWzmAaY=
