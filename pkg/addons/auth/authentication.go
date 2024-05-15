@@ -13,8 +13,8 @@ type authObject struct {
 	vm        *goja.Runtime
 }
 
-func (c *authObject) Authenticate(username string, password string, term string) interface{} {
-	token, err := c.container.GetAuthenticationService().Authenticate(util.SystemContext, username, password, model.TokenTerm(model.TokenTerm_value[term]), false)
+func (c *authObject) Authenticate(username string, password string, term string, minimizeToken bool) interface{} {
+	token, err := c.container.GetAuthenticationService().Authenticate(util.SystemContext, username, password, model.TokenTerm(model.TokenTerm_value[term]), minimizeToken)
 
 	if err != nil {
 		util2.ThrowError(c.vm, err.Error())
@@ -23,8 +23,8 @@ func (c *authObject) Authenticate(username string, password string, term string)
 	return token.Content
 }
 
-func (c *authObject) AuthenticateWithoutPassword(username string, term string) interface{} {
-	token, err := c.container.GetAuthenticationService().AuthenticateWithoutPassword(util.SystemContext, username, model.TokenTerm(model.TokenTerm_value[term]))
+func (c *authObject) AuthenticateWithoutPassword(username string, term string, minimizeToken bool) interface{} {
+	token, err := c.container.GetAuthenticationService().AuthenticateWithoutPassword(util.SystemContext, username, model.TokenTerm(model.TokenTerm_value[term]), minimizeToken)
 
 	if err != nil {
 		util2.ThrowError(c.vm, err.Error())
