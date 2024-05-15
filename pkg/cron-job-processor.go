@@ -42,7 +42,7 @@ func (f *cronJobProcessor) Register(ctx context.Context, entity *model2.CronJob)
 	_, err := c.AddFunc(entity.Expression, func() {
 		atomic.AddInt32(&executionNumber, 1)
 
-		f.execute(context.Background(), executionNumber, entity.Id.String())
+		f.execute(util.WithSystemContext(context.Background()), executionNumber, entity.Id.String())
 	})
 
 	if err != nil {

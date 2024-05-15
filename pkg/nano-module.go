@@ -78,6 +78,19 @@ func (m module) Init() {
 	); err != nil {
 		log.Fatal(err)
 	}
+
+	if err := RegisterResourceProcessor[*model2.Job](
+		"nano-job-listener",
+		&jobProcessor{
+			codeExecutor: m.codeExecutor,
+			api:          api.NewInterface(m.container),
+		},
+		m.backendEventHandler,
+		m.container,
+		model2.JobResource,
+	); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (m module) ensureNamespace() {
@@ -108,6 +121,7 @@ func (m module) ensureResources() {
 		model2.CodeResource,
 		model2.ScriptResource,
 		model2.CronJobResource,
+		model2.JobResource,
 		model2.ModuleResource,
 		model2.ActionResource,
 	}
