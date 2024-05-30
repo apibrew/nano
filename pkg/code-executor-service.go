@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	abs2 "github.com/apibrew/apibrew/pkg/abs"
 	"github.com/apibrew/apibrew/pkg/api"
 	"github.com/apibrew/apibrew/pkg/formats/unstructured"
 	"github.com/apibrew/apibrew/pkg/service"
@@ -520,7 +521,7 @@ func (s *codeExecutorService) restartCodeContext(ctx context.Context) {
 			log.Fatal(err)
 		}
 
-		code := model.CodeMapperInstance.FromRecord(codeRecord)
+		code := model.CodeMapperInstance.FromRecord(abs2.RecordLikeAsRecord(codeRecord))
 
 		if err := s.updateCode(ctx, code); err != nil {
 			log.Fatal(err)

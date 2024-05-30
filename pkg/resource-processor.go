@@ -2,6 +2,7 @@ package nano
 
 import (
 	"context"
+	abs2 "github.com/apibrew/apibrew/pkg/abs"
 	"github.com/apibrew/apibrew/pkg/model"
 	"github.com/apibrew/apibrew/pkg/service"
 	backend_event_handler "github.com/apibrew/apibrew/pkg/service/backend-event-handler"
@@ -41,7 +42,7 @@ func RegisterResourceProcessor[T any](handlerName string,
 					return nil, err
 				}
 
-				record = mergeRecords(existing, record)
+				record = mergeRecords(abs2.RecordLikeAsRecord(existing), record)
 
 				entity := processor.MapperTo(record)
 
@@ -57,7 +58,7 @@ func RegisterResourceProcessor[T any](handlerName string,
 					return nil, err
 				}
 
-				record = mergeRecords(existing, record)
+				record = mergeRecords(abs2.RecordLikeAsRecord(existing), record)
 
 				entity := processor.MapperTo(record)
 
@@ -99,7 +100,7 @@ func RegisterResourceProcessor[T any](handlerName string,
 	}
 
 	for _, record := range codeRecords {
-		entity := processor.MapperTo(record)
+		entity := processor.MapperTo(abs2.RecordLikeAsRecord(record))
 
 		err := processor.Register(util.SystemContext, entity)
 
