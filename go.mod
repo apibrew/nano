@@ -3,7 +3,7 @@ module github.com/apibrew/nano
 go 1.20
 
 require (
-	github.com/apibrew/apibrew v1.4.25
+	github.com/apibrew/apibrew v1.4.27
 	github.com/aws/aws-sdk-go v1.50.19
 	github.com/clarkmcc/go-typescript v0.7.0
 	github.com/dop251/goja v0.0.0-20240220182346-e401ed450204
@@ -20,7 +20,7 @@ require (
 )
 
 require (
-	github.com/apibrew/metrics v1.0.17 // indirect
+	github.com/apibrew/metrics v1.0.18 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
