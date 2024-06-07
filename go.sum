@@ -47,8 +47,8 @@ github.com/apibrew/apibrew v1.4.21 h1:JhbK0HQBoMer+ACEsTDrCadRrehPlCNSHoBZJurrJa
 github.com/apibrew/apibrew v1.4.21/go.mod h1:r3G1GXEmQo5MIpOy8n0VxIySinWMpWW8fIJXpLXZuWE=
 github.com/apibrew/metrics v1.0.17 h1:prlEqfu2E0sGHz+dempVgvZuAqJ0hVRnv0fJm3gqWUM=
 github.com/apibrew/metrics v1.0.17/go.mod h1:dpYHJM4v6bsusBJwprnjHsxySn8X+OACJQyUNWzmAaY=
-github.com/aws/aws-sdk-go v1.50.19 h1:YSIDKRSkh/TW0RPWoocdLqtC/T5W6IGBVhFs6P7Qcac=
-github.com/aws/aws-sdk-go v1.50.19/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
+github.com/aws/aws-sdk-go v1.53.18 h1:BeMeCK5e3bDGJj675FhnO94zRci8O35ombWXRvYomJs=
+github.com/aws/aws-sdk-go v1.53.18/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
