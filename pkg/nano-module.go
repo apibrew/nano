@@ -4,7 +4,6 @@ import (
 	"context"
 	errors2 "errors"
 	"fmt"
-	"github.com/apibrew/apibrew/pkg/abs"
 	"github.com/apibrew/apibrew/pkg/api"
 	"github.com/apibrew/apibrew/pkg/errors"
 	"github.com/apibrew/apibrew/pkg/model"
@@ -98,13 +97,13 @@ func (m module) ensureNamespace() {
 	_, err := m.container.GetRecordService().Apply(util.SystemContext, service.RecordUpdateParams{
 		Namespace: resources.NamespaceResource.Namespace,
 		Resource:  resources.NamespaceResource.Name,
-		Records: []abs.RecordLike{
-			&model.Record{
+		Records: []*model.Record{
+			{
 				Properties: map[string]*structpb.Value{
 					"name": structpb.NewStringValue("nano"),
 				},
 			},
-			&model.Record{
+			{
 				Properties: map[string]*structpb.Value{
 					"name": structpb.NewStringValue("actions"),
 				},
