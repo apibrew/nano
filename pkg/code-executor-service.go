@@ -33,6 +33,7 @@ type codeExecutorService struct {
 	modules             util2.Map[string, string]
 	systemModules       util2.Map[string, string]
 	registry            *require.Registry
+	native              util2.Map[string, interface{}]
 }
 
 func (s *codeExecutorService) GetContainer() service.Container {
@@ -308,6 +309,12 @@ func (s *codeExecutorService) registerBuiltIns(codeName string, vm *goja.Runtime
 		}
 	}
 
+	for _, key := range s.native.Keys() {
+		if err := vm.Set(key, s.native.Get(key)); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -528,6 +535,10 @@ func (s *codeExecutorService) restartCodeContext(ctx context.Context) {
 	}
 }
 
+func (s *codeExecutorService) RegisterNative(name string, val interface{}) {
+	s.native.Set(name, val)
+}
+
 func newCodeExecutorService(container service.Container, backendEventHandler backend_event_handler.BackendEventHandler) *codeExecutorService {
 	ces := &codeExecutorService{
 		container:           container,
@@ -535,6 +546,7 @@ func newCodeExecutorService(container service.Container, backendEventHandler bac
 		codeContext:         util2.NewConcurrentSyncMap[string, []*codeExecutionContext](),
 		systemModules:       util2.NewConcurrentSyncMap[string, string](),
 		modules:             util2.NewConcurrentSyncMap[string, string](),
+		native:              util2.NewConcurrentSyncMap[string, interface{}](),
 		globalObject:        newGlobalObject(),
 	}
 

@@ -22,6 +22,14 @@ type module struct {
 	backendEventHandler backend_event_handler.BackendEventHandler
 }
 
+func (m module) RegisterNative(name string, fn interface{}) {
+	m.codeExecutor.RegisterNative(name, fn)
+}
+
+type NativeRegistry interface {
+	RegisterNative(name string, fn interface{})
+}
+
 func (m module) Init() {
 	log.Println("nano module is enabled")
 	m.ensureNamespace()
